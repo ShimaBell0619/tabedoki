@@ -25,7 +25,7 @@ for (const width of [320, 390, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     await page.clock.install({ time: new Date('2026-10-11T12:00:00') });
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: /食べどきを/ })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /食品一覧/ })).toBeVisible();
     await register(page, '牛乳', '2026-10-11', '消費期限', '冷蔵');
     await register(page, '食パン', '2026-10-13', '賞味期限', '常温');
     await expect(page.getByText('今日まで', { exact: true }).first()).toBeVisible();
@@ -36,8 +36,10 @@ for (const width of [320, 390, 1440]) {
     await expect(page.getByRole('heading', { name: '牛乳' })).toHaveCount(0);
     await expect(page.getByRole('heading', { name: '食パン' })).toBeVisible();
     await page.getByRole('searchbox', { name: '食品名で検索' }).clear();
+    await openFilters(page);
     await page.getByLabel('保存場所で絞り込み').selectOption('chilled');
     await expect(page.getByRole('heading', { name: '食パン' })).toHaveCount(0);
+    await openFilters(page);
     await page.getByLabel('保存場所で絞り込み').selectOption('all');
     await page.getByRole('button', { name: '牛乳を編集' }).click();
     await page.getByRole('dialog').getByRole('textbox', { name: /食品名/ }).fill('低脂肪牛乳');
@@ -50,6 +52,7 @@ for (const width of [320, 390, 1440]) {
     await page.getByRole('button', { name: '戻す' }).click();
     await page.getByRole('button', { name: '管理中' }).click();
     page.once('dialog', dialog => dialog.accept());
+    await page.getByRole('button', { name: '低脂肪牛乳のその他の操作' }).click();
     await page.getByRole('button', { name: '低脂肪牛乳を削除' }).click();
     await expect(page.getByRole('heading', { name: '低脂肪牛乳' })).toHaveCount(0);
     await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
@@ -63,14 +66,17 @@ test('期限境界・バックアップ復元・不正JSON拒否・上書き確�
   await page.goto('/');
   await register(page, '昨日のヨーグルト', '2026-10-10');
   await register(page, '4日後の卵', '2026-10-15');
+  await openFilters(page);
   await page.getByLabel('期限状態で絞り込み').selectOption('expired');
   await expect(page.getByRole('heading', { name: '昨日のヨーグルト' })).toBeVisible();
   await expect(page.getByRole('heading', { name: '4日後の卵' })).toHaveCount(0);
+  await openFilters(page);
   await page.getByLabel('期限状態で絞り込み').selectOption('later');
   await expect(page.getByRole('heading', { name: '4日後の卵' })).toBeVisible();
+  await openFilters(page);
   await page.getByLabel('期限状態で絞り込み').selectOption('all');
   const downloadWait = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'JSONを保存' }).click();
+  await page.getByRole('button', { name: 'バックアップを保存' }).click();
   const download = await downloadWait;
   const path = await download.path();
   page.once('dialog', dialog => dialog.dismiss());
@@ -95,3 +101,7 @@ test('キーボード・Escapeとフォーカス表示', async ({ page }) => {
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog')).not.toBeVisible();
 });
+async function openFilters(page) {
+  const button = page.getByRole('button', { name: /^絞り込み/ });
+  if (await button.getAttribute('aria-expanded') === 'false') await button.click();
+}

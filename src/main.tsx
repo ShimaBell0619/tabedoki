@@ -2,12 +2,14 @@ import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'r
 import { createRoot } from 'react-dom/client';
 import {
   BACKUP_MAX_BYTES, MAX_ITEMS, READ_ERROR, SAVE_ERROR, applyFoodCandidate, categories,
-  daysLeft, deadlineLabel, deadlineState, defaultTemplates, initialFoodForm, isFood, previousFoods, units, writeData,
+  deadlineLabel, deadlineState, defaultTemplates, initialFoodForm, isFood, previousFoods, units, writeData,
   localDate, makeBackup, readData, validateBackup,
   type DeadlineKind, type DeadlineState, type Food, type FoodCategory, type FoodForm, type FoodTemplate,
   type FoodStatus, type QuantityUnit, type StoragePlace,
 } from './food';
 import { TemplateManager } from './TemplateManager';
+import { FoodActions } from './FoodActions';
+import { Icon } from './Icon';
 import './styles.css';
 
 type View = 'active' | 'finished' | 'all';
@@ -29,6 +31,8 @@ function App() {
   const [notice, setNotice] = useState(initial.error);
   const [view, setView] = useState<View>('active');
   const [search, setSearch] = useState('');
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [selectedCandidate, setSelectedCandidate] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<'all' | FoodCategory>('all');
   const [placeFilter, setPlaceFilter] = useState<'all' | StoragePlace>('all');
   const [deadlineFilter, setDeadlineFilter] = useState<DeadlineFilter>('all');
@@ -95,11 +99,12 @@ function App() {
       quantity: item.quantity, unit: item.unit, place: item.place,
     } : initialFoodForm());
     setFormError('');
+    setSelectedCandidate(null);
     dialog.current?.showModal();
   }
   function openTemplates(fromFood = false) {
     returnToFood.current = fromFood;
-    setFormError(''); setManagingTemplates(true);
+    setFormError(''); setSelectedCandidate(null); setManagingTemplates(true);
     if (!dialog.current?.open) dialog.current?.showModal();
   }
   function closeTemplates() {
@@ -112,7 +117,8 @@ function App() {
     setNotice('定番食品を保存しました。'); setFormError('');
     return true;
   }
-  function chooseCandidate(candidate: FoodTemplate | Food) {
+  function chooseCandidate(candidate: FoodTemplate | Food, source: 'template' | 'food') {
+    setSelectedCandidate(`${source}:${candidate.id}`);
     setForm(current => applyFoodCandidate(current, candidate));
     setFormError('');
   }
@@ -167,27 +173,95 @@ function App() {
     setNotice('空の状態から開始しました。');
   }
 
+  const filterCount = Number(categoryFilter !== 'all') + Number(placeFilter !== 'all') + Number(deadlineFilter !== 'all');
+  const hasFilters = filterCount > 0 || Boolean(search.trim());
+  const deadlineNames = { expired: '期限切れ', today: '今日まで', soon: '3日以内', later: '4日以上' };
+  function resetFilters() {
+    setSearch(''); setCategoryFilter('all'); setPlaceFilter('all'); setDeadlineFilter('all');
+  }
+
   return <div className="page">
-    <header className="topbar"><div className="topbar-inner"><a href="/" className="brand" aria-label="たべどき ホーム"><span className="brand-mark" aria-hidden="true">葉</span>たべどき<span className="brand-dot">。</span></a><span className="top-note">おうちの食材、ちょうどよく。</span></div></header>
+    <header className="topbar"><div className="topbar-inner">
+      <a href="/" className="brand" aria-label="たべどき ホーム"><span className="brand-mark"><Icon name="cooking-pot" /></span>たべどき</a>
+      <button className="header-action" type="button" aria-label="定番食品を管理" onClick={() => openTemplates()}><Icon name="bookmark" />定番食品</button>
+    </div></header>
     <main className="main">
-      <section className="intro"><div><div className="eyebrow">MY KITCHEN · 食品管理</div><h1>食べどきを、<br className="mobile-only"/>見逃さない。</h1><p>おうちの食品をまとめて、期限が近い順にチェック。</p></div><button className="primary desktop-create" disabled={blocked} onClick={() => openForm()} type="button"><span aria-hidden="true">＋</span> 食品を登録</button></section>
-      <section className="summary" aria-label="期限の状況"><button className={`summary-tile danger ${deadlineFilter === 'expired' ? 'chosen' : ''}`} onClick={() => { setView('active'); setDeadlineFilter(deadlineFilter === 'expired' ? 'all' : 'expired'); }}><span className="summary-title"><span className="indicator red"/>期限切れ</span><strong>{counts.expired}<small>件</small></strong><span className="summary-sub">早めに確認</span></button><button className={`summary-tile warning ${deadlineFilter === 'today' ? 'chosen' : ''}`} onClick={() => { setView('active'); setDeadlineFilter(deadlineFilter === 'today' ? 'all' : 'today'); }}><span className="summary-title"><span className="indicator orange"/>今日まで</span><strong>{counts.today}<small>件</small></strong><span className="summary-sub">今日が期限</span></button><button className={`summary-tile gentle ${deadlineFilter === 'soon' ? 'chosen' : ''}`} onClick={() => { setView('active'); setDeadlineFilter(deadlineFilter === 'soon' ? 'all' : 'soon'); }}><span className="summary-title"><span className="indicator yellow"/>3日以内</span><strong>{counts.soon}<small>件</small></strong><span className="summary-sub">あと少し</span></button></section>
-      {notice && <div className={`notice ${blocked ? 'notice-error' : ''}`} role="status"><span>{notice}</span>{blocked ? (!initial.canExport && <button type="button" onClick={clearCorrupt}>空の状態から始める</button>) : <button type="button" aria-label="通知を閉じる" onClick={() => setNotice('')}>×</button>}</div>}
-      <section className="inventory" aria-labelledby="inventory-heading"><div className="section-head"><div><div className="eyebrow">YOUR PANTRY</div><h2 id="inventory-heading">食品一覧 <span className="total">{displayed.length}件</span></h2></div><div className="tabs" role="group" aria-label="表示する食品"><button type="button" aria-pressed={view === 'active'} onClick={() => setView('active')}>管理中</button><button type="button" aria-pressed={view === 'finished'} onClick={() => setView('finished')}>完了</button><button type="button" aria-pressed={view === 'all'} onClick={() => setView('all')}>すべて</button></div></div>
-      <div className="filters"><label className="search"><span className="sr-only">食品名で検索</span><span aria-hidden="true">⌕</span><input type="search" placeholder="食品名で検索" value={search} onChange={event => setSearch(event.target.value)}/></label><label><span className="sr-only">カテゴリで絞り込み</span><select value={categoryFilter} onChange={event => setCategoryFilter(event.target.value as typeof categoryFilter)}><option value="all">すべてのカテゴリ</option>{Object.entries(categories).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label><label className="select-label"><span className="sr-only">保存場所で絞り込み</span><select value={placeFilter} onChange={event => setPlaceFilter(event.target.value as typeof placeFilter)}><option value="all">すべての場所</option><option value="chilled">冷蔵</option><option value="frozen">冷凍</option><option value="pantry">常温</option></select></label><label className="select-label"><span className="sr-only">期限状態で絞り込み</span><select value={deadlineFilter} onChange={event => setDeadlineFilter(event.target.value as DeadlineFilter)}><option value="all">すべての期限</option><option value="expired">期限切れ</option><option value="today">今日まで</option><option value="soon">3日以内</option><option value="later">4日以上</option></select></label></div>
-      {displayed.length === 0 ? <div className="empty"><div className="empty-icon" aria-hidden="true">✳</div><h3>{items.length === 0 ? 'まずは食品を登録しましょう' : '該当する食品がありません'}</h3><p>{items.length === 0 ? '期限と保存場所を記録して、食材を無駄なく使いましょう。' : '検索や絞り込みを変更してみてください。'}</p>{items.length === 0 && <button className="secondary" disabled={blocked} onClick={() => openForm()}>食品を登録する</button>}</div> :
-      <ul className="food-list">{displayed.map(item => { const delta = daysLeft(item.deadline, today); const state = deadlineState(item.deadline, today); return <li className={`food-row ${item.status !== 'active' ? 'completed' : ''}`} key={item.id}><div className={`date-block state-${state}`} aria-label={`${kinds[item.kind]} ${item.deadline}`}><span className="date-month">{Number(item.deadline.slice(5, 7))}月</span><strong>{Number(item.deadline.slice(8, 10))}</strong></div><div className="food-info"><div className="food-primary"><h3>{item.name}</h3><span className={`deadline-chip state-${item.status === 'active' ? state : 'later'}`}>{item.status !== 'active' ? (item.status === 'used' ? '使い切り済み' : '廃棄済み') : deadlineLabel(item.deadline, today)}</span></div><div className="food-meta"><span>{kinds[item.kind]}</span><span aria-hidden="true">·</span><span>{categories[item.category]}</span><span aria-hidden="true">·</span><span>{places[item.place]}</span><span aria-hidden="true">·</span><span>数量 {item.quantity}{units[item.unit]}</span>{item.status === 'active' && delta < 0 && <span className="sr-only">期限切れ</span>}</div></div><div className="food-actions"><button type="button" disabled={blocked} onClick={() => openForm(item)} aria-label={`${item.name}を編集`}>編集</button>{item.status === 'active' ? <><button type="button" disabled={blocked} onClick={() => changeStatus(item, 'used')} aria-label={`${item.name}を使い切り`}>使い切り</button><button type="button" disabled={blocked} onClick={() => changeStatus(item, 'discarded')} aria-label={`${item.name}を廃棄`}>廃棄</button></> : <button type="button" disabled={blocked} onClick={() => changeStatus(item, 'active')}>戻す</button>}<button type="button" className="delete" disabled={blocked} onClick={() => removeFood(item)} aria-label={`${item.name}を削除`}>削除</button></div></li>; })}</ul>}
+      <div className="page-heading"><h1 id="inventory-heading">食品一覧 <span className="total">{displayed.length}件</span></h1>
+        <button className="primary desktop-create" disabled={blocked} onClick={() => openForm()} type="button"><Icon name="plus" />食品を登録</button>
+      </div>
+      <section className="summary" aria-label="期限の状況">
+        {(['expired', 'today', 'soon'] as const).map(state => <button key={state} type="button" className={`summary-tile state-${state}`} aria-pressed={view === 'active' && deadlineFilter === state} onClick={() => { setView('active'); setDeadlineFilter(view === 'active' && deadlineFilter === state ? 'all' : state); }}>
+          <span className="summary-title">{deadlineNames[state]}</span><strong>{counts[state]}<small>件</small></strong>
+        </button>)}
       </section>
-      <section className="data-section" aria-labelledby="data-heading"><div><div className="eyebrow">DATA & BACKUP</div><h2 id="data-heading">データのバックアップ</h2><p>データはこのブラウザ内だけに保存されます。ブラウザのデータ削除・機種変更で失われるため、定期的にJSONファイルへバックアップしてください。別の端末とは同期しません。</p></div><div className="backup-buttons"><button type="button" className="secondary" disabled={blocked && !initial.canExport} onClick={exportBackup}>JSONを保存</button><button type="button" className="secondary outline" onClick={() => upload.current?.click()}>JSONから復元</button><button type="button" className="secondary outline" onClick={() => openTemplates()}>定番食品を管理</button><input className="sr-only" type="file" ref={upload} accept=".json,application/json" aria-label="バックアップファイルを選択" onChange={importBackup}/></div></section>
-      <footer>たべどき · 家庭の食品管理 <span>保存先：このブラウザ</span></footer>
-    </main>
-    <button className="primary mobile-create" disabled={blocked} onClick={() => openForm()} type="button"><span aria-hidden="true">＋</span> 食品を登録</button>
-    <dialog ref={dialog} className="food-dialog" aria-labelledby="dialog-heading" onClose={() => setManagingTemplates(false)} onCancel={event => { if (managingTemplates && returnToFood.current) { event.preventDefault(); closeTemplates(); } }}>{managingTemplates ? <TemplateManager templates={templates} blocked={blocked} error={formError} onError={setFormError} onSave={saveTemplates} onDone={closeTemplates} returning={returnToFood.current}/> : <form onSubmit={saveFood} className="food-form"><div className="dialog-head"><div><div className="eyebrow">FOOD DETAILS</div><h2 id="dialog-heading">{editingId ? '食品を編集' : '食品を登録'}</h2></div><button className="close" type="button" onClick={() => dialog.current?.close()} aria-label="閉じる">×</button></div>
-        {!editingId && <div className="candidates">
-          {previous.length > 0 && <section aria-label="前に登録した食品"><h3>前に登録した食品</h3><div className="candidate-list">{previous.map(candidate => <button key={candidate.id} type="button" className="candidate-button" aria-label={`以前の${candidate.name}`} onClick={() => chooseCandidate(candidate)}>{candidate.name}</button>)}</div></section>}
-          <section aria-label="定番食品"><div className="candidate-heading"><h3>定番食品から選ぶ</h3><button type="button" className="manage-link" onClick={() => openTemplates(true)}>定番を編集</button></div>{templates.length === 0 && <p className="form-help">定番食品を追加すると、ここから選べます。</p>}<div className="candidate-list">{templates.map(candidate => <button key={candidate.id} type="button" className="candidate-button" aria-label={`定番の${candidate.name}`} onClick={() => chooseCandidate(candidate)}>{candidate.name}</button>)}</div></section>
+      {notice && <div className={`notice ${blocked ? 'notice-error' : ''}`} role="status"><span>{notice}</span>{blocked ? (!initial.canExport && <button type="button" onClick={clearCorrupt}>空の状態から始める</button>) : <button className="icon-button" type="button" aria-label="通知を閉じる" onClick={() => setNotice('')}><Icon name="x" /></button>}</div>}
+      <section className="inventory" aria-labelledby="inventory-heading">
+        <div className="list-toolbar">
+          <div className="tabs" role="group" aria-label="表示する食品">
+            <button type="button" aria-pressed={view === 'active'} onClick={() => setView('active')}>管理中</button>
+            <button type="button" aria-pressed={view === 'finished'} onClick={() => setView('finished')}>完了</button>
+            <button type="button" aria-pressed={view === 'all'} onClick={() => setView('all')}>すべて</button>
+          </div><span className="sort-label">期限が近い順</span>
+        </div>
+        <div className="search-toolbar">
+          <label className="search"><span className="sr-only">食品名で検索</span><Icon name="search" /><input type="search" placeholder="食品名で検索" value={search} onChange={event => setSearch(event.target.value)}/></label>
+          <button type="button" className="filter-toggle secondary" aria-expanded={filtersOpen} aria-controls="filter-panel" onClick={() => setFiltersOpen(!filtersOpen)}><Icon name="sliders-horizontal" />絞り込み{filterCount > 0 && <span className="filter-count">{filterCount}</span>}</button>
+        </div>
+        <div className="filters" id="filter-panel" hidden={!filtersOpen}>
+          <label><span>カテゴリ</span><select aria-label="カテゴリで絞り込み" value={categoryFilter} onChange={event => setCategoryFilter(event.target.value as typeof categoryFilter)}><option value="all">すべて</option>{Object.entries(categories).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+          <label><span>保存場所</span><select aria-label="保存場所で絞り込み" value={placeFilter} onChange={event => setPlaceFilter(event.target.value as typeof placeFilter)}><option value="all">すべて</option>{Object.entries(places).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+          <label><span>期限</span><select aria-label="期限状態で絞り込み" value={deadlineFilter} onChange={event => setDeadlineFilter(event.target.value as DeadlineFilter)}><option value="all">すべて</option>{Object.entries(deadlineNames).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+        </div>
+        {hasFilters && <div className="active-filters" aria-label="適用中の絞り込み">
+          {search.trim() && <span>「{search.trim()}」</span>}{categoryFilter !== 'all' && <span>{categories[categoryFilter]}</span>}{placeFilter !== 'all' && <span>{places[placeFilter]}</span>}{deadlineFilter !== 'all' && <span>{deadlineNames[deadlineFilter]}</span>}
+          <button type="button" onClick={resetFilters}>条件をクリア</button>
         </div>}
-        <label><span>食品名 <span className="required">必須</span></span><input required maxLength={80} placeholder="例：牛乳、たまご、食パン" value={form.name} onChange={event => setForm({ ...form, name: event.target.value })}/></label><div className="form-group"><label>期限の種類<select value={form.kind} onChange={event => setForm({ ...form, kind: event.target.value as DeadlineKind })}><option value="best-before">賞味期限</option><option value="use-by">消費期限</option></select></label><label><span>期限の日付 <span className="required">必須</span></span><input type="date" required min="1000-01-01" max="9999-12-31" value={form.deadline} onChange={event => setForm({ ...form, deadline: event.target.value })}/></label></div><p className="form-help">期限・保存方法は商品の表示を確認してください。表示期限は未開封で、指定の保存方法を守った場合のものです。</p><div className="form-group"><label>保存場所<select value={form.place} onChange={event => setForm({ ...form, place: event.target.value as StoragePlace })}><option value="chilled">冷蔵</option><option value="frozen">冷凍</option><option value="pantry">常温</option></select></label><label>食品カテゴリ<select value={form.category} onChange={event => setForm({ ...form, category: event.target.value as FoodCategory })}>{Object.entries(categories).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label></div><div className="form-group"><label>数量<input type="number" required min="1" max="999" step="1" value={form.quantity || ''} onChange={event => setForm({ ...form, quantity: Number(event.target.value) })}/></label><label>数量の単位<select value={form.unit} onChange={event => setForm({ ...form, unit: event.target.value as QuantityUnit })}>{Object.entries(units).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label></div><p className="form-help">パックは購入した包装単位です。中身を個別に数える場合は「個」を選び、数量も変更してください。</p>{formError && <p className="form-error" role="alert">{formError}</p>}<div className="dialog-actions"><button type="button" className="secondary outline" onClick={() => dialog.current?.close()}>キャンセル</button><button type="submit" className="primary">{editingId ? '変更を保存' : '登録する'}</button></div></form>}</dialog>
+        {displayed.length === 0 ? <div className="empty">
+          <div className="empty-icon"><Icon name={hasFilters ? 'search' : 'cooking-pot'} /></div>
+          <h2>{hasFilters ? '該当する食品がありません' : view === 'finished' ? '完了した食品はありません' : items.length === 0 ? '食品を登録しましょう' : '管理中の食品はありません'}</h2>
+          {!hasFilters && view !== 'finished' && <button className="secondary" type="button" disabled={blocked} onClick={() => openForm()}><Icon name="plus" />食品を登録する</button>}
+        </div> : <ul className="food-list">{displayed.map(item => {
+          const state = deadlineState(item.deadline, today);
+          return <li className={`food-row ${item.status !== 'active' ? 'completed' : ''}`} key={item.id}>
+            <div className={`date-block state-${item.status === 'active' ? state : 'later'}`} aria-label={`${kinds[item.kind]} ${item.deadline}`}><span className="date-month">{Number(item.deadline.slice(5, 7))}月</span><strong>{Number(item.deadline.slice(8, 10))}</strong></div>
+            <div className="food-info">
+              <div className="food-primary"><h3>{item.name}</h3><span className="quantity">{item.quantity}{units[item.unit]}</span></div>
+              <div className="food-meta"><span className={`deadline-chip state-${item.status === 'active' ? state : 'later'}`}>{item.status !== 'active' ? (item.status === 'used' ? '使い切り済み' : '廃棄済み') : deadlineLabel(item.deadline, today)}</span><span>{kinds[item.kind]}</span><span>{places[item.place]}</span><span>{categories[item.category]}</span><time className="date-year" dateTime={item.deadline}>{item.deadline.slice(0, 4)}年</time></div>
+            </div>
+            <FoodActions item={item} blocked={blocked} onEdit={() => openForm(item)} onFinish={() => changeStatus(item, item.status === 'active' ? 'used' : 'active')} onDiscard={() => changeStatus(item, 'discarded')} onRemove={() => removeFood(item)} />
+          </li>;
+        })}</ul>}
+      </section>
+      <section className="data-section" aria-labelledby="data-heading">
+        <div><h2 id="data-heading">バックアップ</h2><p>このブラウザに保存されます。端末間の同期はありません。<br/>データ削除・機種変更で失われるため、バックアップを保存してください。</p></div>
+        <div className="backup-buttons">
+          <button type="button" className="secondary" disabled={blocked && !initial.canExport} onClick={exportBackup}><Icon name="download" />バックアップを保存</button>
+          <button type="button" className="secondary outline" onClick={() => upload.current?.click()}><Icon name="upload" />バックアップから復元</button>
+          <input className="sr-only" type="file" ref={upload} accept=".json,application/json" aria-label="バックアップファイルを選択" onChange={importBackup}/>
+        </div>
+      </section>
+    </main>
+    <div className="mobile-create-bar"><button className="primary mobile-create" disabled={blocked} onClick={() => openForm()} type="button"><Icon name="plus" />食品を登録</button></div>
+    <dialog ref={dialog} className="food-dialog" aria-labelledby="dialog-heading" onClose={() => setManagingTemplates(false)} onCancel={event => { if (managingTemplates && returnToFood.current) { event.preventDefault(); closeTemplates(); } }}>
+      {managingTemplates ? <TemplateManager templates={templates} blocked={blocked} error={formError} onError={setFormError} onSave={saveTemplates} onDone={closeTemplates} returning={returnToFood.current}/> : <form onSubmit={saveFood} className="food-form">
+        <div className="dialog-head"><h2 id="dialog-heading">{editingId ? '食品を編集' : '食品を登録'}</h2><button className="close icon-button" type="button" onClick={() => dialog.current?.close()} aria-label="閉じる"><Icon name="x" /></button></div>
+        {!editingId && <div className="candidates">
+          <section aria-label="定番食品"><div className="candidate-heading"><h3>定番食品</h3><button type="button" className="manage-link" onClick={() => openTemplates(true)}>定番を編集</button></div>
+            {templates.length === 0 && <p className="form-help">よく買う食品を追加できます。</p>}
+            <div className="candidate-list">{templates.map(candidate => <button key={candidate.id} type="button" className="candidate-button" aria-pressed={selectedCandidate === `template:${candidate.id}`} aria-label={`定番の${candidate.name}`} onClick={() => chooseCandidate(candidate, 'template')}>{candidate.name}</button>)}</div>
+          </section>
+          {previous.length > 0 && <section aria-label="前に登録した食品"><h3>前に登録した食品</h3><div className="candidate-list">{previous.map(candidate => <button key={candidate.id} type="button" className="candidate-button" aria-pressed={selectedCandidate === `food:${candidate.id}`} aria-label={`以前の${candidate.name}`} onClick={() => chooseCandidate(candidate, 'food')}>{candidate.name}</button>)}</div></section>}
+        </div>}
+        <label><span>食品名 <span className="required">必須</span></span><input required maxLength={80} placeholder="例：牛乳" value={form.name} onChange={event => { setForm({ ...form, name: event.target.value }); setSelectedCandidate(null); }}/></label>
+        <div className="form-group"><label>期限の種類<select value={form.kind} onChange={event => setForm({ ...form, kind: event.target.value as DeadlineKind })}>{Object.entries(kinds).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label><label><span>期限の日付 <span className="required">必須</span></span><input type="date" required min="1000-01-01" max="9999-12-31" value={form.deadline} onChange={event => setForm({ ...form, deadline: event.target.value })}/></label></div>
+        <p className="form-help">期限は未開封・指定の保存方法が前提です。商品の表示を確認してください。</p>
+        <div className="form-group"><label>数量<input type="number" required min="1" max="999" step="1" value={form.quantity || ''} onChange={event => setForm({ ...form, quantity: Number(event.target.value) })}/></label><label>数量の単位<select value={form.unit} onChange={event => setForm({ ...form, unit: event.target.value as QuantityUnit })}>{Object.entries(units).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label></div>
+        {form.unit === 'pack' && <p className="form-help">3個組の納豆なら1パック。個別に数える場合は「個」に変更してください。</p>}
+        <div className="form-group"><label>保存場所<select value={form.place} onChange={event => setForm({ ...form, place: event.target.value as StoragePlace })}>{Object.entries(places).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label><label>食品カテゴリ<select value={form.category} onChange={event => setForm({ ...form, category: event.target.value as FoodCategory })}>{Object.entries(categories).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label></div>
+        {formError && <p className="form-error" role="alert">{formError}</p>}
+        <div className="dialog-actions"><button type="button" className="secondary outline" onClick={() => dialog.current?.close()}>キャンセル</button><button type="submit" className="primary" disabled={blocked}>{editingId ? '変更を保存' : '登録する'}</button></div>
+      </form>}
+    </dialog>
   </div>;
 }
 

@@ -69,6 +69,7 @@ test('定番と以前の食品から、今回の期限・新ID・数量1で登�
   await dialog.getByLabel(/期限の日付/).fill('2026-12-02');
   await dialog.getByRole('button', { name: '登録する', exact: true }).click();
   expect(JSON.parse(await readSaved(page)).items.map(x => x.deadline)).toEqual(['2020-01-01', '2026-12-01', '2026-12-02']);
+  await openFilters(page);
   await page.getByLabel('カテゴリで絞り込み').selectOption('soy');
   await expect(page.getByText('数量 1パック')).toHaveCount(2);
   await page.getByRole('button', { name: '納豆を編集', exact: true }).last().click();
@@ -104,7 +105,7 @@ test('移行保存失敗は読み取りとJSON退避を許可し、再試行で�
   await expect(page.getByRole('button', { name: '食品を登録', exact: true }).last()).toBeDisabled();
   await expect(page.getByRole('button', { name: item.name + 'を編集' })).toBeDisabled();
   const downloadWait = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'JSONを保存', exact: true }).click();
+  await page.getByRole('button', { name: 'バックアップを保存', exact: true }).click();
   const backup = JSON.parse(readFileSync(await (await downloadWait).path(), 'utf8'));
   expect(backup.version).toBe(3);
   expect(backup.items).toHaveLength(1);
@@ -160,6 +161,7 @@ test('保存失敗では新規・編集の入力と、完了・削除・復元�
   await page.getByRole('button', { name: item.name + 'を使い切り' }).click();
   await expect(page.getByRole('heading', { name: item.name })).toBeVisible();
   page.once('dialog', dialog => dialog.accept());
+  await page.getByRole('button', { name: item.name + 'のその他の操作' }).click();
   await page.getByRole('button', { name: item.name + 'を削除' }).click();
   await expect(page.getByRole('heading', { name: item.name })).toBeVisible();
   page.once('dialog', dialog => dialog.accept());
@@ -181,11 +183,14 @@ test('カテゴリ・場所・検索のAND絞り込み、復元の不正デー�
   ] });
   await seed(page, { [key]: original });
   await page.goto('/');
+  await openFilters(page);
   await page.getByLabel('カテゴリで絞り込み').selectOption('soy');
   await expect(page.getByRole('heading', { name: '牛乳', exact: true })).toHaveCount(0);
-  await page.getByLabel('保存場所で絞り込み').selectOption('chilled');
+  await openFilters(page);
+    await page.getByLabel('保存場所で絞り込み').selectOption('chilled');
   await expect(page.getByRole('heading', { name: item.name })).toHaveCount(0);
-  await page.getByLabel('保存場所で絞り込み').selectOption('frozen');
+  await openFilters(page);
+    await page.getByLabel('保存場所で絞り込み').selectOption('frozen');
   await page.getByRole('searchbox').fill('納豆');
   await expect(page.getByRole('heading', { name: item.name })).toBeVisible();
   for (const value of [
@@ -209,7 +214,7 @@ test('最大3,000件のアプリ出力を実ファイルとして復元できる
   await seed(page, { [key]: JSON.stringify({ version: 3, templates: defaultTemplates(), items }) });
   await page.goto('/');
   const downloadWait = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'JSONを保存', exact: true }).click();
+  await page.getByRole('button', { name: 'バックアップを保存', exact: true }).click();
   const path = await (await downloadWait).path();
   const text = readFileSync(path, 'utf8');
   expect(Buffer.byteLength(text)).toBeGreaterThan(1024 * 1024);
@@ -249,3 +254,8 @@ for (const width of [320, 390, 1440]) {
   });
 }
 
+
+async function openFilters(page) {
+  const button = page.getByRole('button', { name: /^絞り込み/ });
+  if (await button.getAttribute('aria-expanded') === 'false') await button.click();
+}
