@@ -26,6 +26,6 @@ npm run test:e2e
 npm run dev
 ```
 
-仕様: [PRODUCT.md](PRODUCT.md) ／ UI: [DESIGN.md](DESIGN.md) ／ 検証証拠: [VERIFICATION.md](VERIFICATION.md)
+製品の約束: [PRODUCT.md](PRODUCT.md) ／ 視覚設計: [DESIGN.md](DESIGN.md) ／ 変更・検証履歴: [GitHub PR](https://github.com/ShimaBell0619/tabedoki/pulls)・[Actions](https://github.com/ShimaBell0619/tabedoki/actions)
 
 Foundation固定SHA: `861a240fc6d344cfab654aaf93a922f1069f97aa`。
