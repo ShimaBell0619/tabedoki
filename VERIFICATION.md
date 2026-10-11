@@ -1,5 +1,15 @@
 # 検証記録 — たべどき
 
+## 定番食品のカスタマイズ・v3（2026-10-11）
+
+- Issue [#6](https://github.com/ShimaBell0619/tabedoki/issues/6)、PR [#7](https://github.com/ShimaBell0619/tabedoki/pull/7)。
+- 機能HEAD `be095eb454ae300421b9b6806fb28870ec914f06`の[PR CI](https://github.com/ShimaBell0619/tabedoki/actions/runs/38115215266)で、Node.js 24.20.0、npm ci/check/typecheck/単体21件/build/Chromium E2E 30件がすべて成功。checkoutはmerge ref `5e5033e29b7d73eb5ae276298e4feb51889cd25f`。
+- 定番CRUDと既存在庫不変、テンプレート数量・区分の補完、新在庫の独立ID、全定番削除後の保持、v1/v2/v3互換、食品と定番の単一書き込み、実ファイルの復元・取消し、追加／編集／削除／復元の保存例外、数量・名前・上限検証、登録途中入力、320/390/1440pxとキーボードを確認。
+- Artifact `browser-5e5033e29b7d73eb5ae276298e4feb51889cd25f-38115215266-1`（ID `11692598663`）の管理一覧・編集画面6枚を目視。横はみ出し・文字の重なりなし。画面切り替えのスクロール位置は先頭に戻すよう追加修正し、最後のHEADでも正式CIと画像確認を行う。最終CIと公開証拠はPR #7に記録する。
+- 初回E2Eで管理を閉じた後の編集状態が残る問題を検出。dialogのcloseで状態をリセットし、上記30件が成功した。
+- 自己レビュー・React品質確認を実施。独立`@codex review`は各回の明示承認が未取得のため未依頼。ローカルNode.js 24.19.0とChromium取得失敗を正式CIの代わりにしない。
+- v1/v2の原文を退避として残すが、最新v3のバックアップではない。旧形式のアプリへの単純ロールバックを行わず、v3互換の修正版で復旧する。
+
 ## 食品登録とデータモデルv2（2026-10-11）
 
 - 機能Issue: [#4](https://github.com/ShimaBell0619/tabedoki/issues/4)、機能PR: [#5](https://github.com/ShimaBell0619/tabedoki/pull/5)

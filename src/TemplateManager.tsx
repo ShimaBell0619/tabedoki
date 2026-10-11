@@ -24,7 +24,10 @@ export function TemplateManager({ templates, blocked, error, onError, onSave, on
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Draft>(blankDraft);
   const closeButton = useRef<HTMLButtonElement>(null);
-  useEffect(() => { if (!editing) closeButton.current?.focus(); }, [editing]);
+  useEffect(() => {
+    if (!editing) closeButton.current?.focus();
+    closeButton.current?.closest('dialog')?.scrollTo(0, 0);
+  }, [editing]);
   function edit(template?: FoodTemplate) {
     setEditingId(template?.id ?? null);
     setDraft(template ? {

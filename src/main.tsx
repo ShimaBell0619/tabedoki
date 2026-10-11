@@ -40,7 +40,10 @@ function App() {
   const [today, setToday] = useState(localDate);
 
   useEffect(() => {
-    if (dialog.current?.open) dialog.current.querySelector<HTMLButtonElement>('button')?.focus();
+    if (dialog.current?.open) {
+      dialog.current.querySelector<HTMLButtonElement>('button')?.focus();
+      dialog.current.scrollTop = 0;
+    }
   }, [managingTemplates]);
 
   // Re-evaluate the calendar date on focus/visibility so a tab left open overnight stays correct.

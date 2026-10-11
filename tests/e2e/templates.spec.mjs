@@ -218,6 +218,7 @@ for (const width of [320, 390, 1440]) {
     await entry.focus();
     await page.keyboard.press('Enter');
     await expect(page.getByRole('dialog', { name: '定番食品を管理' })).toBeVisible();
+    expect(await dialog.evaluate(el => el.scrollTop)).toBe(0);
     expect(await dialog.evaluate(el => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(1);
     await page.screenshot({ path: info.outputPath('templates-' + width + '.png') });
     await dialog.getByRole('button', { name: `定番の${longName}を編集`, exact: true }).click();
