@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { writeFileSync } from 'node:fs';
+import { restoreBackup } from './helpers/backup.mjs';
 
 let errors = [];
 test.beforeEach(async ({ page }) => {
@@ -79,14 +80,12 @@ test('期限境界・バックアップ復元・不正JSON拒否・上書き確�
   await page.getByRole('button', { name: 'バックアップを保存' }).click();
   const download = await downloadWait;
   const path = await download.path();
-  page.once('dialog', dialog => dialog.dismiss());
-  await page.getByLabel('バックアップファイルを選択').setInputFiles(path);
+  await restoreBackup(page, path, { accept: false });
   await expect(page.getByRole('heading', { name: '昨日のヨーグルト' })).toBeVisible();
   const bad = Buffer.from('{"version":1,"items":[{"id":"bad"}]}');
   await page.getByLabel('バックアップファイルを選択').setInputFiles({ name: 'broken.json', mimeType: 'application/json', buffer: bad });
   await expect(page.getByText(/復元できません/)).toBeVisible();
-  page.once('dialog', dialog => dialog.accept());
-  await page.getByLabel('バックアップファイルを選択').setInputFiles(path);
+  await restoreBackup(page, path);
   await expect(page.getByText('2件を復元しました。')).toBeVisible();
 });
 
