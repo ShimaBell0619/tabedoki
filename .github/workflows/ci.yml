@@ -1,0 +1,12 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  verify:
+    uses: ShimaBell0619/web-app-foundation/.github/workflows/web-ci.yml@861a240fc6d344cfab654aaf93a922f1069f97aa
+    with:
+      run_e2e: true
