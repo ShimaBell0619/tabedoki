@@ -22,10 +22,13 @@ npm run check
 npm run typecheck
 npm test
 npm run build
+npm run design:lint
 npm run test:e2e
 npm run dev
 ```
 
 製品の約束: [PRODUCT.md](PRODUCT.md) ／ 視覚設計: [DESIGN.md](DESIGN.md) ／ 変更・検証履歴: [GitHub PR](https://github.com/ShimaBell0619/tabedoki/pulls)・[Actions](https://github.com/ShimaBell0619/tabedoki/actions)
 
-Foundation固定SHA: `861a240fc6d344cfab654aaf93a922f1069f97aa`。
+採用元SHAと有効な開発規則は [AGENTS.md](AGENTS.md)、共通CIのpinは [.github/workflows/ci.yml](.github/workflows/ci.yml) で確認します。
+
+checkはReact Hooks規則とeffect依存を含み、design:lintはlockfileで固定したGoogle CLIを使います。ブラウザ準備後、復元の不安定さを調査するときは `npm run test:e2e:restore` で対象ケースを20回実行できます。通常CIは全E2Eを1回実行します。
