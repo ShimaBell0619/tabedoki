@@ -1,4 +1,19 @@
-# 検証記録 — たべどき Phase 1
+# 検証記録 — たべどき
+
+## 食品登録とデータモデルv2（2026-10-11）
+
+- 機能Issue: [#4](https://github.com/ShimaBell0619/tabedoki/issues/4)、機能PR: [#5](https://github.com/ShimaBell0619/tabedoki/pull/5)
+- 機能コードのPR HEAD: `fc8abbced1b1c7c5c8532243f9fad6a924dc45e7`
+- PR CI: [38113452663](https://github.com/ShimaBell0619/tabedoki/actions/runs/38113452663)、チェックアウトSHA: `d8875d1d1e8c4089d5a1078c7402b61d25690f75`（merge ref）
+- 正式環境Node.js 24.20.0で、`npm ci`、`check`、`typecheck`、単体16件、`build`、Chromium E2E 19件がすべて成功。
+- E2Eは既存CRUDに加え、定番・以前の食品の補完、期限非継承・数量1・新ID、v1移行と退避原文、v1/v2復元、v2空・破損・未知version、LocalStorage取得／保存拒否、各変更失敗時の元データと入力保持、AND絞り込み、最大3,000件の実ファイル往復と5MiB上限、320／390／1440pxとキーボード操作を検証。
+- 成功画像10枚をArtifact `browser-d8875d1d1e8c4089d5a1078c7402b61d25690f75-38113452663-1`（ID `11692427011`）から取得。各幅の一覧と登録フォームを目視し、横はみ出し・明らかな日本語の重なりがないことを確認した。登録フォームは縦スクロールで下部まで操作できる。
+- ローカルのNode.jsは24.19.0で要求バージョンより古い。ローカルのChromium取得は失敗したため、正式なブラウザ検証の証拠には使用しない。ローカルの静的チェック・型・単体・ビルドは成功。
+- データ整合性・互換性のリスクに対し自己レビューと失敗系テストを実施。独立した`@codex review`は、Foundationの各回個別承認が必要なため未依頼。
+- 公開版のDeployment ID、main SHA、実ブラウザ操作の結果は、公開後にPR #5へ追記する。CI成功とDeployment READYと公開ブラウザ検証は別の証拠として扱う。
+- 復旧はv2互換の修正版で行う。保持したv1は移行時点の退避であり、v2での変更を含まないため、旧v1専用アプリへの単純なロールバックを行わない。
+
+以下はPhase 1の履歴証拠。
 
 ## 対象と採用元
 - Foundationの参照main SHA（2026-10-11確認）: `861a240fc6d344cfab654aaf93a922f1069f97aa`
