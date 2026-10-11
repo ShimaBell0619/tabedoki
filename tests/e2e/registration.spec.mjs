@@ -71,7 +71,7 @@ test('定番と以前の食品から、今回の期限・新ID・数量1で登�
   expect(JSON.parse(await readSaved(page)).items.map(x => x.deadline)).toEqual(['2020-01-01', '2026-12-01', '2026-12-02']);
   await openFilters(page);
   await page.getByLabel('カテゴリで絞り込み').selectOption('soy');
-  await expect(page.getByText('数量 1パック')).toHaveCount(2);
+  await expect(page.getByText('1パック', { exact: true })).toHaveCount(2);
   await page.getByRole('button', { name: '納豆を編集', exact: true }).last().click();
   await expect(page.getByRole('dialog').getByLabel(/期限の日付/)).toHaveValue('2026-12-02');
   await expect(page.getByRole('dialog').getByRole('button', { name: '定番の納豆' })).toHaveCount(0);
@@ -187,10 +187,10 @@ test('カテゴリ・場所・検索のAND絞り込み、復元の不正デー�
   await page.getByLabel('カテゴリで絞り込み').selectOption('soy');
   await expect(page.getByRole('heading', { name: '牛乳', exact: true })).toHaveCount(0);
   await openFilters(page);
-    await page.getByLabel('保存場所で絞り込み').selectOption('chilled');
+  await page.getByLabel('保存場所で絞り込み').selectOption('chilled');
   await expect(page.getByRole('heading', { name: item.name })).toHaveCount(0);
   await openFilters(page);
-    await page.getByLabel('保存場所で絞り込み').selectOption('frozen');
+  await page.getByLabel('保存場所で絞り込み').selectOption('frozen');
   await page.getByRole('searchbox').fill('納豆');
   await expect(page.getByRole('heading', { name: item.name })).toBeVisible();
   for (const value of [
