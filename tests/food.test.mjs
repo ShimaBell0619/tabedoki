@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
-  daysLeft, deadlineState, validDate, localDate, validateBackup, makeBackup, readFoods,
-  writeFoods, STORAGE_KEY, LEGACY_STORAGE_KEY, MAX_ITEMS, BACKUP_MAX_BYTES,
-  initialFoodForm, applyFoodCandidate, foodTemplates, previousFoods, isFood,
+  daysLeft, deadlineState, validDate, localDate, validateBackup, makeBackup, readData,
+  writeData, STORAGE_KEY, V2_STORAGE_KEY, LEGACY_STORAGE_KEY, MAX_ITEMS, MAX_TEMPLATES, BACKUP_MAX_BYTES, validateTemplates, defaultTemplates,
+  initialFoodForm, applyFoodCandidate, previousFoods, isFood,
 } from '../src/food.ts';
+const foodTemplates = defaultTemplates();
 const item = { id: '1', name: '牛乳', category: 'eggs-dairy', kind: 'use-by', deadline: '2026-10-12', quantity: 1, unit: 'bottle', place: 'chilled', status: 'active' };
 const { category, unit, ...legacyItem } = item;
 function storage(seed = {}, failWrite = false) {
@@ -36,8 +37,8 @@ test('閏年と不正日付を検査', () => {
   assert.equal(validDate('2024-02-29'), true);
   for (const bad of ['2026-02-29', '2026-13-01', '2026-00-01', '2026-04-31', '0000-01-01', '2026-1-1', '2026-10-11T00:00:00Z']) assert.equal(validDate(bad), false, bad);
 });
-test('v2バックアップ往復と不正データの拒否', () => {
-  assert.deepEqual(validateBackup(JSON.parse(makeBackup([item]))), [item]);
+test('v3バックアップ往復と不正データの拒否', () => {
+  assert.deepEqual(validateBackup(JSON.parse(makeBackup({ items: [item], templates: foodTemplates }))), { items: [item], templates: foodTemplates });
   for (const bad of [null, {}, { version: 3, items: [item] }, { version: 2, items: [item, item] }, ...[
     { quantity: 0 }, { quantity: 1.5 }, { name: '<'.repeat(81) }, { deadline: '2026-02-30' },
     { place: 'unknown' }, { category: 'unknown' }, { category: 'toString' }, { unit: 'kg' }, { unit: 'constructor' },
@@ -48,8 +49,8 @@ test('v2バックアップ往復と不正データの拒否', () => {
 test('v1復元は旧項目を保持し新項目だけ既定値にする', () => {
   const legacy = { ...legacyItem, id: 'legacy-id', name: '  納豆  ', quantity: 9, status: 'used', extra: 'ignore', category: 'soy', unit: 'pack' };
   const result = validateBackup({ version: 1, items: [legacy] });
-  assert.deepEqual(result, [{ ...legacyItem, id: 'legacy-id', name: '  納豆  ', quantity: 9, status: 'used', category: 'other', unit: 'item' }]);
-  assert.equal(Object.hasOwn(result[0], 'extra'), false);
+  assert.deepEqual(result.items, [{ ...legacyItem, id: 'legacy-id', name: '  納豆  ', quantity: 9, status: 'used', category: 'other', unit: 'item' }]);
+  assert.equal(Object.hasOwn(result.items[0], 'extra'), false);
 });
 test('新規は期限空欄・数量1、候補は旧期限や数量をコピーしない', () => {
   const blank = initialFoodForm();
@@ -77,81 +78,124 @@ test('以前の候補は登録順・最大3件・正規化した名前で重複�
   assert.deepEqual(items, before);
   assert.deepEqual(previousFoods(items.filter(x => x.id !== 'e')).map(x => x.id), ['d', 'c', 'a']);
 });
-test('v1の自動移行は原文とID・状態・順序を保持する', () => {
+test('v1からv3への自動移行は原文と全旧項目・順序を保持する', () => {
   const raw = JSON.stringify({ version: 1, items: [{ ...legacyItem, id: 'last', status: 'used' }, legacyItem] });
   const store = storage({ [LEGACY_STORAGE_KEY]: raw });
-  const result = readFoods(store);
+  const result = readData(store);
   assert.equal(result.error, '');
   assert.equal(store.map.get(LEGACY_STORAGE_KEY), raw);
-  assert.deepEqual(result.items.map(x => x.id), ['last', '1']);
-  assert.deepEqual(result.items.map(x => x.category), ['other', 'other']);
-  assert.deepEqual(result.items.map(x => x.unit), ['item', 'item']);
+  assert.deepEqual(result.items, [{ ...legacyItem, id: 'last', status: 'used', category: 'other', unit: 'item' }, { ...legacyItem, category: 'other', unit: 'item' }]);
+  assert.deepEqual(result.templates, foodTemplates);
   assert.equal(store.writes, 1);
-  assert.equal(JSON.parse(store.map.get(STORAGE_KEY)).version, 2);
-  assert.deepEqual(readFoods(store), result);
+  assert.equal(JSON.parse(store.map.get(STORAGE_KEY)).version, 3);
+  assert.deepEqual(readData(store), result);
   assert.equal(store.writes, 1);
 });
-test('v2は空でも優先し、通常読み込みは書き込まない', () => {
-  const store = storage({ [STORAGE_KEY]: '{"version":2,"items":[]}', [LEGACY_STORAGE_KEY]: JSON.stringify({ version: 1, items: [legacyItem] }) });
-  assert.deepEqual(readFoods(store), { items: [], error: '', canExport: true });
+test('v2は空でもv1より優先して移行し、原文を残す', () => {
+  for (const items of [[], [item]]) {
+    const raw = JSON.stringify({ version: 2, items });
+    const store = storage({ [V2_STORAGE_KEY]: raw, [LEGACY_STORAGE_KEY]: JSON.stringify({ version: 1, items: [legacyItem] }) });
+    assert.deepEqual(readData(store), { items, templates: foodTemplates, error: '', canExport: true });
+    assert.equal(store.map.get(V2_STORAGE_KEY), raw);
+    assert.equal(store.writes, 1);
+    readData(store);
+    assert.equal(store.writes, 1);
+  }
+});
+test('v3の空定番・空食品を優先し、表示だけで書かず初期候補を復活させない', () => {
+  const store = storage({ [STORAGE_KEY]: '{"version":3,"items":[],"templates":[]}', [V2_STORAGE_KEY]: JSON.stringify({ version: 2, items: [item] }) });
+  assert.deepEqual(readData(store), { items: [], templates: [], error: '', canExport: true });
   assert.equal(store.writes, 0);
   const empty = storage();
-  assert.deepEqual(readFoods(empty), { items: [], error: '', canExport: true });
+  assert.deepEqual(readData(empty), { items: [], templates: foodTemplates, error: '', canExport: true });
   assert.equal(empty.writes, 0);
 });
-test('v2破損・未知version・誤ったキーのversionでもv1へ戻さない', () => {
-  for (const raw of ['{broken', '{"version":3,"items":[]}', '{"version":1,"items":[]}', JSON.stringify({ version: 2, items: [legacyItem] })]) {
-    const store = storage({ [STORAGE_KEY]: raw, [LEGACY_STORAGE_KEY]: JSON.stringify({ version: 1, items: [legacyItem] }) });
-    const result = readFoods(store);
+test('破損・未知version・不足項目のv3やv2から旧データへ戻さない', () => {
+  for (const [key, raws] of [
+    [STORAGE_KEY, ['{broken', '{"version":4,"items":[]}', '{"version":2,"items":[]}', '{"version":3,"items":[],"templates":null}', JSON.stringify({ version: 3, items: [legacyItem], templates: [] })]],
+    [V2_STORAGE_KEY, ['{broken', '{"version":3,"items":[],"templates":[]}', JSON.stringify({ version: 2, items: [legacyItem] })]],
+  ]) for (const raw of raws) {
+    const store = storage({ [V2_STORAGE_KEY]: JSON.stringify({ version: 2, items: [item] }), [LEGACY_STORAGE_KEY]: JSON.stringify({ version: 1, items: [legacyItem] }), [key]: raw });
+    const result = readData(store);
     assert.equal(result.items.length, 0);
     assert.match(result.error, /読み込めません/);
     assert.equal(result.canExport, false);
-    assert.equal(store.map.get(STORAGE_KEY), raw);
+    assert.equal(store.map.get(key), raw);
     assert.equal(store.writes, 0);
   }
 });
 test('v1破損・読み込み例外でも空データを書き込まない', () => {
   const store = storage({ [LEGACY_STORAGE_KEY]: '{broken' });
-  assert.match(readFoods(store).error, /読み込めません/);
+  assert.match(readData(store).error, /読み込めません/);
   assert.equal(store.writes, 0);
   assert.equal(store.map.has(STORAGE_KEY), false);
-  assert.match(readFoods({ getItem() { throw new Error('denied'); }, setItem() { assert.fail(); } }).error, /読み込めません/);
+  assert.match(readData({ getItem() { throw new Error('denied'); }, setItem() { assert.fail(); } }).error, /読み込めません/);
 });
-test('移行保存失敗時は元データを保持し読み取り・退避を許可する', () => {
-  const raw = JSON.stringify({ version: 1, items: [legacyItem] });
-  const store = storage({ [LEGACY_STORAGE_KEY]: raw }, true);
-  const result = readFoods(store);
+test('v2移行保存失敗でも元データを読み取り・退避できる', () => {
+  const raw = JSON.stringify({ version: 2, items: [item] });
+  const store = storage({ [V2_STORAGE_KEY]: raw }, true);
+  const result = readData(store);
   assert.match(result.error, /現在は変更できません/);
   assert.equal(result.canExport, true);
-  assert.equal(result.items.length, 1);
-  assert.equal(store.map.get(LEGACY_STORAGE_KEY), raw);
+  assert.deepEqual(result.items, [item]);
+  assert.equal(store.map.get(V2_STORAGE_KEY), raw);
   assert.equal(store.map.has(STORAGE_KEY), false);
-  assert.deepEqual(validateBackup(JSON.parse(makeBackup(result.items))), result.items);
+  assert.deepEqual(validateBackup(JSON.parse(makeBackup(result))), { items: result.items, templates: foodTemplates });
 });
 test('移行保存後の読み直しが不一致なら変更を止める', () => {
   const raw = JSON.stringify({ version: 1, items: [legacyItem] });
-  const result = readFoods({ getItem(key) { return key === LEGACY_STORAGE_KEY ? raw : null; }, setItem() {} });
+  const result = readData({ getItem(key) { return key === LEGACY_STORAGE_KEY ? raw : null; }, setItem() {} });
   assert.match(result.error, /現在は変更できません/);
   assert.equal(result.items.length, 1);
 });
-test('通常保存は検証後に書き込み、失敗でも元の保存内容を維持する', () => {
-  const raw = JSON.stringify({ version: 2, items: [item] });
+test('食品と定番を単一保存し、例外・不正データでは両方を保持する', () => {
+  const data = { items: [item], templates: foodTemplates };
+  const raw = JSON.stringify({ version: 3, ...data });
   const store = storage({ [STORAGE_KEY]: raw }, true);
-  assert.throws(() => writeFoods(store, [{ ...item, name: '変更後' }]));
+  assert.throws(() => writeData(store, { items: [], templates: [] }));
   assert.equal(store.map.get(STORAGE_KEY), raw);
-  assert.throws(() => writeFoods(store, [{ ...item, deadline: '2026-02-30' }]));
+  assert.throws(() => writeData(store, { ...data, templates: [{ ...foodTemplates[0], quantity: 0 }] }));
   assert.equal(store.writes, 1);
   const success = storage();
-  assert.deepEqual(writeFoods(success, [{ ...item, extra: 'drop' }]), [item]);
+  assert.deepEqual(writeData(success, { items: [{ ...item, extra: 'drop' }], templates: foodTemplates }), data);
+  assert.equal(success.writes, 1);
   assert.equal(Object.hasOwn(JSON.parse(success.map.get(STORAGE_KEY)), 'exportedAt'), false);
 });
-test('最大件数・最大文字数の出力が取込上限内で往復する', () => {
-  const items = Array.from({ length: MAX_ITEMS }, (_, i) => ({
-    ...item, id: '\u0001'.repeat(95) + String(i).padStart(5, '0'), name: 'x' + '\u0001'.repeat(79),
-    quantity: 999, status: 'discarded',
-  }));
-  const backup = makeBackup(items);
+test('定番の入力検証・上限・IDと正規化した名前の重複を拒否する', () => {
+  const base = foodTemplates[0];
+  for (const value of [null, {}, [null], [1], ["bad"], [{ ...base, name: '   ' }], [{ ...base, name: 'x'.repeat(81) }], ...[
+    { id: '' }, { kind: 'unknown' }, { quantity: 0 }, { quantity: 1.5 }, { quantity: 1000 }, { unit: 'kg' }, { category: 'constructor' }, { place: 'unknown' },
+  ].map(change => [{ ...base, ...change }]), [base, { ...base, name: '別名' }], [{ ...base, name: 'milk' }, { ...base, id: 'other', name: ' ＭＩＬＫ ' }], Array(MAX_TEMPLATES + 1).fill(base)]) assert.throws(() => validateTemplates(value));
+  assert.deepEqual(validateTemplates([]), []);
+});
+test('定番は既知項目のみ保存し、食品の期限や状態を持たない', () => {
+  const base = { ...foodTemplates[0], name: '  たまご  ', deadline: '2020-01-01', status: 'used', extra: 'drop' };
+  assert.deepEqual(validateTemplates([base]), [foodTemplates[0]]);
+});
+test('カスタム定番の明示した数量と区分を補完し、今回の期限は保持する', () => {
+  const template = { ...foodTemplates[0], quantity: 3, kind: 'use-by' };
+  const before = structuredClone(template);
+  const copied = applyFoodCandidate({ ...initialFoodForm(), deadline: '2026-12-20' }, template);
+  assert.equal(copied.quantity, 3);
+  assert.equal(copied.kind, 'use-by');
+  assert.equal(copied.deadline, '2026-12-20');
+  assert.equal(Object.hasOwn(copied, 'id'), false);
+  assert.deepEqual(template, before);
+});
+test('v1/v2バックアップは定番未指定、v3は空も含めて定番を完全復元する', () => {
+  assert.equal(validateBackup({ version: 1, items: [legacyItem] }).templates, undefined);
+  assert.equal(validateBackup({ version: 2, items: [item], templates: foodTemplates }).templates, undefined);
+  const data = { items: [item], templates: [] };
+  assert.deepEqual(validateBackup(JSON.parse(makeBackup(data))), data);
+  assert.throws(() => validateBackup({ version: 3, items: [item] }));
+  assert.throws(() => validateBackup({ version: 4, items: [] }));
+});
+test('最大の食品と定番の出力を5MiB以内で往復する', () => {
+  const items = Array.from({ length: MAX_ITEMS }, (_, i) => ({ ...item, id: '\u0001'.repeat(95) + String(i).padStart(5, '0'), name: 'x' + '\u0001'.repeat(79), quantity: 999, status: 'discarded' }));
+  const templates = Array.from({ length: MAX_TEMPLATES }, (_, i) => ({ ...foodTemplates[0], id: '\u0001'.repeat(95) + String(i).padStart(5, '0'), name: String(i).padStart(2, '0') + '\u0001'.repeat(78), quantity: 999 }));
+  const data = { items, templates };
+  const backup = makeBackup(data);
   assert.ok(Buffer.byteLength(backup) > 1024 * 1024);
   assert.ok(Buffer.byteLength(backup) < BACKUP_MAX_BYTES);
-  assert.deepEqual(validateBackup(JSON.parse(backup)), items);
+  assert.deepEqual(validateBackup(JSON.parse(backup)), data);
 });
