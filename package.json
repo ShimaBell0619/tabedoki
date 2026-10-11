@@ -1,9 +1,11 @@
 {
   "name": "tabedoki",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
-  "engines": { "node": "^24.20.0 || >=26.0.0" },
+  "engines": {
+    "node": "^24.20.0 || >=26.0.0"
+  },
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "check": "node scripts/check.mjs",
@@ -13,6 +15,15 @@
     "preview": "vite preview --host 127.0.0.1",
     "test:e2e": "playwright install --with-deps chromium && playwright test"
   },
-  "dependencies": { "react": "19.3.0", "react-dom": "19.3.0" },
-  "devDependencies": { "@playwright/test": "1.64.0", "@types/react": "^19.2.0", "@types/react-dom": "^19.2.0", "typescript": "5.9.3", "vite": "7.3.7" }
+  "dependencies": {
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "typescript": "5.9.3",
+    "vite": "7.3.7"
+  }
 }
