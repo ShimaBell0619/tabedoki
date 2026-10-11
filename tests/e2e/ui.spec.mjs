@@ -61,6 +61,11 @@ for (const width of [320, 390, 1440]) {
     await expect(dialog.getByRole('button', { name: '定番の納豆', exact: true })).toHaveAttribute('aria-pressed', 'true');
     await expect(dialog.getByLabel(/期限の日付/)).toHaveValue('');
     await page.screenshot({ path: info.outputPath(`ui-register-${width}.png`) });
+    await dialog.getByLabel('食品カテゴリ').scrollIntoViewIfNeeded();
+    const categoryBox = await dialog.getByLabel('食品カテゴリ').boundingBox();
+    const actionsBox = await dialog.locator('.dialog-actions').boundingBox();
+    expect(categoryBox.y + categoryBox.height).toBeLessThanOrEqual(actionsBox.y);
+    await page.screenshot({ path: info.outputPath(`ui-register-bottom-${width}.png`) });
     expect(await dialog.evaluate(el => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(1);
     await page.keyboard.press('Escape');
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);

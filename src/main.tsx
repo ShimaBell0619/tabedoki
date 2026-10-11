@@ -226,7 +226,7 @@ function App() {
             <div className={`date-block state-${item.status === 'active' ? state : 'later'}`} aria-label={`${kinds[item.kind]} ${item.deadline}`}><span className="date-month">{Number(item.deadline.slice(5, 7))}月</span><strong>{Number(item.deadline.slice(8, 10))}</strong></div>
             <div className="food-info">
               <div className="food-primary"><h3>{item.name}</h3><span className="quantity">{item.quantity}{units[item.unit]}</span></div>
-              <div className="food-meta"><span className={`deadline-chip state-${item.status === 'active' ? state : 'later'}`}>{item.status !== 'active' ? (item.status === 'used' ? '使い切り済み' : '廃棄済み') : deadlineLabel(item.deadline, today)}</span><span>{kinds[item.kind]}</span><span>{places[item.place]}</span><span>{categories[item.category]}</span><time className="date-year" dateTime={item.deadline}>{item.deadline.slice(0, 4)}年</time></div>
+              <div className="food-meta"><span className={`deadline-chip state-${item.status === 'active' ? state : 'later'}`}>{item.status !== 'active' ? (item.status === 'used' ? '使い切り済み' : '廃棄済み') : deadlineLabel(item.deadline, today)}</span><span>{kinds[item.kind]}</span><span>{places[item.place]}</span><span>{categories[item.category]}</span>{item.deadline.slice(0, 4) !== today.slice(0, 4) && <time className="date-year" dateTime={item.deadline}>{item.deadline.slice(0, 4)}年</time>}</div>
             </div>
             <FoodActions item={item} blocked={blocked} onEdit={() => openForm(item)} onFinish={() => changeStatus(item, item.status === 'active' ? 'used' : 'active')} onDiscard={() => changeStatus(item, 'discarded')} onRemove={() => removeFood(item)} />
           </li>;
