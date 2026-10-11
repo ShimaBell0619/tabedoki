@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
-import { makeBackup, BACKUP_MAX_BYTES } from '../../src/food.ts';
+import { defaultTemplates, BACKUP_MAX_BYTES } from '../../src/food.ts';
 
-const key = 'tabedoki:foods:v2';
+const key = 'tabedoki:data:v3';
 const legacyKey = 'tabedoki:foods:v1';
 const item = { id: 'old-id', name: '以前の納豆', kind: 'use-by', deadline: '2020-01-01', quantity: 7, place: 'frozen', status: 'used', category: 'soy', unit: 'piece' };
 const { category, unit, ...legacy } = item;
@@ -24,7 +24,7 @@ async function seed(page, data = {}, fail = false) {
     }
     window.__failFoodWrites = sessionStorage.getItem('v2-test-fail') === 'true';
     Storage.prototype.setItem = function(key, value) {
-      if (window.__failFoodWrites && key === 'tabedoki:foods:v2') throw new DOMException('test quota', 'QuotaExceededError');
+      if (window.__failFoodWrites && key === 'tabedoki:data:v3') throw new DOMException('test quota', 'QuotaExceededError');
       return original.call(this, key, value);
     };
   }, { data, fail });
@@ -41,7 +41,7 @@ async function upload(page, value) {
 async function readSaved(page) { return page.evaluate(key => localStorage.getItem(key), key); }
 
 test('定番と以前の食品から、今回の期限・新ID・数量1で登録する', async ({ page }, info) => {
-  await seed(page, { [key]: JSON.stringify({ version: 2, items: [item] }) });
+  await seed(page, { [key]: JSON.stringify({ version: 3, templates: defaultTemplates(), items: [item] }) });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
   let dialog = await openNew(page);
@@ -106,18 +106,18 @@ test('移行保存失敗は読み取りとJSON退避を許可し、再試行で�
   const downloadWait = page.waitForEvent('download');
   await page.getByRole('button', { name: 'JSONを保存', exact: true }).click();
   const backup = JSON.parse(readFileSync(await (await downloadWait).path(), 'utf8'));
-  expect(backup.version).toBe(2);
+  expect(backup.version).toBe(3);
   expect(backup.items).toHaveLength(1);
   expect(await readSaved(page)).toBeNull();
   expect(await page.evaluate(key => localStorage.getItem(key), legacyKey)).toBe(raw);
   await page.evaluate(() => sessionStorage.setItem('v2-test-fail', 'false'));
   await page.reload();
   await expect(page.getByRole('button', { name: '食品を登録', exact: true }).last()).toBeEnabled();
-  expect(JSON.parse(await readSaved(page)).version).toBe(2);
+  expect(JSON.parse(await readSaved(page)).version).toBe(3);
 });
 
-for (const [label, raw] of [['破損', '{broken'], ['未知version', '{"version":3,"items":[]}'], ['不足項目', JSON.stringify({ version: 2, items: [legacy] })]]) {
-  test('v2' + label + 'はv1へ戻さず、確認した復元で回復する', async ({ page }) => {
+for (const [label, raw] of [['破損', '{broken'], ['未知version', '{"version":4,"items":[]}'], ['不足項目', JSON.stringify({ version: 3, templates: defaultTemplates(), items: [legacy] })]]) {
+  test('v3' + label + 'はv1へ戻さず、確認した復元で回復する', async ({ page }) => {
     await seed(page, { [key]: raw, [legacyKey]: JSON.stringify({ version: 1, items: [{ ...legacy, status: 'active' }] }) });
     await page.goto('/');
     await expect(page.getByText(/読み込めません/)).toBeVisible();
@@ -130,8 +130,8 @@ for (const [label, raw] of [['破損', '{broken'], ['未知version', '{"version"
   });
 }
 
-test('空のv2がある場合はv1を復活させず、表示だけで書き込まない', async ({ page }) => {
-  const raw = '{"version":2,"items":[]}';
+test('空のv3がある場合はv1を復活させず、表示だけで書き込まない', async ({ page }) => {
+  const raw = '{"version":3,"items":[],"templates":[]}';
   await seed(page, { [key]: raw, [legacyKey]: JSON.stringify({ version: 1, items: [legacy] }) });
   await page.goto('/');
   await expect(page.getByRole('heading', { name: item.name })).toHaveCount(0);
@@ -139,7 +139,7 @@ test('空のv2がある場合はv1を復活させず、表示だけで書き込�
 });
 
 test('保存失敗では新規・編集の入力と、完了・削除・復元の元データを保持する', async ({ page }) => {
-  const original = JSON.stringify({ version: 2, items: [{ ...item, status: 'active' }] });
+  const original = JSON.stringify({ version: 3, templates: defaultTemplates(), items: [{ ...item, status: 'active' }] });
   await seed(page, { [key]: original }, true);
   await page.goto('/');
   let dialog = await openNew(page);
@@ -175,7 +175,7 @@ test('保存失敗では新規・編集の入力と、完了・削除・復元�
 });
 
 test('カテゴリ・場所・検索のAND絞り込み、復元の不正データと上限を検証する', async ({ page }) => {
-  const original = JSON.stringify({ version: 2, items: [
+  const original = JSON.stringify({ version: 3, templates: defaultTemplates(), items: [
     { ...item, status: 'active' },
     { ...item, id: 'milk', name: '牛乳', category: 'eggs-dairy', place: 'chilled', unit: 'bottle', status: 'active' },
   ] });
@@ -206,7 +206,7 @@ test('カテゴリ・場所・検索のAND絞り込み、復元の不正デー�
 test('最大3,000件のアプリ出力を実ファイルとして復元できる', async ({ page }) => {
   test.setTimeout(60000);
   const items = Array.from({ length: 3000 }, (_, i) => ({ ...item, id: String(i), name: 'あ'.repeat(80), status: 'used' }));
-  await seed(page, { [key]: JSON.stringify({ version: 2, items }) });
+  await seed(page, { [key]: JSON.stringify({ version: 3, templates: defaultTemplates(), items }) });
   await page.goto('/');
   const downloadWait = page.waitForEvent('download');
   await page.getByRole('button', { name: 'JSONを保存', exact: true }).click();
@@ -229,7 +229,7 @@ test('LocalStorage取得そのものが拒否されても画面を表示して�
 
 for (const width of [320, 390, 1440]) {
   test(width + 'pxの登録候補・フォームが収まり、キーボードで選択できる', async ({ page }, info) => {
-    await seed(page, { [key]: JSON.stringify({ version: 2, items: [{ ...item, name: '以前の食品'.repeat(13) }] }) });
+    await seed(page, { [key]: JSON.stringify({ version: 3, templates: defaultTemplates(), items: [{ ...item, name: '以前の食品'.repeat(13) }] }) });
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/');
     const dialog = await openNew(page);
