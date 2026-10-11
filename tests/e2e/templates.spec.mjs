@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { defaultTemplates, STORAGE_KEY, V2_STORAGE_KEY } from '../../src/food.ts';
+import { restoreBackup } from './helpers/backup.mjs';
 
 const stock = { id: 'stock-1', name: '在庫の牛乳', kind: 'use-by', deadline: '2026-12-01', quantity: 7, unit: 'bottle', category: 'eggs-dairy', place: 'chilled', status: 'active' };
 const initial = () => ({ version: 3, items: [stock], templates: defaultTemplates() });
@@ -38,9 +39,8 @@ async function newFood(page) {
   await page.getByRole('button', { name: '食品を登録', exact: true }).last().click();
   return page.getByRole('dialog');
 }
-async function upload(page, value, accept = true) {
-  page.once('dialog', dialog => accept ? dialog.accept() : dialog.dismiss());
-  await page.getByLabel('バックアップファイルを選択').setInputFiles({ name: 'templates.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(value)) });
+async function upload(page, value, accept = true, notice) {
+  await restoreBackup(page, { name: 'templates.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(value)) }, { accept, notice });
 }
 
 test('定番の追加・編集・削除を保存し、在庫を変えず新規登録に設定を使う', async ({ page }) => {
@@ -130,7 +130,7 @@ test('追加・編集・削除と一括復元の保存失敗は定番・在庫�
   await expect(dialog.getByRole('button', { name: '定番の牛乳を編集' })).toBeVisible();
   expect(await saved(page)).toBe(raw);
   await dialog.getByRole('button', { name: '完了', exact: true }).click();
-  await upload(page, { version: 3, items: [], templates: [] });
+  await upload(page, { version: 3, items: [], templates: [] }, true, /保存できません/);
   expect(await saved(page)).toBe(raw);
   await page.evaluate(() => { window.__failWrites = false; });
   dialog = await manage(page);
@@ -165,6 +165,14 @@ test('v1/v2バックアップ復元は現在のカスタム定番を保持する
 });
 
 test('v3の実バックアップは食品と定番を一緒に復元し、取消しでは変えない', async ({ page }) => {
+  // 待機の代用ではなく、読取りが次の操作より遅れる条件を再現する。
+  await page.addInitScript(() => {
+    const read = File.prototype.text;
+    File.prototype.text = async function() {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      return read.call(this);
+    };
+  });
   const data = { ...initial(), templates: [{ ...defaultTemplates()[0], id: 'custom', name: '自分のたまご', quantity: 4 }] };
   await seed(page, { [STORAGE_KEY]: JSON.stringify(data) });
   await page.goto('/');
@@ -176,9 +184,8 @@ test('v3の実バックアップは食品と定番を一緒に復元し、取消
   await upload(page, { version: 3, items: [], templates: [] }, false);
   expect(JSON.parse(await saved(page))).toEqual(data);
   await upload(page, { version: 3, items: [], templates: [] });
-  page.once('dialog', dialog => dialog.accept());
-  await page.getByLabel('バックアップファイルを選択').setInputFiles(path);
-  expect(JSON.parse(await saved(page))).toEqual(data);
+  await restoreBackup(page, path);
+  await expect.poll(async () => JSON.parse(await saved(page))).toEqual(data);
 });
 
 test('不正な定番の復元と重複名を拒否し、50件上限を表示する', async ({ page }) => {

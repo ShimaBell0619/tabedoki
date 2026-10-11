@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
+import { restoreBackup } from './helpers/backup.mjs';
 import { defaultTemplates, BACKUP_MAX_BYTES } from '../../src/food.ts';
 
 const key = 'tabedoki:data:v3';
@@ -219,8 +220,7 @@ test('最大3,000件のアプリ出力を実ファイルとして復元できる
   const text = readFileSync(path, 'utf8');
   expect(Buffer.byteLength(text)).toBeGreaterThan(1024 * 1024);
   expect(Buffer.byteLength(text)).toBeLessThan(BACKUP_MAX_BYTES);
-  page.once('dialog', dialog => dialog.accept());
-  await page.getByLabel('バックアップファイルを選択').setInputFiles(path);
+  await restoreBackup(page, path);
   await expect(page.getByText('3000件を復元しました。')).toBeVisible();
   expect(JSON.parse(await readSaved(page)).items).toEqual(items);
 });
