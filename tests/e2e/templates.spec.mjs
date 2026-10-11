@@ -169,7 +169,7 @@ test('v3の実バックアップは食品と定番を一緒に復元し、取消
   await seed(page, { [STORAGE_KEY]: JSON.stringify(data) });
   await page.goto('/');
   const waiting = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'JSONを保存', exact: true }).click();
+  await page.getByRole('button', { name: 'バックアップを保存', exact: true }).click();
   const path = await (await waiting).path();
   const exported = JSON.parse(readFileSync(path, 'utf8'));
   expect(exported).toMatchObject(data);
