@@ -6,9 +6,11 @@ import {
 import { TemplateManager } from './TemplateManager';
 import { DeadlineInput } from './DeadlineInput';
 import { Icon } from './Icon';
+import { foodFormFromShopping, type ShoppingItem } from '../shopping';
 
 type Props = {
   item?: Food;
+  purchase?: ShoppingItem;
   templatesOnly: boolean;
   items: Food[];
   templates: FoodTemplate[];
@@ -20,12 +22,12 @@ type Props = {
   onSaveTemplates: (templates: FoodTemplate[]) => boolean;
 };
 
-export function FoodEditor({ item, templatesOnly, items, templates, blocked, formError, setFormError, onClose, onSave, onSaveTemplates }: Props) {
+export function FoodEditor({ item, purchase, templatesOnly, items, templates, blocked, formError, setFormError, onClose, onSave, onSaveTemplates }: Props) {
   const editingId = item?.id;
   const [form, setForm] = useState<FoodForm>(() => item ? {
     name: item.name, category: item.category, kind: item.kind, deadline: item.deadline,
     quantity: item.quantity, unit: item.unit, place: item.place,
-  } : initialFoodForm());
+  } : purchase ? foodFormFromShopping(purchase) : initialFoodForm());
   const [managingTemplates, setManagingTemplates] = useState(templatesOnly);
   const [candidatesOpen, setCandidatesOpen] = useState(false);
   const returnToFood = useRef(false);
@@ -37,9 +39,10 @@ export function FoodEditor({ item, templatesOnly, items, templates, blocked, for
   useEffect(() => { dialog.current?.showModal(); }, []);
   useEffect(() => {
     if (managingTemplates) dialog.current?.querySelector<HTMLButtonElement>('button')?.focus();
+    else if (purchase) deadlineInput.current?.focus();
     else nameInput.current?.focus();
     if (dialog.current) dialog.current.scrollTop = 0;
-  }, [managingTemplates]);
+  }, [managingTemplates, purchase]);
 
   function saveFood(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

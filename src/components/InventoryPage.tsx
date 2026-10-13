@@ -1,8 +1,10 @@
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import {
   categories, units, places, kinds, deadlineState, deadlineLabel, deadlineFilters, matchesDeadline,
   type Food, type FoodCategory, type StoragePlace, type FoodStatus, type DeadlineFilter,
+  normalizedName,
 } from '../food';
+import type { ShoppingItem } from '../shopping';
 import { FoodActions } from './FoodActions';
 import { Icon } from './Icon';
 
@@ -10,14 +12,16 @@ type Props = {
   items: Food[];
   today: string;
   blocked: boolean;
-  children: ReactNode;
   onCreate: () => void;
   onEdit: (item: Food) => void;
   onStatus: (item: Food, status: FoodStatus) => void;
   onRemove: (item: Food) => void;
+  shopping: ShoppingItem[];
+  onLowStock: (item: Food, lowStock: boolean) => void;
+  onAddShopping: (item: Food) => boolean;
 };
 
-export function InventoryPage({ items, today, blocked, children, onCreate, onEdit, onStatus, onRemove }: Props) {
+export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatus, onRemove, shopping, onLowStock, onAddShopping }: Props) {
   const [view, setView] = useState<'active' | 'finished' | 'all'>('active');
   const [search, setSearch] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -38,6 +42,7 @@ export function InventoryPage({ items, today, blocked, children, onCreate, onEdi
     (Object.keys(places) as StoragePlace[]).map(place => ({ place, items: displayed.filter(item => item.place === place) }));
   const filterCount = Number(categoryFilter !== 'all') + Number(placeFilter !== 'all') + Number(deadlineFilter !== 'all');
   const hasFilters = filterCount > 0 || Boolean(search.trim());
+  const listed = new Set(shopping.filter(item => !item.bought).map(item => normalizedName(item.name)));
   function resetFilters() {
     setSearch(''); setCategoryFilter('all'); setPlaceFilter('all'); setDeadlineFilter('all');
   }
@@ -49,7 +54,6 @@ export function InventoryPage({ items, today, blocked, children, onCreate, onEdi
         <Icon name="plus" />食品を登録
       </button>
     </div>
-    {children}
     <section className="inventory" aria-labelledby="inventory-heading">
       <div className="list-toolbar">
         <div className="tabs" role="group" aria-label="表示する食品">
@@ -117,8 +121,10 @@ export function InventoryPage({ items, today, blocked, children, onCreate, onEdi
           const date = `${item.deadline.slice(0, 4) !== today.slice(0, 4) ? item.deadline.slice(0, 4) + '/' : ''}${Number(item.deadline.slice(5, 7))}/${Number(item.deadline.slice(8))}`;
           return <li className={`food-row ${item.status !== 'active' ? 'completed' : ''}`} key={item.id}>
             <details className="food-details">
-              <summary aria-label={`${item.name}の詳細`}>
-                <div className="food-primary"><h3>{item.name}</h3><span className="quantity">{item.quantity}{units[item.unit]}</span></div>
+              <summary aria-label={`${item.name}の詳細、${item.quantity}${units[item.unit]}、${kinds[item.kind]} ${item.deadline}、${item.status === 'active' ? deadlineLabel(item.deadline, today) : item.status === 'used' ? '使い切り済み' : '廃棄済み'}`}>
+                <div className="food-primary"><h3>{item.name}</h3><span className="quantity">{item.quantity}{units[item.unit]}</span>
+                  {item.lowStock && item.status === 'active' && <span className="low-stock">残りわずか</span>}
+                </div>
                 <div className="food-deadline">
                   <time dateTime={item.deadline} aria-label={`${kinds[item.kind]} ${item.deadline}`}>{date}</time>
                   <span className={`deadline-chip state-${state}`}>{item.status === 'active' ? deadlineLabel(item.deadline, today) :
@@ -127,6 +133,14 @@ export function InventoryPage({ items, today, blocked, children, onCreate, onEdi
               </summary>
               <div className="food-expanded">
                 <div className="food-meta"><span>{kinds[item.kind]}</span><span>{places[item.place]}</span><span>{categories[item.category]}</span></div>
+                {item.status === 'active' && <div className="stock-controls">
+                  <label><input type="checkbox" checked={item.lowStock} disabled={blocked}
+                    onChange={event => onLowStock(item, event.target.checked)} aria-label={`${item.name}の残りわずか`} />残りわずか</label>
+                  <button type="button" className="secondary" disabled={blocked || listed.has(normalizedName(item.name))}
+                    onClick={() => onAddShopping(item)} aria-label={`${item.name}を買い物に追加`}>
+                    {listed.has(normalizedName(item.name)) ? '追加済み' : '買い物に追加'}
+                  </button>
+                </div>}
                 <FoodActions item={item} blocked={blocked} onEdit={() => onEdit(item)}
                   onFinish={() => onStatus(item, item.status === 'active' ? 'used' : 'active')}
                   onDiscard={() => onStatus(item, 'discarded')} onRemove={() => onRemove(item)} />

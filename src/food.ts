@@ -22,9 +22,10 @@ export type Food = {
   unit: QuantityUnit;
   place: StoragePlace;
   status: FoodStatus;
+  lowStock: boolean;
 };
 
-export type LegacyFood = Omit<Food, 'category' | 'unit'>;
+export type LegacyFood = Omit<Food, 'category' | 'unit' | 'lowStock'>;
 export type FoodForm = Pick<Food, 'name' | 'category' | 'kind' | 'deadline' | 'quantity' | 'unit' | 'place'>;
 export type FoodTemplate = Pick<Food, 'id' | 'name' | 'category' | 'kind' | 'quantity' | 'place' | 'unit'>;
 const starterTemplates: readonly Pick<FoodTemplate, 'name' | 'category' | 'place' | 'unit'>[] = [
@@ -49,7 +50,7 @@ export function validateTemplates(value: unknown): FoodTemplate[] {
   const ids = new Set<string>();
   const names = new Set<string>();
   return value.map(item => {
-    if (!isFood({ ...item, deadline: '2000-01-01', status: 'active' })) throw new Error('定番食品の入力項目を確認してください。');
+    if (!isFood({ ...item, deadline: '2000-01-01', status: 'active', lowStock: false })) throw new Error('定番食品の入力項目を確認してください。');
     if (ids.has(item.id)) throw new Error('重複する定番食品IDがあります。');
     const name = item.name.trim();
     const key = normalizedName(name);
@@ -111,7 +112,7 @@ export function parseDeadline(raw: string): string | null {
 
 export const deadlineFilters = {
   all: 'すべて', expired: '期限切れ', fortnight: '0〜14日', month: '15〜30日',
-  long: '31日以降', today: '今日まで', soon: '3日以内', later: '4日以上',
+  long: '31日以降', today: '今日まで', soon: '1〜3日', later: '4日以上',
 } as const;
 export type DeadlineFilter = keyof typeof deadlineFilters;
 export function matchesDeadline(deadline: string, today: string, filter: DeadlineFilter): boolean {
@@ -158,9 +159,13 @@ export function isLegacyFood(value: unknown): value is LegacyFood {
     (v.status === 'active' || v.status === 'used' || v.status === 'discarded');
 }
 
-export function isFood(value: unknown): value is Food {
+export function isV3Food(value: unknown): value is Omit<Food, 'lowStock'> {
   if (!isLegacyFood(value)) return false;
   const v = value as unknown as Record<string, unknown>;
   return typeof v.category === 'string' && Object.hasOwn(categories, v.category) &&
     typeof v.unit === 'string' && Object.hasOwn(units, v.unit);
+}
+
+export function isFood(value: unknown): value is Food {
+  return isV3Food(value) && typeof (value as Record<string, unknown>).lowStock === 'boolean';
 }

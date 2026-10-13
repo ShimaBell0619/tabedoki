@@ -1,7 +1,7 @@
 import { openCandidates, openFoodActions } from './helpers/inventory.mjs';
 import { test, expect } from '@playwright/test';
 import { writeFileSync } from 'node:fs';
-import { restoreBackup } from './helpers/backup.mjs';
+import { restoreBackup, openBackup } from './helpers/backup.mjs';
 
 let errors = [];
 test.beforeEach(async ({ page }) => {
@@ -82,6 +82,7 @@ test('期限境界・バックアップ復元・不正JSON拒否・上書き確�
   await openFilters(page);
   await page.getByLabel('期限状態で絞り込み').selectOption('all');
   const downloadWait = page.waitForEvent('download');
+  await openBackup(page);
   await page.getByRole('button', { name: 'バックアップを保存' }).click();
   const download = await downloadWait;
   const path = await download.path();

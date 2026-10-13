@@ -1,7 +1,7 @@
 import { openCandidates, openFoodActions } from './helpers/inventory.mjs';
 import { test, expect } from '@playwright/test';
 import { defaultTemplates } from '../../src/food.ts';
-import { STORAGE_KEY } from '../../src/storage.ts';
+import { V3_STORAGE_KEY } from '../../src/storage.ts';
 
 async function seed(page) {
   await page.clock.install({ time: new Date('2026-10-11T12:00:00') });
@@ -12,7 +12,7 @@ async function seed(page) {
       { id: '3', name: '納豆', category: 'soy', deadline: '2026-10-13', kind: 'best-before', quantity: 3, unit: 'pack', place: 'chilled', status: 'active' },
       { id: '4', name: '食パン', category: 'staples', deadline: '2026-10-17', kind: 'best-before', quantity: 1, unit: 'bag', place: 'pantry', status: 'active' },
     ] }));
-  }, { key: STORAGE_KEY, templates: defaultTemplates() });
+  }, { key: V3_STORAGE_KEY, templates: defaultTemplates() });
   await page.goto('/');
 }
 
