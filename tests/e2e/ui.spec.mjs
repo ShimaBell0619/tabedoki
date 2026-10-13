@@ -62,7 +62,6 @@ for (const width of [320, 390, 1440]) {
     const dialog = page.getByRole('dialog');
     await openCandidates(dialog);
     await dialog.getByRole('button', { name: '定番の納豆', exact: true }).click();
-    await openCandidates(dialog);
     await expect(dialog.getByRole('button', { name: '定番・以前の登録から入力' })).toHaveAttribute('aria-expanded', 'false');
     await expect(dialog.getByLabel(/期限の日付/)).toHaveValue('');
     await page.screenshot({ path: info.outputPath(`ui-register-${width}.png`) });
