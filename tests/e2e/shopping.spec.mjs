@@ -50,7 +50,7 @@ for (const width of [320, 390, 1440]) {
     await expect(page.getByRole('button', { name: '牛乳を買い物に追加', exact: true })).toHaveText('追加済み');
     await shopping(page);
     await expect(page.getByLabel('補充候補')).toHaveCount(0);
-    await page.getByLabel('牛乳を購入済みにする').check();
+    await page.getByLabel('牛乳の購入状態').check();
     expect((await saved(page)).items).toHaveLength(1);
     await page.screenshot({ path: info.outputPath(`shopping-${width}.png`), fullPage: true });
     await page.getByRole('button', { name: '牛乳を在庫に登録' }).click();
@@ -90,7 +90,7 @@ test('同名通常在庫は補充を抑え、全件lowで候補。新在庫登�
   await page.getByLabel('牛乳の残りわずか').last().check();
   await shopping(page); await expect(page.getByLabel('補充候補')).toBeVisible();
   await page.getByLabel('補充候補').getByRole('button', { name: '牛乳を買い物に追加' }).click();
-  await page.getByLabel('牛乳を購入済みにする').check();
+  await page.getByLabel('牛乳の購入状態').check();
   await expect(page.getByLabel('補充候補')).toHaveCount(0);
   await page.getByRole('button', { name: '牛乳を在庫に登録' }).click();
   await page.getByRole('dialog').getByLabel(/期限の日付/).fill('20271231');
@@ -102,14 +102,14 @@ test('NFKC重複・購入済みへの再追加・解除競合・定番からの�
   await seed(page, initial([], [{ ...shoppingFrom('milk', 'first'), quantity: 7 }])); await page.goto('/'); await shopping(page);
   await add(page, ' ＭＩＬＫ ');
   expect((await saved(page)).shopping).toHaveLength(1); expect((await saved(page)).shopping[0].quantity).toBe(7);
-  await page.getByLabel('milkを購入済みにする', { exact: true }).check();
+  await page.getByLabel('milkの購入状態', { exact: true }).check();
   await add(page, 'milk');
   await page.getByLabel('購入済み', { exact: true }).getByRole('checkbox').click();
   await expect(page.getByRole('status')).toContainText('同名');
   expect((await saved(page)).shopping.map(item => item.bought)).toEqual([true, false]);
   page.once('dialog', dialog => dialog.accept());
   await page.getByLabel('未購入', { exact: true }).getByRole('button', { name: '買い物のmilkを削除' }).click();
-  await page.getByRole('checkbox', { name: 'milkを未購入に戻す', exact: true }).uncheck();
+  await page.getByRole('checkbox', { name: 'milkの購入状態', exact: true }).uncheck();
   await page.locator('.shopping-templates > summary').click();
   await page.getByRole('button', { name: '定番の牛乳を買い物に追加' }).click();
   expect((await saved(page)).shopping.find(item => item.name === '牛乳')).toMatchObject({ category: 'eggs-dairy', unit: 'bottle', place: 'chilled' });
