@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { defaultTemplates } from '../../src/food.ts';
-import { STORAGE_KEY } from '../../src/storage.ts';
+import { V3_STORAGE_KEY } from '../../src/storage.ts';
 
 for (const width of [320, 390, 1440]) {
   test(`${width}pxで長い食品名・翌年・期限条件・場所別と展開を確認する`, async ({ page }, info) => {
@@ -12,7 +12,7 @@ for (const width of [320, 390, 1440]) {
     const longName = '長い食品名'.repeat(16);
     const dates = ['2026-12-19', '2026-12-20', '2027-01-03', '2027-01-04', '2027-01-19', '2027-01-20'];
     const items = dates.map((deadline, i) => ({ id: String(i), name: i === 5 ? longName : `食品${i}`, category: 'condiments', kind: 'best-before', deadline, quantity: 1, unit: 'bottle', place: i % 2 ? 'pantry' : 'chilled', status: 'active' }));
-    await page.addInitScript(({ key, templates, items }) => localStorage.setItem(key, JSON.stringify({ version: 3, templates, items })), { key: STORAGE_KEY, templates: defaultTemplates(), items });
+    await page.addInitScript(({ key, templates, items }) => localStorage.setItem(key, JSON.stringify({ version: 3, templates, items })), { key: V3_STORAGE_KEY, templates: defaultTemplates(), items });
     await page.goto('/');
     await expect(page.getByRole('heading', { name: longName, exact: true })).toBeVisible();
     await expect(page.getByLabel('賞味期限 2027-01-20', { exact: true })).toContainText('2027/1/20');
