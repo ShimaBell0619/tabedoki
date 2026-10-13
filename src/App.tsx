@@ -24,6 +24,7 @@ export function App() {
   const [notice, setNotice] = useState(initial.error);
   const [formError, setFormError] = useState('');
   const [today, setToday] = useState(localDate);
+  const unreadable = blocked && !initial.canExport;
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>;
     const update = () => {
@@ -149,15 +150,15 @@ export function App() {
     if (commitData({ items: [], templates: defaultTemplates(), shopping: [] }, true)) setNotice('空の状態から開始しました。');
   }
   const navigation = <>
-    <button type="button" aria-pressed={screen === 'inventory'} onClick={() => setScreen('inventory')}>在庫</button>
-    <button type="button" aria-pressed={screen === 'shopping'} onClick={() => setScreen('shopping')}>買い物</button>
+    <button type="button" disabled={unreadable} aria-pressed={screen === 'inventory'} onClick={() => setScreen('inventory')}>在庫</button>
+    <button type="button" disabled={unreadable} aria-pressed={screen === 'shopping'} onClick={() => setScreen('shopping')}>買い物</button>
   </>;
 
   return <div className="page">
     <header className="topbar"><div className="topbar-inner">
       <a href="/" className="brand" aria-label="たべどき ホーム"><span className="brand-mark"><Icon name="cooking-pot" /></span>たべどき</a>
       <nav className="screen-navigation desktop-navigation" aria-label="画面選択">{navigation}</nav>
-      <button className="header-action" type="button" aria-label="定番食品を管理"
+      <button className="header-action" type="button" disabled={unreadable} aria-label="定番食品を管理"
         onClick={() => { setFormError(''); setEditor({ templatesOnly: true }); }}><Icon name="bookmark" />定番食品</button>
     </div></header>
     <main className="main">
@@ -166,6 +167,7 @@ export function App() {
         {blocked ? <button type="button" onClick={() => window.location.reload()}>再読み込み</button> :
           <button className="icon-button" type="button" aria-label="通知を閉じる" onClick={() => setNotice('')}><Icon name="x" /></button>}
       </div>}
+      {unreadable ? <h1>データの復旧</h1> : <>
       <div hidden={screen !== 'inventory'}>
         <InventoryPage items={data.items} today={today} blocked={blocked} onCreate={() => openForm()}
           onEdit={openForm} onStatus={changeStatus} onRemove={removeFood} shopping={data.shopping}
@@ -175,6 +177,7 @@ export function App() {
         <ShoppingPage items={data.shopping} foods={data.items} templates={data.templates} blocked={blocked}
           onAdd={addToShopping} onBought={changeBought} onRemove={removeShopping} onRegister={item => openForm(undefined, item)} />
       </div>
+      </>}
       <BackupPanel data={data} today={today} blocked={blocked} canExport={!blocked || initial.canExport}
         raw={blocked ? initial.raw : null} onNotice={setNotice} onRestore={restore}
         onRestorePrevious={restorePrevious} onReadPreviousRaw={() => previousRaw(window.localStorage)} onReset={clearCorrupt} />

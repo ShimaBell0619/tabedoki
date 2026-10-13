@@ -152,6 +152,8 @@ test('買い物300件上限と保存失敗は名前/購入チェックを保持�
 test('破損原文を実ファイルに退避し、退避失敗で置換せず、旧JSON復元と直前復元ができる', async ({ page }) => {
   const raw = '{broken original';
   await seed(page, raw, RECOVERY_KEY); await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'データの復旧', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '食品を登録しましょう', exact: true })).toHaveCount(0);
   const waiting = page.waitForEvent('download');
   await page.getByRole('button', { name: '読み込めないデータを退避' }).click();
   expect(readFileSync(await (await waiting).path(), 'utf8')).toBe(raw);
