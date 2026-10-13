@@ -3,10 +3,10 @@ import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { defaultTemplates } from '../../src/food.ts';
 import { STORAGE_KEY, V2_STORAGE_KEY } from '../../src/storage.ts';
-import { restoreBackup } from './helpers/backup.mjs';
+import { restoreBackup, openBackup } from './helpers/backup.mjs';
 
-const stock = { id: 'stock-1', name: '在庫の牛乳', kind: 'use-by', deadline: '2026-12-01', quantity: 7, unit: 'bottle', category: 'eggs-dairy', place: 'chilled', status: 'active' };
-const initial = () => ({ version: 3, items: [stock], templates: defaultTemplates() });
+const stock = { id: 'stock-1', name: '在庫の牛乳', kind: 'use-by', deadline: '2026-12-01', quantity: 7, unit: 'bottle', category: 'eggs-dairy', place: 'chilled', status: 'active', lowStock: false };
+const initial = () => ({ version: 4, items: [stock], templates: defaultTemplates(), shopping: [] });
 let errors;
 test.beforeEach(({ page }) => {
   errors = [];
@@ -148,11 +148,11 @@ test('追加・編集・削除と一括復元の保存失敗は定番・在庫�
 });
 
 for (const items of [[], [stock]]) {
-  test(`v2の${items.length}食品を保持してv3へ移行し、v2原文を残す`, async ({ page }) => {
+  test(`v2の${items.length}食品を保持してv4へ移行し、v2原文を残す`, async ({ page }) => {
     const raw = JSON.stringify({ version: 2, items });
     await seed(page, { [V2_STORAGE_KEY]: raw, 'tabedoki:foods:v1': JSON.stringify({ version: 1, items: [] }) });
     await page.goto('/');
-    expect(JSON.parse(await saved(page))).toEqual({ version: 3, items, templates: defaultTemplates() });
+    expect(JSON.parse(await saved(page))).toEqual({ version: 4, items, templates: defaultTemplates(), shopping: [] });
     expect(await page.evaluate(key => localStorage.getItem(key), V2_STORAGE_KEY)).toBe(raw);
     await page.reload();
     expect(await page.evaluate(() => window.__dataWrites)).toBe(0);
@@ -170,7 +170,7 @@ test('v1/v2バックアップ復元は現在のカスタム定番を保持する
   }
 });
 
-test('v3の実バックアップは食品と定番を一緒に復元し、取消しでは変えない', async ({ page }) => {
+test('v4の実バックアップは食品と定番を一緒に復元し、取消しでは変えない', async ({ page }) => {
   // 待機の代用ではなく、読取りが次の操作より遅れる条件を再現する。
   await page.addInitScript(() => {
     const read = File.prototype.text;
@@ -183,6 +183,7 @@ test('v3の実バックアップは食品と定番を一緒に復元し、取消
   await seed(page, { [STORAGE_KEY]: JSON.stringify(data) });
   await page.goto('/');
   const waiting = page.waitForEvent('download');
+  await openBackup(page);
   await page.getByRole('button', { name: 'バックアップを保存', exact: true }).click();
   const path = await (await waiting).path();
   const exported = JSON.parse(readFileSync(path, 'utf8'));

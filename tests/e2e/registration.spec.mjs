@@ -1,14 +1,14 @@
 import { openCandidates, openFoodActions } from './helpers/inventory.mjs';
 import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
-import { restoreBackup } from './helpers/backup.mjs';
+import { restoreBackup, openBackup } from './helpers/backup.mjs';
 import { defaultTemplates } from '../../src/food.ts';
 import { BACKUP_MAX_BYTES } from '../../src/storage.ts';
 
 const key = 'tabedoki:data:v3';
 const legacyKey = 'tabedoki:foods:v1';
-const item = { id: 'old-id', name: '以前の納豆', kind: 'use-by', deadline: '2020-01-01', quantity: 7, place: 'frozen', status: 'used', category: 'soy', unit: 'piece' };
-const { category, unit, ...legacy } = item;
+const item = { id: 'old-id', name: '以前の納豆', kind: 'use-by', deadline: '2020-01-01', quantity: 7, place: 'frozen', status: 'used', category: 'soy', unit: 'piece', lowStock: false };
+const { category, unit, lowStock, ...legacy } = item;
 let errors;
 test.beforeEach(async ({ page }) => {
   errors = [];
@@ -114,16 +114,17 @@ test('移行保存失敗は読み取りとJSON退避を許可し、再試行で�
     await openFoodActions(page);
   await expect(page.getByRole('button', { name: item.name + 'を編集' })).toBeDisabled();
   const downloadWait = page.waitForEvent('download');
+  await openBackup(page);
   await page.getByRole('button', { name: 'バックアップを保存', exact: true }).click();
   const backup = JSON.parse(readFileSync(await (await downloadWait).path(), 'utf8'));
-  expect(backup.version).toBe(3);
+  expect(backup.version).toBe(4);
   expect(backup.items).toHaveLength(1);
   expect(await readSaved(page)).toBeNull();
   expect(await page.evaluate(key => localStorage.getItem(key), legacyKey)).toBe(raw);
   await page.evaluate(() => sessionStorage.setItem('v2-test-fail', 'false'));
   await page.reload();
   await expect(page.getByRole('button', { name: '食品を登録', exact: true }).last()).toBeEnabled();
-  expect(JSON.parse(await readSaved(page)).version).toBe(3);
+  expect(JSON.parse(await readSaved(page)).version).toBe(4);
 });
 
 for (const [label, raw] of [['破損', '{broken'], ['未知version', '{"version":4,"items":[]}'], ['不足項目', JSON.stringify({ version: 3, templates: defaultTemplates(), items: [legacy] })]]) {
@@ -140,8 +141,8 @@ for (const [label, raw] of [['破損', '{broken'], ['未知version', '{"version"
   });
 }
 
-test('空のv3がある場合はv1を復活させず、表示だけで書き込まない', async ({ page }) => {
-  const raw = '{"version":3,"items":[],"templates":[]}';
+test('空のv4がある場合はv1を復活させず、表示だけで書き込まない', async ({ page }) => {
+  const raw = '{"version":4,"items":[],"templates":[],"shopping":[]}';
   await seed(page, { [key]: raw, [legacyKey]: JSON.stringify({ version: 1, items: [legacy] }) });
   await page.goto('/');
   await expect(page.getByRole('heading', { name: item.name })).toHaveCount(0);
@@ -149,7 +150,7 @@ test('空のv3がある場合はv1を復活させず、表示だけで書き込�
 });
 
 test('保存失敗では新規・編集の入力と、完了・削除・復元の元データを保持する', async ({ page }) => {
-  const original = JSON.stringify({ version: 3, templates: defaultTemplates(), items: [{ ...item, status: 'active' }] });
+  const original = JSON.stringify({ version: 4, shopping: [], templates: defaultTemplates(), items: [{ ...item, status: 'active' }] });
   await seed(page, { [key]: original }, true);
   await page.goto('/');
   let dialog = await openNew(page);
@@ -191,7 +192,7 @@ test('保存失敗では新規・編集の入力と、完了・削除・復元�
 });
 
 test('カテゴリ・場所・検索のAND絞り込み、復元の不正データと上限を検証する', async ({ page }) => {
-  const original = JSON.stringify({ version: 3, templates: defaultTemplates(), items: [
+  const original = JSON.stringify({ version: 4, shopping: [], templates: defaultTemplates(), items: [
     { ...item, status: 'active' },
     { ...item, id: 'milk', name: '牛乳', category: 'eggs-dairy', place: 'chilled', unit: 'bottle', status: 'active' },
   ] });
@@ -228,6 +229,7 @@ test('最大3,000件のアプリ出力を実ファイルとして復元できる
   await seed(page, { [key]: JSON.stringify({ version: 3, templates: defaultTemplates(), items }) });
   await page.goto('/');
   const downloadWait = page.waitForEvent('download');
+  await openBackup(page);
   await page.getByRole('button', { name: 'バックアップを保存', exact: true }).click();
   const path = await (await downloadWait).path();
   const text = readFileSync(path, 'utf8');
