@@ -75,7 +75,7 @@ for (const width of [320, 390, 1440]) {
     expect(after.items[1]).toMatchObject({ name: '牛乳', quantity: 3, unit: 'bottle', category: 'eggs-dairy', place: 'chilled', kind: 'use-by', deadline: '2027-12-31', lowStock: false, status: 'active' });
     expect(after.items[1].id).not.toBe(food.id);
     await inventory(page); await expect(page.getByRole('searchbox')).toHaveValue('牛乳');
-    await expect(page.getByLabel('消費期限 2027-12-31')).toHaveText('2027/12/31');
+    await expect(page.getByLabel('消費期限 2027-12-31', { exact: true })).toHaveText('2027/12/31');
     await page.screenshot({ path: info.outputPath(`purchase-inventory-${width}.png`), fullPage: true });
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
   });
