@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
-import { defaultTemplates, STORAGE_KEY, V2_STORAGE_KEY } from '../../src/food.ts';
+import { defaultTemplates } from '../../src/food.ts';
+import { STORAGE_KEY, V2_STORAGE_KEY } from '../../src/storage.ts';
 import { restoreBackup } from './helpers/backup.mjs';
 
 const stock = { id: 'stock-1', name: '在庫の牛乳', kind: 'use-by', deadline: '2026-12-01', quantity: 7, unit: 'bottle', category: 'eggs-dairy', place: 'chilled', status: 'active' };

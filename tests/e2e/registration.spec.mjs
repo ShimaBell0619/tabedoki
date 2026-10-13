@@ -1,7 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { restoreBackup } from './helpers/backup.mjs';
-import { defaultTemplates, BACKUP_MAX_BYTES } from '../../src/food.ts';
+import { defaultTemplates } from '../../src/food.ts';
+import { BACKUP_MAX_BYTES } from '../../src/storage.ts';
 
 const key = 'tabedoki:data:v3';
 const legacyKey = 'tabedoki:foods:v1';

@@ -1,5 +1,5 @@
 import { useId, useRef, useState } from 'react';
-import type { Food } from './food';
+import type { Food } from '../food';
 import { Icon } from './Icon';
 
 type Props = {
@@ -27,7 +27,9 @@ export function FoodActions({ item, blocked, onEdit, onFinish, onDiscard, onRemo
     <button type="button" className="icon-button" disabled={blocked} popoverTarget={id} aria-label={`${item.name}のその他の操作`} onClick={event => {
       const rect = event.currentTarget.getBoundingClientRect();
       setPosition({ top: Math.max(8, Math.min(rect.bottom + 6, window.innerHeight - 120)), left: Math.max(8, Math.min(rect.right - 164, window.innerWidth - 172)) });
-    }}><Icon name="ellipsis" /></button>
+    }}>
+          <Icon name="ellipsis" />
+          </button>
     <div id={id} ref={menu} popover="auto" className="action-menu" style={position} aria-label={`${item.name}の操作`}>
       {item.status === 'active' && <button type="button" disabled={blocked} onClick={() => act(onDiscard)} aria-label={`${item.name}を廃棄`}>廃棄として記録</button>}
       <button type="button" className="delete" disabled={blocked} onClick={() => act(onRemove)} aria-label={`${item.name}を削除`}>削除</button>
