@@ -199,7 +199,7 @@ test('旧タブがv3へ保存しても新規買い物を含むv4正本は変わ�
   await page.reload();
   expect(await saved(page)).toEqual(before);
   await shopping(page);
-  await expect(page.getByText('新しい買い物', { exact: true })).toBeVisible();
+  await expect(page.getByRole('checkbox', { name: '新しい買い物の購入状態' })).toBeVisible();
 });
 
 test('最大v4を実JSONで往復し300件在庫の検索・追加・最後の行を確認する', async ({ page }, info) => {
