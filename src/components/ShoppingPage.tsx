@@ -40,7 +40,7 @@ export function ShoppingPage({ items, foods, templates, blocked, onAdd, onBought
         <h2>{bought ? '購入済み' : '買うもの'}</h2>
         <ul className="shopping-list">{group.map(item => <li key={item.id}>
           <label className="shopping-check"><input type="checkbox" checked={item.bought} disabled={blocked}
-            onChange={event => onBought(item, event.target.checked)} aria-label={`${item.name}を${item.bought ? '未購入に戻す' : '購入済みにする'}`} />
+            onChange={event => onBought(item, event.target.checked)} aria-label={`${item.name}の購入状態`} />
             <span>{item.name}<small>{item.quantity}{units[item.unit]}</small></span>
           </label>
           <div className="shopping-actions">
