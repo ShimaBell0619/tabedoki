@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>たべどき UX モック — 在庫と買い物</title>
+<style>
+:root{font-family:system-ui,"Noto Sans JP",sans-serif;color:#233632;background:#eaf0ec;font-size:14px}
+*{box-sizing:border-box}button,input,select{font:inherit}button{cursor:pointer;touch-action:manipulation}button:focus-visible,input:focus-visible{outline:3px solid #cb7a2b;outline-offset:2px}
+.shell{max-width:430px;min-height:840px;margin:20px auto;background:#f6f8f8;border:1px solid #dbe5df;border-radius:20px;overflow:hidden;position:relative;box-shadow:0 9px 40px #142d2312}
+header{display:flex;align-items:center;justify-content:space-between;padding:16px 19px;background:#fff;border-bottom:1px solid #dce4e1}
+.logo{display:flex;align-items:center;gap:10px;font-size:19px;font-weight:800;letter-spacing:-.03em}.logo-mark{display:grid;place-items:center;background:#116b60;color:white;border-radius:9px;width:29px;height:29px;font-size:20px}
+small,.muted{color:#62776f}.content{padding:22px 17px 102px}h1{font-size:24px;line-height:1.25;margin:0;letter-spacing:-.045em}h2{font-size:14px;margin:20px 0 9px}.title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:19px}.meta{font-size:12px;margin-top:5px;color:#64766d}
+button.primary{border:1px solid #116b60;background:#116b60;color:white;border-radius:9px;padding:10px 13px;font-weight:700;white-space:nowrap}button.secondary{border:1px solid #b9d2c8;background:#fff;color:#116b60;border-radius:9px;padding:9px 12px;font-weight:700}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-bottom:19px}
+.stat{border:1px solid #dce4e1;border-radius:11px;background:#fff;text-align:left;padding:12px 9px;display:flex;flex-direction:column;gap:8px}.stat.on{background:#ecf6f1;border-color:#116b60;box-shadow:inset 0 0 0 1px #116b60}
+.stat span{color:#63776f;font-size:11px;white-space:nowrap}.stat b{font-size:26px;line-height:1}.stat.expired b{color:#aa433d}
+.tools{display:flex;align-items:center;gap:8px;margin-bottom:15px}.search{flex:1;min-width:0;border:1px solid #dce4e1;background:#fff;border-radius:9px;display:flex;align-items:center;padding:0 11px;gap:7px;height:43px}
+.search input{border:0;min-width:0;outline:none;width:100%;font-size:14px}.sort{background:#fff;border:1px solid #dce4e1;border-radius:9px;padding:0 12px;height:43px;color:#354c41;font-size:12px}
+.group-heading{display:flex;align-items:center;justify-content:space-between;margin:18px 2px 8px;font-size:13px;font-weight:760}.group-heading small{font-weight:500;font-size:11px}
+.card{border:1px solid #dce4e1;border-radius:12px;background:#fff;overflow:hidden}
+.food{display:flex;align-items:center;gap:8px;min-height:62px;padding:0 11px 0 14px;border-bottom:1px solid #edf0ee}.food:last-child,.shop-row:last-child{border:0}
+.food-main{border:0;background:none;flex:1;min-width:0;text-align:left;padding:10px 0}.food-name{font-size:14px;font-weight:740;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sub{font-size:11px;color:#74867d;margin-top:5px}
+.low{font-size:10px;padding:3px 5px;border-radius:4px;background:#fff2d7;color:#94601d;white-space:nowrap;vertical-align:middle;margin-left:4px}
+.date{text-align:right;min-width:68px}.date b{display:block;font-size:13px;font-variant-numeric:tabular-nums}.date small{display:block;margin-top:3px;font-size:10px;color:#728177;white-space:nowrap}.date .alert{color:#ae4c38;font-weight:700}.add{background:#f1f9f5;border:1px solid #c3d9d0;border-radius:8px;color:#116b60;font-size:20px;width:34px;height:35px;flex-shrink:0}.add.done{font-size:15px}
+nav{position:absolute;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #dce4e1;display:flex;padding:8px 8px 12px}
+nav button{position:relative;border:0;background:none;flex:1;color:#6c8378;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;border-radius:9px;padding:6px 8px;font-size:11px;font-weight:760}
+nav button.active{background:#eaf5ef;color:#116b60}nav .ico{font-size:20px;line-height:1.2}nav .count{position:absolute;top:0;left:calc(50% + 12px);background:#c8653c;color:#fff;font-size:10px;padding:2px 5px;border-radius:9px}
+.shop-row{display:flex;align-items:center;gap:10px;min-height:59px;padding:9px 13px;border-bottom:1px solid #edf0ee}.shop-row input[type=checkbox]{width:21px;height:21px;accent-color:#116b60;cursor:pointer;flex-shrink:0}.shop-label{flex:1;font-weight:700;min-width:0}.shop-label.done{text-decoration:line-through;color:#82938b}.shop-label small{display:block;font-weight:400;font-size:10px;margin-top:4px}.tiny{font-size:11px;padding:7px 9px;border:1px solid #c6ded4;border-radius:7px;background:#f0f7f4;color:#116b60;font-weight:700}.remove{border:0;background:none;color:#a8594b;padding:6px;font-size:18px}
+.notice{border-radius:9px;padding:11px;background:#e9f3ee;color:#3b5f51;font-size:12px;margin:12px 0}.suggest{background:white;border:1px solid #dce4e1;border-radius:10px;padding:13px;margin-top:17px}.suggest .suggest-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0}.suggest-row+.suggest-row{border-top:1px solid #eef1ef}
+.overlay{position:absolute;inset:0;background:#152b2380;display:flex;align-items:flex-end;z-index:5}
+.dialog{background:#fff;border-radius:20px 20px 0 0;width:100%;max-height:85%;overflow-y:auto;padding:21px 19px 24px}.dialog-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:17px}.dialog-head strong{font-size:19px}.close{background:#f0f3f1;border:0;border-radius:8px;width:33px;height:33px;color:#596d62;font-size:22px}
+.detail{border:1px solid #dce4e1;border-radius:10px;padding:13px;line-height:1.7}.detail b{font-size:16px}.detail p{margin:2px 0;color:#708178;font-size:12px}
+.action{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 2px;border-bottom:1px solid #edf0ee}.action strong{font-size:13px}.action small{display:block;font-size:11px;margin-top:5px}.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+.field{display:flex;flex-direction:column;gap:7px;margin:13px 0}.field label{font-size:12px;font-weight:700}.field input,.field select{border:1px solid #cbd9d1;border-radius:9px;height:44px;width:100%;padding:0 12px;background:#fff;font-size:16px;color:#233632}.row-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}.date-fields{display:flex;gap:8px}.date-fields input{min-width:0;flex:1}
+.empty{text-align:center;color:#71877c;padding:32px 10px;line-height:1.8}.error{color:#a33e35;font-size:12px;margin-top:5px}
+@media(max-width:460px){body{margin:0}.shell{margin:0 auto;border:0;border-radius:0;min-height:100dvh;box-shadow:none}}
+</style></head><body>
+<div id="app" class="shell"></div>
+<script>
+(function(){
+const app=document.getElementById('app');
+const initialScreen=new URLSearchParams(location.search).get('screen')||'inventory';
+const today=new Date();today.setHours(0,0,0,0);
+function dateOffset(n){const d=new Date(today);d.setDate(d.getDate()+n);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
+function remain(iso){const a=iso.split('-').map(Number);return Math.round((new Date(a[0],a[1]-1,a[2])-today)/86400000)}
+function fmt(iso){return String(Number(iso.slice(5,7)))+'/'+iso.slice(8,10)}
+function status(n){return n<0?Math.abs(n)+'日超過':n===0?'今日まで':'あと'+n+'日'}
+const E=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','"':'&quot;',"'":'&#39;'}[c]));
+const state={screen:initialScreen==='shopping'?'shopping':'inventory',filter:'all',sort:'place',query:'',dialog:null,next:50,toast:'',foods:[
+{id:1,name:'ごまドレッシング',place:'冷蔵',date:dateOffset(-2),unit:'本',low:false},
+{id:2,name:'味噌',place:'冷蔵',date:dateOffset(3),unit:'個',low:false},
+{id:3,name:'マヨネーズ',place:'冷蔵',date:dateOffset(6),unit:'本',low:false},
+{id:4,name:'ポン酢',place:'冷蔵',date:dateOffset(12),unit:'本',low:true},
+{id:5,name:'しょうゆ',place:'常温',date:dateOffset(24),unit:'本',low:false},
+{id:6,name:'めんつゆ',place:'冷蔵',date:dateOffset(65),unit:'本',low:false},
+{id:7,name:'ケチャップ',place:'冷蔵',date:dateOffset(120),unit:'本',low:true},
+{id:8,name:'オリーブオイル',place:'常温',date:dateOffset(180),unit:'本',low:false},
+{id:9,name:'塩',place:'常温',date:dateOffset(365),unit:'袋',low:false}
+],shop:[{id:40,name:'食パン',bought:false},{id:41,name:'牛乳',bought:false}]};
+const pending=()=>state.shop.filter(x=>!x.bought);
+function addCart(name){if(!state.shop.some(x=>x.name===name&&!x.bought))state.shop.unshift({id:state.next++,name,bought:false});state.screen='shopping';state.dialog=null;state.toast=name+'を買い物リストに追加しました';render()}
+function foodRow(x){const n=remain(x.date),linked=pending().some(s=>s.name===x.name);return '<div class="food"><button class="food-main" data-a="detail" data-id="'+x.id+'"><div class="food-name">'+E(x.name)+(x.low?'<span class="low">残りわずか</span>':'')+'</div><div class="sub">1'+x.unit+' · 調味料</div></button><div class="date"><b>'+fmt(x.date)+'</b><small class="'+(n<=7?'alert':'')+'">'+status(n)+'</small></div><button class="add '+(linked?'done':'')+'" aria-label="'+E(x.name)+'を買い物リストに追加" data-a="cart" data-id="'+x.id+'">'+(linked?'✓':'+')+'</button></div>'}
+function stock(){
+const s=state.foods,f=s.filter(x=>{const n=remain(x.date);return (state.filter==='all'||state.filter==='expired'&&n<0||state.filter==='14'&&n>=0&&n<=14||state.filter==='30'&&n>14&&n<=30||state.filter==='low'&&x.low)&&x.name.includes(state.query)});
+const stat=(key,label,n)=>'<button class="stat '+(key==='expired'?'expired ':'')+(state.filter===key?'on':'')+'" data-a="filter" data-v="'+key+'"><span>'+label+'</span><b>'+n+'</b></button>';
+const groups=state.sort==='place'?['冷蔵','常温','冷凍'].map(p=>[p,f.filter(x=>x.place===p)]).filter(g=>g[1].length):[['期限が近い順',f.slice().sort((a,b)=>a.date.localeCompare(b.date))]];
+return '<div class="title"><div><h1>在庫一覧</h1><div class="meta">'+s.length+'件の食品</div></div><button class="primary" data-a="newfood">＋ 登録</button></div><div class="stats">'+stat('expired','期限切れ',s.filter(x=>remain(x.date)<0).length)+stat('14','14日以内',s.filter(x=>remain(x.date)>=0&&remain(x.date)<=14).length)+stat('30','15〜30日',s.filter(x=>remain(x.date)>14&&remain(x.date)<=30).length)+'</div><div class="tools"><div class="search"><span aria-hidden="true">⌕</span><input id="query" aria-label="食品を検索" placeholder="食品を検索" value="'+E(state.query)+'"></div><button class="sort" data-a="sort">'+(state.sort==='place'?'場所別 ↕':'期限順 ↕')+'</button></div><div class="group-heading"><span>'+(state.filter==='all'?'すべての食品':state.filter==='low'?'残りわずか':state.filter==='expired'?'期限切れ':state.filter==='14'?'14日以内':'15〜30日')+' <small>'+f.length+'件</small></span><button class="remove" style="font-size:12px;color:#116b60" data-a="filter" data-v="'+(state.filter==='all'?'low':'all')+'">'+(state.filter==='all'?'残りわずか '+s.filter(x=>x.low).length+'件 →':'解除')+'</button></div>'+ (f.length?groups.map(g=>'<div class="group-heading"><span>'+g[0]+'</span><small>'+g[1].length+'件</small></div><div class="card">'+g[1].sort((a,b)=>a.date.localeCompare(b.date)).map(foodRow).join('')+'</div>').join(''):'<div class="card empty">該当する食品はありません。</div>')}
+function shopRow(x){return '<div class="shop-row"><input type="checkbox" data-a="bought" data-id="'+x.id+'" '+(x.bought?'checked':'')+' aria-label="'+E(x.name)+'を購入済みにする"><div class="shop-label '+(x.bought?'done':'')+'">'+E(x.name)+(x.source?'<small>在庫から追加</small>':'')+'</div>'+(x.bought?'<button class="tiny" data-a="register" data-id="'+x.id+'">在庫に登録</button>':'')+'<button class="remove" data-a="remove" data-id="'+x.id+'" aria-label="削除">×</button></div>'}
+function shop(){
+const a=pending(),b=state.shop.filter(x=>x.bought),suggest=state.foods.filter(x=>x.low&&!a.some(s=>s.name===x.name));
+return '<div class="title"><div><h1>買い物リスト</h1><div class="meta">未購入 '+a.length+'件</div></div><button class="primary" data-a="newshop">＋ 追加</button></div><h2>買うもの</h2><div class="card">'+(a.length?a.map(shopRow).join(''):'<div class="empty">買うものはありません</div>')+'</div>'+(b.length?'<h2>購入済み</h2><div class="card">'+b.map(shopRow).join('')+'</div>':'')+(suggest.length?'<div class="suggest"><b>残りわずかの食品</b>'+suggest.map(x=>'<div class="suggest-row">'+E(x.name)+'<button class="tiny" data-a="cart" data-id="'+x.id+'">＋ リストへ</button></div>').join('')+'</div>':'')+'<div class="notice">購入後に「在庫に登録」を選ぶと、食品名を引き継いで期限を入力できます。</div>'}
+function formatDate(raw){if(!/^\d{8}$/.test(raw))return null;const y=+raw.slice(0,4),m=+raw.slice(4,6),d=+raw.slice(6);const dt=new Date(y,m-1,d);return y>=1000&&dt.getFullYear()===y&&dt.getMonth()===m-1&&dt.getDate()===d?raw.slice(0,4)+'-'+raw.slice(4,6)+'-'+raw.slice(6):null}
+function modal(){
+if(!state.dialog)return '';
+let inner='',d=state.dialog;
+if(d.type==='detail'){const f=state.foods.find(x=>x.id===d.id);inner='<div class="detail"><b>'+E(f.name)+'</b><p>'+f.place+' · 1'+f.unit+' · 調味料<br>賞味期限 '+f.date+'（'+status(remain(f.date))+'）</p></div><div class="action"><div><strong>残りわずか</strong><small>買い物の補充候補に表示します</small></div><button class="secondary" data-a="low" data-id="'+f.id+'">'+(f.low?'設定中 ✓':'設定する')+'</button></div><div class="actions"><button class="primary" data-a="cart" data-id="'+f.id+'">＋ 買い物に追加</button></div>'}
+else if(d.type==='newshop')inner='<div class="field"><label for="shopname">食品名</label><input id="shopname" maxlength="80" placeholder="例：酢"></div><p class="error" id="error"></p><div class="actions"><button class="primary" data-a="saveshop">追加する</button></div>';
+else inner='<div class="field"><label for="foodname">食品名</label><input id="foodname" value="'+E(d.name||'')+'" maxlength="80" placeholder="例：しょうゆ"></div><div class="row-fields"><div class="field"><label>期限の種類</label><select><option>賞味期限</option><option>消費期限</option></select></div><div class="field"><label>保存場所</label><select id="foodplace"><option>冷蔵</option><option>常温</option><option>冷凍</option></select></div></div><div class="field"><label for="fooddate">期限の日付</label><div class="date-fields"><input id="fooddate" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD" value=""><button class="secondary" data-a="calendar">📅</button></div><small>例：20271231 / カレンダー選択も可能</small><input style="display:none;margin-top:8px" id="calendar" type="date"><small id="date-preview" style="color:#116b60"></small></div><div id="error" class="error"></div><div class="actions"><button class="primary" data-a="savefood">登録する</button></div>';
+return '<div class="overlay"><div class="dialog" role="dialog" aria-modal="true"><div class="dialog-head"><strong>'+(d.type==='detail'?'食品の詳細':d.type==='newshop'?'買うものを追加':'食品を登録')+'</strong><button class="close" data-a="close">×</button></div>'+inner+'</div></div>'
+}
+function render(){app.innerHTML='<header><div class="logo"><span class="logo-mark">▤</span>たべどき</div><small>UXモック</small></header><main class="content">'+(state.toast?'<div class="notice">'+E(state.toast)+'</div>':'')+(state.screen==='inventory'?stock():shop())+'</main><nav><button class="'+(state.screen==='inventory'?'active':'')+'" data-a="screen" data-v="inventory"><span class="ico">▤</span>在庫</button><button class="'+(state.screen==='shopping'?'active':'')+'" data-a="screen" data-v="shopping"><span class="ico">▦</span>買い物'+(pending().length?'<span class="count">'+pending().length+'</span>':'')+'</button></nav>'+modal()}
+function preview(){const el=app.querySelector('#date-preview');if(!el)return;const s=formatDate(app.querySelector('#fooddate').value);el.textContent=s?'確認：'+s.replaceAll('-','/'):'8桁の正しい日付を入力してください';el.style.color=s?'#116b60':'#a33e35'}
+app.addEventListener('input',e=>{if(e.target.id==='query'){state.query=e.target.value;const pos=e.target.selectionStart;render();const input=app.querySelector('#query');input.focus();input.setSelectionRange(pos,pos)}if(e.target.id==='fooddate')preview();if(e.target.id==='calendar'&&e.target.value){app.querySelector('#fooddate').value=e.target.value.replaceAll('-','');preview()}});
+app.addEventListener('change',e=>{if(e.target.dataset.a==='bought'){const x=state.shop.find(s=>s.id===+e.target.dataset.id);if(x)x.bought=e.target.checked;render()}});
+app.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,id=+b.dataset.id;
+if(a==='screen'){state.screen=b.dataset.v;state.toast=''}
+if(a==='filter'){state.filter=state.filter===b.dataset.v?'all':b.dataset.v}
+if(a==='sort')state.sort=state.sort==='place'?'date':'place';
+if(a==='detail')state.dialog={type:'detail',id};
+if(a==='low'){const f=state.foods.find(x=>x.id===id);f.low=!f.low}
+if(a==='cart'){const f=state.foods.find(x=>x.id===id);if(f){addCart(f.name);return}}
+if(a==='newfood')state.dialog={type:'newfood',name:'',fromShop:null};
+if(a==='newshop')state.dialog={type:'newshop'};
+if(a==='close')state.dialog=null;
+if(a==='remove')state.shop=state.shop.filter(x=>x.id!==id);
+if(a==='register'){const x=state.shop.find(x=>x.id===id);state.dialog={type:'newfood',name:x.name,fromShop:id}}
+if(a==='calendar'){const x=app.querySelector('#calendar');x.style.display=x.style.display==='none'?'block':'none';return}
+if(a==='saveshop'){const name=app.querySelector('#shopname').value.trim();if(!name){app.querySelector('#error').textContent='食品名を入力してください';return}addCart(name);return}
+if(a==='savefood'){const name=app.querySelector('#foodname').value.trim(),date=formatDate(app.querySelector('#fooddate').value),place=app.querySelector('#foodplace').value;if(!name||!date){app.querySelector('#error').textContent='食品名と正しい8桁の日付が必要です';return}state.foods.push({id:state.next++,name,place,date,unit:'点',low:false});if(state.dialog.fromShop!=null)state.shop=state.shop.filter(x=>x.id!==state.dialog.fromShop);state.screen='inventory';state.dialog=null;state.toast=name+'を在庫に登録しました'}
+render()});
+if(initialScreen==='register')state.dialog={type:'newfood',name:'しょうゆ',fromShop:null};
+render();
+})();
+</script></body></html>
