@@ -1,3 +1,4 @@
+import { openCandidates, openFoodActions } from './helpers/inventory.mjs';
 import { test, expect } from '@playwright/test';
 import { defaultTemplates } from '../../src/food.ts';
 import { STORAGE_KEY } from '../../src/storage.ts';
@@ -42,6 +43,7 @@ for (const width of [320, 390, 1440]) {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('食品一覧 1件');
     await summary.click();
     await expect(summary).toHaveAttribute('aria-pressed', 'false');
+    await openFoodActions(page);
     const menu = page.getByRole('button', { name: '牛乳のその他の操作' });
     await menu.focus(); await page.keyboard.press('Enter');
     await expect(page.getByRole('button', { name: '牛乳を削除' })).toBeVisible();
@@ -58,8 +60,10 @@ for (const width of [320, 390, 1440]) {
     await page.getByRole('button', { name: '管理中', exact: true }).click();
     await page.getByRole('button', { name: '食品を登録', exact: true }).last().click();
     const dialog = page.getByRole('dialog');
+    await openCandidates(dialog);
     await dialog.getByRole('button', { name: '定番の納豆', exact: true }).click();
-    await expect(dialog.getByRole('button', { name: '定番の納豆', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await openCandidates(dialog);
+    await expect(dialog.getByRole('button', { name: '定番・以前の登録から入力' })).toHaveAttribute('aria-expanded', 'false');
     await expect(dialog.getByLabel(/期限の日付/)).toHaveValue('');
     await page.screenshot({ path: info.outputPath(`ui-register-${width}.png`) });
     await dialog.getByLabel('食品カテゴリ').scrollIntoViewIfNeeded();

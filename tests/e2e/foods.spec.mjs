@@ -1,3 +1,4 @@
+import { openCandidates, openFoodActions } from './helpers/inventory.mjs';
 import { test, expect } from '@playwright/test';
 import { writeFileSync } from 'node:fs';
 import { restoreBackup } from './helpers/backup.mjs';
@@ -42,17 +43,21 @@ for (const width of [320, 390, 1440]) {
     await expect(page.getByRole('heading', { name: '食パン' })).toHaveCount(0);
     await openFilters(page);
     await page.getByLabel('保存場所で絞り込み').selectOption('all');
+    await openFoodActions(page);
     await page.getByRole('button', { name: '牛乳を編集' }).click();
     await page.getByRole('dialog').getByRole('textbox', { name: /食品名/ }).fill('低脂肪牛乳');
     await page.getByRole('button', { name: '変更を保存' }).click();
     await expect(page.getByRole('heading', { name: '低脂肪牛乳' })).toBeVisible();
+    await openFoodActions(page);
     await page.getByRole('button', { name: '低脂肪牛乳を使い切り' }).click();
     await expect(page.getByRole('heading', { name: '低脂肪牛乳' })).toHaveCount(0);
     await page.getByRole('button', { name: '完了' }).click();
     await expect(page.getByRole('heading', { name: '低脂肪牛乳' })).toBeVisible();
+    await openFoodActions(page);
     await page.getByRole('button', { name: '戻す' }).click();
     await page.getByRole('button', { name: '管理中' }).click();
     page.once('dialog', dialog => dialog.accept());
+    await openFoodActions(page);
     await page.getByRole('button', { name: '低脂肪牛乳のその他の操作' }).click();
     await page.getByRole('button', { name: '低脂肪牛乳を削除' }).click();
     await expect(page.getByRole('heading', { name: '低脂肪牛乳' })).toHaveCount(0);

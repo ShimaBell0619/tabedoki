@@ -32,3 +32,5 @@ npm run dev
 採用元SHAと有効な開発規則は [AGENTS.md](AGENTS.md)、共通CIのpinは [.github/workflows/ci.yml](.github/workflows/ci.yml) で確認します。
 
 checkはReact Hooks規則とeffect依存を含み、design:lintはlockfileで固定したGoogle CLIを使います。ブラウザ準備後、復元の不安定さを調査するときは `npm run test:e2e:restore` で対象ケースを20回実行できます。通常CIは全E2Eを1回実行します。
+
+期限は8桁の数字（YYYYMMDD）、YYYY-MM-DDの貼り付け、カレンダーで入力できます。定番・以前の登録は必要なときに開いて選択し、今回の期限を入力してください。一覧の食品を開くと詳細と操作を表示します。
