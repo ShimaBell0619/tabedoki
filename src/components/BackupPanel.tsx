@@ -8,6 +8,7 @@ type Props = {
   blocked: boolean;
   canExport: boolean;
   raw: string | null;
+  hasPrevious: boolean;
   onNotice: (message: string) => void;
   onRestore: (backup: BackupData) => boolean;
   onRestorePrevious: () => void;
@@ -15,7 +16,7 @@ type Props = {
   onReset: () => void;
 };
 
-export function BackupPanel({ data, today, blocked, canExport, raw, onNotice, onRestore, onRestorePrevious, onReadPreviousRaw, onReset }: Props) {
+export function BackupPanel({ data, today, blocked, canExport, raw, hasPrevious, onNotice, onRestore, onRestorePrevious, onReadPreviousRaw, onReset }: Props) {
   const upload = useRef<HTMLInputElement>(null);
   const current = useRef(data);
   current.current = data;
@@ -24,8 +25,10 @@ export function BackupPanel({ data, today, blocked, canExport, raw, onNotice, on
   function download(text: string, filename: string, type = 'application/json') {
     const url = URL.createObjectURL(new Blob([text], { type }));
     const anchor = document.createElement('a');
-    anchor.href = url; anchor.download = filename; anchor.click();
-    URL.revokeObjectURL(url);
+    anchor.href = url; anchor.download = filename;
+    document.body.appendChild(anchor);
+    anchor.click(); anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
   function exportBackup() {
     try {
@@ -56,13 +59,13 @@ export function BackupPanel({ data, today, blocked, canExport, raw, onNotice, on
       <div className="backup-buttons">
         <button type="button" className="secondary" disabled={!canExport} onClick={exportBackup}><Icon name="download" />バックアップを保存</button>
         <button type="button" className="secondary outline" disabled={reading} onClick={() => upload.current?.click()}><Icon name="upload" />バックアップから復元</button>
-        <button type="button" className="secondary outline" disabled={reading} onClick={onRestorePrevious}>直前の置換前データを復元</button>
-        <button type="button" className="secondary outline" onClick={() => {
+        {hasPrevious && <button type="button" className="secondary outline" disabled={reading} onClick={onRestorePrevious}>直前の置換前データを復元</button>}
+        {hasPrevious && <button type="button" className="secondary outline" onClick={() => {
           try {
             download(onReadPreviousRaw(), `tabedoki-previous-${today}.txt`, 'text/plain');
             onNotice('直前の置換前データの原文を退避しました。通常のバックアップとして復元できるとは限りません。');
           } catch (error) { onNotice(`退避できません：${error instanceof Error ? error.message : '原文を取得できません。'}`); }
-        }}>直前の置換前データを退避</button>
+        }}>直前の置換前データを退避</button>}
         {raw !== null && <button type="button" className="secondary outline" onClick={() => {
           download(raw, `tabedoki-unreadable-${today}.txt`, 'text/plain');
           onNotice('元の文字列を退避しました。通常のバックアップとして復元できるとは限りません。');
