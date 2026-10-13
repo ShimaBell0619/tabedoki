@@ -112,7 +112,7 @@ export function parseDeadline(raw: string): string | null {
 
 export const deadlineFilters = {
   all: 'すべて', expired: '期限切れ', fortnight: '0〜14日', month: '15〜30日',
-  long: '31日以降', today: '今日まで', soon: '3日以内', later: '4日以上',
+  long: '31日以降', today: '今日まで', soon: '1〜3日', later: '4日以上',
 } as const;
 export type DeadlineFilter = keyof typeof deadlineFilters;
 export function matchesDeadline(deadline: string, today: string, filter: DeadlineFilter): boolean {
