@@ -5,5 +5,7 @@ export async function openCandidates(dialog) {
 }
 
 export async function openFoodActions(page) {
-  for (const summary of await page.locator('.food-details:not([open]) > summary').all()) await summary.click();
+  for (const details of await page.locator('.food-details').all()) {
+    if (await details.getAttribute('open') === null) await details.locator('summary').click();
+  }
 }

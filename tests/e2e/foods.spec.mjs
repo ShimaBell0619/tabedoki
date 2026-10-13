@@ -30,7 +30,7 @@ for (const width of [320, 390, 1440]) {
     await expect(page.getByRole('heading', { name: /食品一覧/ })).toBeVisible();
     await register(page, '牛乳', '2026-10-11', '消費期限', '冷蔵');
     await register(page, '食パン', '2026-10-13', '賞味期限', '常温');
-    await expect(page.getByText('今日まで', { exact: true }).first()).toBeVisible();
+    await expect(page.locator('.deadline-chip').getByText('今日まで', { exact: true })).toBeVisible();
     await expect(page.getByText('あと2日')).toBeVisible();
     await page.reload();
     await expect(page.getByRole('heading', { name: '牛乳' })).toBeVisible();

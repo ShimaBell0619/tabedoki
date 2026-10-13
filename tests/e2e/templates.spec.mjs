@@ -227,6 +227,7 @@ for (const width of [320, 390, 1440]) {
     await dialog.getByRole('textbox', { name: /食品名/ }).fill('登録途中の食品');
     await dialog.getByLabel(/期限の日付/).fill('2026-12-24');
     await dialog.getByLabel('数量', { exact: true }).fill('4');
+    await openCandidates(dialog);
     const entry = dialog.getByRole('button', { name: '定番を編集', exact: true });
     await entry.focus();
     await page.keyboard.press('Enter');
