@@ -7,8 +7,9 @@ import { validateShopping, type ShoppingItem } from './shopping.ts';
 export type AppData = { items: Food[]; templates: FoodTemplate[]; shopping: ShoppingItem[] };
 export const LEGACY_STORAGE_KEY = 'tabedoki:foods:v1';
 export const V2_STORAGE_KEY = 'tabedoki:foods:v2';
-// Historical key: the JSON version is authoritative. Old code must stop at v4.
-export const STORAGE_KEY = 'tabedoki:data:v3';
+// A separate key prevents stale v3 tabs from overwriting v4 data.
+export const V3_STORAGE_KEY = 'tabedoki:data:v3';
+export const STORAGE_KEY = 'tabedoki:data:v4';
 export const RECOVERY_KEY = 'tabedoki:recovery:previous';
 export const BACKUP_MAX_BYTES = 5 * 1024 * 1024;
 export type BackupData = { items: Food[]; templates?: FoodTemplate[]; shopping?: ShoppingItem[] };
@@ -70,7 +71,7 @@ export function decodeStored(raw: string, expected?: 1 | 2 | 3 | 4): AppData {
 export function replaceData(storage: DataStorage, data: AppData): AppData {
   const valid = validateData(data);
   const current = storage.getItem(STORAGE_KEY);
-  const raw = current ?? storage.getItem(V2_STORAGE_KEY) ?? storage.getItem(LEGACY_STORAGE_KEY);
+  const raw = current ?? storage.getItem(V3_STORAGE_KEY) ?? storage.getItem(V2_STORAGE_KEY) ?? storage.getItem(LEGACY_STORAGE_KEY);
   // Even a first replacement protects the current empty/starter state.
   storage.setItem(RECOVERY_KEY, raw ?? JSON.stringify({ version: 4, items: [], templates: defaultTemplates(), shopping: [] }));
   return writeData(storage, valid);
@@ -94,11 +95,12 @@ export function readData(storage: DataStorage): ReadDataResult {
     let version: 1 | 2 | 3 | 4;
     if (canonical !== null) {
       const value = JSON.parse(canonical);
-      if (value?.version !== 3 && value?.version !== 4) throw new Error('未知の正本形式です。');
-      version = value.version;
+      if (value?.version !== 4) throw new Error('未知の正本形式です。');
+      version = 4;
     } else {
-      raw = storage.getItem(V2_STORAGE_KEY);
-      version = 2;
+      raw = storage.getItem(V3_STORAGE_KEY);
+      version = 3;
+      if (raw === null) { raw = storage.getItem(V2_STORAGE_KEY); version = 2; }
       if (raw === null) { raw = storage.getItem(LEGACY_STORAGE_KEY); version = 1; }
     }
     if (raw === null) return { items: [], templates: defaultTemplates(), shopping: [], error: '', canExport: true, raw: null };
