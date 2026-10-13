@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { MAX_ITEMS, defaultTemplates, isFood, localDate, normalizedName, type Food, type FoodForm, type FoodStatus, type FoodTemplate } from './food';
-import { READ_ERROR, SAVE_ERROR, applyBackup, previousData, previousRaw, readData, replaceData, writeData, type AppData, type BackupData } from './storage';
+import { READ_ERROR, SAVE_ERROR, RECOVERY_KEY, applyBackup, previousData, previousRaw, readData, replaceData, writeData, type AppData, type BackupData } from './storage';
 import { addShopping, registerPurchase, setBought, shoppingFrom, type ShoppingItem } from './shopping';
 import { InventoryPage } from './components/InventoryPage';
 import { FoodEditor } from './components/FoodEditor';
@@ -25,6 +25,8 @@ export function App() {
   const [formError, setFormError] = useState('');
   const [today, setToday] = useState(localDate);
   const unreadable = blocked && !initial.canExport;
+  let hasPrevious = false;
+  try { hasPrevious = window.localStorage.getItem(RECOVERY_KEY) !== null; } catch { /* Recovery storage unavailable. */ }
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>;
     const update = () => {
@@ -179,7 +181,7 @@ export function App() {
       </div>
       </>}
       <BackupPanel data={data} today={today} blocked={blocked} canExport={!blocked || initial.canExport}
-        raw={blocked ? initial.raw : null} onNotice={setNotice} onRestore={restore}
+        raw={blocked ? initial.raw : null} hasPrevious={hasPrevious} onNotice={setNotice} onRestore={restore}
         onRestorePrevious={restorePrevious} onReadPreviousRaw={() => previousRaw(window.localStorage)} onReset={clearCorrupt} />
     </main>
     <div className="mobile-create-bar mobile-navigation">
