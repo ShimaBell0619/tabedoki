@@ -121,7 +121,7 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
           const date = `${item.deadline.slice(0, 4) !== today.slice(0, 4) ? item.deadline.slice(0, 4) + '/' : ''}${Number(item.deadline.slice(5, 7))}/${Number(item.deadline.slice(8))}`;
           return <li className={`food-row ${item.status !== 'active' ? 'completed' : ''}`} key={item.id}>
             <details className="food-details">
-              <summary aria-label={`${item.name}の詳細`}>
+              <summary aria-label={`${item.name}の詳細、${item.quantity}${units[item.unit]}、${kinds[item.kind]} ${item.deadline}、${item.status === 'active' ? deadlineLabel(item.deadline, today) : item.status === 'used' ? '使い切り済み' : '廃棄済み'}`}>
                 <div className="food-primary"><h3>{item.name}</h3><span className="quantity">{item.quantity}{units[item.unit]}</span>
                   {item.lowStock && item.status === 'active' && <span className="low-stock">残りわずか</span>}
                 </div>

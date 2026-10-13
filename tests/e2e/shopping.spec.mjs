@@ -192,7 +192,7 @@ test('最大v4を実JSONで往復し300件在庫の検索・追加・最後の�
   test.setTimeout(60000);
   const items = Array.from({ length: 3000 }, (_, i) => ({ ...food, id: String(i), name: 'あ'.repeat(80), status: 'used' }));
   const shoppingItems = Array.from({ length: 300 }, (_, i) => shoppingFrom('買い物' + i, String(i)));
-  const value = initial(items, shoppingItems);
+  const value = { ...initial(items, shoppingItems), templates: Array.from({ length: 50 }, (_, i) => ({ ...defaultTemplates()[0], id: 'template-' + i, name: '最大定番' + i })) };
   await seed(page, value); await page.goto('/'); await openBackup(page);
   const waiting = page.waitForEvent('download'); await page.getByRole('button', { name: 'バックアップを保存', exact: true }).click();
   const path = await (await waiting).path();
