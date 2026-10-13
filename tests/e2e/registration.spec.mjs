@@ -241,10 +241,26 @@ test('最大3,000件のアプリ出力を実ファイルとして復元できる
 });
 
 test('LocalStorage取得そのものが拒否されても画面を表示して保存を止める', async ({ page }) => {
-  await page.addInitScript(() => Object.defineProperty(window, 'localStorage', { get() { throw new DOMException('denied', 'SecurityError'); } }));
+  await page.addInitScript(() => {
+    window.__blockedWrites = 0;
+    const write = Storage.prototype.setItem;
+    Storage.prototype.setItem = function(key, value) {
+      if (key === 'tabedoki:data:v3') window.__blockedWrites++;
+      return write.call(this, key, value);
+    };
+    Object.defineProperty(window, 'localStorage', { get() { throw new DOMException('denied', 'SecurityError'); } });
+  });
   await page.goto('/');
   await expect(page.getByText(/読み込めません/)).toBeVisible();
-  await expect(page.getByRole('button', { name: '食品を登録', exact: true }).last()).toBeDisabled();
+  await expect(page.getByRole('heading', { name: 'データの復旧', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '在庫', exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: '買い物', exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'バックアップを保存', exact: true })).toBeDisabled();
+  page.once('dialog', dialog => dialog.accept());
+  await page.getByRole('button', { name: '空の状態から始める', exact: true }).click();
+  await expect(page.getByRole('status')).toContainText('保存できません');
+  expect(await page.evaluate(() => window.__blockedWrites)).toBe(0);
+  await expect(page.getByRole('heading', { name: 'データの復旧', exact: true })).toBeVisible();
 });
 
 for (const width of [320, 390, 1440]) {
