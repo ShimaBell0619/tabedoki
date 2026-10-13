@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { daysLeft, deadlineState, validDate, localDate, MAX_ITEMS, MAX_TEMPLATES, validateTemplates, defaultTemplates, initialFoodForm, applyFoodCandidate, previousFoods, isFood } from '../src/food.ts';
-import { validateBackup, makeBackup, readData, writeData, STORAGE_KEY, V2_STORAGE_KEY, LEGACY_STORAGE_KEY, BACKUP_MAX_BYTES } from '../src/storage.ts';
+import { validateBackup, makeBackup, readData, writeData, STORAGE_KEY, V3_STORAGE_KEY, V2_STORAGE_KEY, LEGACY_STORAGE_KEY, BACKUP_MAX_BYTES } from '../src/storage.ts';
 const foodTemplates = defaultTemplates();
 const item = { id: '1', name: '牛乳', category: 'eggs-dairy', kind: 'use-by', deadline: '2026-10-12', quantity: 1, unit: 'bottle', place: 'chilled', status: 'active', lowStock: false };
 const { category, unit, lowStock, ...legacyItem } = item;
@@ -100,7 +100,7 @@ test('v2は空でもv1より優先して移行し、原文を残す', () => {
   }
 });
 test('v3の空定番・空食品を優先し、v4へ移行し初期候補を復活させない', () => {
-  const store = storage({ [STORAGE_KEY]: '{"version":3,"items":[],"templates":[]}', [V2_STORAGE_KEY]: JSON.stringify({ version: 2, items: [item] }) });
+  const store = storage({ [V3_STORAGE_KEY]: '{"version":3,"items":[],"templates":[]}', [V2_STORAGE_KEY]: JSON.stringify({ version: 2, items: [item] }) });
   assert.deepEqual(readData(store), { items: [], templates: [], shopping: [], error: '', canExport: true, raw: null });
   assert.equal(store.writes, 2);
   const empty = storage();
@@ -109,7 +109,8 @@ test('v3の空定番・空食品を優先し、v4へ移行し初期候補を復�
 });
 test('破損・未知version・不足項目のv3やv2から旧データへ戻さない', () => {
   for (const [key, raws] of [
-    [STORAGE_KEY, ['{broken', '{"version":4,"items":[]}', '{"version":2,"items":[]}', '{"version":3,"items":[],"templates":null}', JSON.stringify({ version: 3, items: [legacyItem], templates: [], shopping: [] })]],
+    [STORAGE_KEY, ['{broken', '{"version":4,"items":[]}', '{"version":3,"items":[],"templates":[]}' ]],
+    [V3_STORAGE_KEY, ['{broken', '{"version":4,"items":[]}', '{"version":2,"items":[]}', '{"version":3,"items":[],"templates":null}', JSON.stringify({ version: 3, items: [legacyItem], templates: [], shopping: [] })]],
     [V2_STORAGE_KEY, ['{broken', '{"version":3,"items":[],"templates":[]}', JSON.stringify({ version: 2, items: [legacyItem] })]],
   ]) for (const raw of raws) {
     const store = storage({ [V2_STORAGE_KEY]: JSON.stringify({ version: 2, items: [item] }), [LEGACY_STORAGE_KEY]: JSON.stringify({ version: 1, items: [legacyItem] }), [key]: raw });
@@ -147,7 +148,7 @@ test('移行保存後の読み直しが不一致なら変更を止める', () =>
 });
 test('食品と定番を単一保存し、例外・不正データでは両方を保持する', () => {
   const data = { items: [item], templates: foodTemplates, shopping: [] };
-  const raw = JSON.stringify({ version: 3, ...data });
+  const raw = JSON.stringify({ version: 4, ...data });
   const store = storage({ [STORAGE_KEY]: raw }, true);
   assert.throws(() => writeData(store, { items: [], templates: [], shopping: [] }));
   assert.equal(store.map.get(STORAGE_KEY), raw);
