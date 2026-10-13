@@ -1,3 +1,4 @@
+import { openCandidates, openFoodActions } from './helpers/inventory.mjs';
 import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { defaultTemplates } from '../../src/food.ts';
@@ -68,6 +69,7 @@ test('定番の追加・編集・削除を保存し、在庫を変えず新規�
   await page.reload();
   expect(JSON.parse(await saved(page))).toEqual(after);
   dialog = await newFood(page);
+    await openCandidates(dialog);
   await dialog.getByRole('button', { name: '定番の低脂肪牛乳', exact: true }).click();
   await expect(dialog.getByLabel('数量', { exact: true })).toHaveValue('2');
   await expect(dialog.getByLabel('期限の種類')).toHaveValue('use-by');
@@ -87,7 +89,9 @@ test('定番の追加・編集・削除を保存し、在庫を変えず新規�
   expect(JSON.parse(await saved(page)).items).toEqual(foods);
   await dialog.getByRole('button', { name: '完了', exact: true }).click();
   dialog = await newFood(page);
+    await openCandidates(dialog);
   await expect(dialog.getByRole('button', { name: '定番の低脂肪牛乳', exact: true })).toHaveCount(0);
+    await openCandidates(dialog);
   await expect(dialog.getByRole('button', { name: '以前の低脂肪牛乳', exact: true })).toBeVisible();
 });
 
@@ -101,6 +105,7 @@ test('定番をすべて削除しても再読み込みで初期8件を復活さ�
   expect(JSON.parse(await saved(page))).toMatchObject({ items: [stock], templates: [] });
   await page.reload();
   const food = await newFood(page);
+    await openCandidates(food);
   await expect(food.getByRole('button', { name: /^定番の/ })).toHaveCount(0);
   await food.getByRole('textbox', { name: /食品名/ }).fill('自由入力');
   await food.getByLabel(/期限の日付/).fill('2026-12-25');
@@ -222,6 +227,7 @@ for (const width of [320, 390, 1440]) {
     await dialog.getByRole('textbox', { name: /食品名/ }).fill('登録途中の食品');
     await dialog.getByLabel(/期限の日付/).fill('2026-12-24');
     await dialog.getByLabel('数量', { exact: true }).fill('4');
+    await openCandidates(dialog);
     const entry = dialog.getByRole('button', { name: '定番を編集', exact: true });
     await entry.focus();
     await page.keyboard.press('Enter');

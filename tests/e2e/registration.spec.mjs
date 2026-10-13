@@ -1,3 +1,4 @@
+import { openCandidates, openFoodActions } from './helpers/inventory.mjs';
 import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { restoreBackup } from './helpers/backup.mjs';
@@ -48,6 +49,7 @@ test('定番と以前の食品から、今回の期限・新ID・数量1で登�
   await page.goto('/');
   let dialog = await openNew(page);
   await expect(dialog.getByLabel(/期限の日付/)).toHaveValue('');
+    await openCandidates(dialog);
   await dialog.getByRole('button', { name: '以前の以前の納豆', exact: true }).click();
   await expect(dialog.getByRole('textbox', { name: /食品名/ })).toHaveValue(item.name);
   await expect(dialog.getByLabel('食品カテゴリ')).toHaveValue('soy');
@@ -59,6 +61,7 @@ test('定番と以前の食品から、今回の期限・新ID・数量1で登�
   await expect(dialog).toBeVisible();
   await expect.poll(async () => JSON.parse(await readSaved(page)).items.length).toBe(1);
   await dialog.getByLabel(/期限の日付/).fill('2026-12-01');
+    await openCandidates(dialog);
   await dialog.getByRole('button', { name: '定番の納豆', exact: true }).click();
   await expect(dialog.getByLabel(/期限の日付/)).toHaveValue('2026-12-01');
   await expect(dialog.getByLabel('数量の単位')).toHaveValue('pack');
@@ -67,6 +70,7 @@ test('定番と以前の食品から、今回の期限・新ID・数量1で登�
   expect(saved[1]).toMatchObject({ name: '納豆', category: 'soy', quantity: 1, unit: 'pack', status: 'active', deadline: '2026-12-01' });
   expect(saved[1].id).not.toBe(item.id);
   dialog = await openNew(page);
+    await openCandidates(dialog);
   await dialog.getByRole('button', { name: '定番の納豆', exact: true }).click();
   await dialog.getByLabel(/期限の日付/).fill('2026-12-02');
   await dialog.getByRole('button', { name: '登録する', exact: true }).click();
@@ -74,8 +78,10 @@ test('定番と以前の食品から、今回の期限・新ID・数量1で登�
   await openFilters(page);
   await page.getByLabel('カテゴリで絞り込み').selectOption('soy');
   await expect(page.getByText('1パック', { exact: true })).toHaveCount(2);
+    await openFoodActions(page);
   await page.getByRole('button', { name: '納豆を編集', exact: true }).last().click();
   await expect(page.getByRole('dialog').getByLabel(/期限の日付/)).toHaveValue('2026-12-02');
+    await openCandidates(dialog);
   await expect(page.getByRole('dialog').getByRole('button', { name: '定番の納豆' })).toHaveCount(0);
   await page.getByRole('button', { name: 'キャンセル' }).click();
   await openNew(page);
@@ -105,6 +111,7 @@ test('移行保存失敗は読み取りとJSON退避を許可し、再試行で�
   await page.goto('/');
   await expect(page.getByText(/現在は変更できません/)).toBeVisible();
   await expect(page.getByRole('button', { name: '食品を登録', exact: true }).last()).toBeDisabled();
+    await openFoodActions(page);
   await expect(page.getByRole('button', { name: item.name + 'を編集' })).toBeDisabled();
   const downloadWait = page.waitForEvent('download');
   await page.getByRole('button', { name: 'バックアップを保存', exact: true }).click();
@@ -146,6 +153,7 @@ test('保存失敗では新規・編集の入力と、完了・削除・復元�
   await seed(page, { [key]: original }, true);
   await page.goto('/');
   let dialog = await openNew(page);
+    await openCandidates(dialog);
   await dialog.getByRole('button', { name: '定番の牛乳' }).click();
   await dialog.getByLabel(/期限の日付/).fill('2026-12-01');
   await dialog.getByRole('button', { name: '登録する', exact: true }).click();
@@ -153,6 +161,7 @@ test('保存失敗では新規・編集の入力と、完了・削除・復元�
   await expect(dialog.getByRole('textbox', { name: /食品名/ })).toHaveValue('牛乳');
   expect(await readSaved(page)).toBe(original);
   await dialog.getByRole('button', { name: 'キャンセル' }).click();
+    await openFoodActions(page);
   await page.getByRole('button', { name: item.name + 'を編集' }).click();
   dialog = page.getByRole('dialog');
   await dialog.getByRole('textbox', { name: /食品名/ }).fill('変更した納豆');
@@ -160,9 +169,11 @@ test('保存失敗では新規・編集の入力と、完了・削除・復元�
   await expect(dialog.getByRole('alert')).toContainText('保存できません');
   await expect(dialog.getByRole('textbox', { name: /食品名/ })).toHaveValue('変更した納豆');
   await dialog.getByRole('button', { name: 'キャンセル' }).click();
+    await openFoodActions(page);
   await page.getByRole('button', { name: item.name + 'を使い切り' }).click();
   await expect(page.getByRole('heading', { name: item.name })).toBeVisible();
   page.once('dialog', dialog => dialog.accept());
+    await openFoodActions(page);
   await page.getByRole('button', { name: item.name + 'のその他の操作' }).click();
   await page.getByRole('button', { name: item.name + 'を削除' }).click();
   await expect(page.getByRole('heading', { name: item.name })).toBeVisible();
@@ -171,6 +182,7 @@ test('保存失敗では新規・編集の入力と、完了・削除・復元�
   expect(await readSaved(page)).toBe(original);
   await expect(page.getByRole('heading', { name: item.name })).toBeVisible();
   await page.evaluate(() => { window.__failFoodWrites = false; });
+    await openFoodActions(page);
   await page.getByRole('button', { name: item.name + 'を編集' }).click();
   await page.getByRole('dialog').getByRole('textbox', { name: /食品名/ }).fill('変更した納豆');
   await page.getByRole('button', { name: '変更を保存' }).click();
@@ -239,11 +251,13 @@ for (const width of [320, 390, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/');
     const dialog = await openNew(page);
+    await openCandidates(dialog);
     const candidate = dialog.getByRole('button', { name: '定番のたまご', exact: true });
     await candidate.focus();
     await page.keyboard.press('Enter');
     await expect(dialog.getByRole('textbox', { name: /食品名/ })).toHaveValue('たまご');
-    await expect(candidate).toHaveCSS('outline-style', 'solid');
+    await expect(dialog.getByLabel(/期限の日付/)).toBeFocused();
+    await expect(dialog.getByLabel(/期限の日付/)).toHaveCSS('outline-style', 'solid');
     expect(await dialog.evaluate(el => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(1);
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
     await dialog.evaluate(el => { el.scrollTop = 0; });

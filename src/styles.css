@@ -28,16 +28,6 @@ h1{font-size:29px;letter-spacing:-.04em;line-height:1.3;margin:0;font-weight:800
 .secondary{border:1px solid #cbd8d3;color:#28574b;background:#fff}
 .secondary:hover{background:#edf5f2}
 .secondary.outline{color:var(--muted)}
-.summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:28px}
-.summary-tile{position:relative;background:#fff;border:1px solid var(--border);border-radius:12px;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:17px 20px;text-align:left;color:#233632}
-.summary-title{font-size:14px;font-weight:700}
-.summary-tile strong{font-size:30px;line-height:1.2;letter-spacing:-.04em;font-weight:750;font-variant-numeric:tabular-nums}
-.summary-tile small{font-size:12px;font-weight:500;margin-left:5px;letter-spacing:0;color:var(--muted)}
-.summary-tile.state-expired strong{color:#a13e36}
-.summary-tile.state-today strong{color:#965a12}
-.summary-tile.state-soon strong{color:#236657}
-.summary-tile:hover{border-color:#7ca89a}
-.summary-tile[aria-pressed=true]{border-color:var(--accent);background:#edf6f2;box-shadow:inset 0 0 0 1px var(--accent)}
 .notice{padding:10px 12px 10px 16px;margin:0 0 20px;border-radius:10px;background:#e6f3ed;color:#265944;display:flex;justify-content:space-between;align-items:center;gap:12px;overflow-wrap:anywhere;font-size:13px}
 .notice-error{background:#fff0ec;color:#8e372b}
 .notice button{color:inherit;border:0;background:transparent;min-height:44px}
@@ -65,23 +55,15 @@ h1{font-size:29px;letter-spacing:-.04em;line-height:1.3;margin:0;font-weight:800
 .active-filters>span{background:#e5eee9;color:#315b4a;padding:4px 9px;border-radius:6px;max-width:100%}
 .active-filters button{border:0;background:transparent;text-decoration:underline;color:#385f50;min-height:44px;padding:4px 8px}
 .food-list{margin:0;padding:0;list-style:none;border:1px solid var(--border);border-radius:13px;background:#fff}
-.food-row{display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:16px;align-items:center;padding:18px 20px;border-bottom:1px solid #e7ece9;min-width:0}
+.food-row{display:block;padding:0;border-bottom:1px solid var(--border);min-width:0}
 .food-row:last-child{border-bottom:0}
 .food-row.completed{background:#f9fbfa}
 .food-row:first-child{border-radius:13px 13px 0 0}
 .food-row:last-child{border-radius:0 0 13px 13px}
-.date-block{height:62px;width:56px;border-radius:10px;display:flex;flex-direction:column;justify-content:center;align-items:center;background:#edf4ef;color:#365f4b}
-.date-month{font-size:11px;font-weight:650}
-.date-block strong{font-size:25px;line-height:1.2;font-weight:750;font-variant-numeric:tabular-nums}
-.date-block.state-expired{background:#fcf0ed;color:#a13e36}
-.date-block.state-today{background:#fff4e4;color:#965a12}
-.date-block.state-soon{background:#eef6ed;color:#386742}
-.food-info{min-width:0}
 .food-primary{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:7px}
 .food-primary h3{font-size:17px;line-height:1.4;margin:0;overflow-wrap:anywhere;font-weight:750}
 .quantity{font-size:13px;color:var(--muted);white-space:nowrap}
 .food-meta{display:flex;align-items:center;flex-wrap:wrap;gap:7px 10px;color:var(--muted);font-size:12px}
-.date-year{font-size:11px}
 .deadline-chip{display:inline-flex;align-items:center;border-radius:5px;padding:3px 7px;font-size:12px;white-space:nowrap;font-weight:700;background:#edf4ef;color:#365f4b}
 .deadline-chip.state-expired{background:#fcf0ed;color:#a13e36}
 .deadline-chip.state-today{background:#fff4e4;color:#965a12}
@@ -146,13 +128,37 @@ h1{font-size:29px;letter-spacing:-.04em;line-height:1.3;margin:0;font-weight:800
 @media(max-width:760px){
 .topbar{height:62px}.topbar-inner{padding:0 18px}.brand{font-size:20px}.brand-mark{width:32px;height:32px;border-radius:9px}.brand-mark .icon{width:21px;height:21px}
 .main{padding:24px 16px 110px}.page-heading{margin-bottom:18px}h1{font-size:25px}.total{font-size:13px}.desktop-create{display:none}
-.summary{gap:8px;margin-bottom:24px}.summary-tile{padding:12px;flex-direction:column;align-items:flex-start;gap:6px;border-radius:10px}.summary-title{font-size:12px}.summary-tile strong{font-size:27px}.summary-tile small{font-size:11px}
 .tabs button{padding:8px 12px;font-size:12px;min-height:42px}.sort-label{font-size:11px}.list-toolbar{margin-bottom:14px}.search-toolbar{gap:8px}.filter-toggle{font-size:12px;padding:10px}.filter-toggle .icon{width:17px;height:17px}
 .filters{grid-template-columns:1fr 1fr;gap:12px;padding:12px}.filters>label:last-child{grid-column:1/-1}
-.food-row{grid-template-columns:48px minmax(0,1fr);gap:10px 12px;padding:16px 12px}.date-block{width:48px;height:58px}.date-block strong{font-size:24px}.food-primary{gap:7px;margin-bottom:6px}.food-primary h3{font-size:16px}.food-meta{gap:6px 8px}.quantity{font-size:12px}.deadline-chip{font-size:11px}.food-actions{grid-column:2;justify-content:flex-end;gap:5px}.food-actions button{font-size:12px;padding:8px 10px}.food-actions .icon-button{padding:0;width:40px}
+.food-row{padding:0}.food-primary{gap:7px;margin-bottom:6px}.food-primary h3{font-size:16px}.food-meta{gap:6px 8px}.quantity{font-size:12px}.deadline-chip{font-size:11px}.food-actions{grid-column:2;justify-content:flex-end;gap:5px}.food-actions button{font-size:12px;padding:8px 10px}.food-actions .icon-button{padding:0;width:44px}
 .data-section{display:block;padding-top:20px}.backup-buttons{margin-top:16px;gap:8px}.backup-buttons button{flex:1;padding:10px 8px}
 .mobile-create-bar{display:block;position:fixed;bottom:0;left:0;right:0;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:#fffffff2;border-top:1px solid var(--border);z-index:4}.mobile-create{width:100%;min-height:48px}
 .food-dialog{width:calc(100vw - 24px);max-height:94dvh;border-radius:16px}.food-form,.template-manager{padding:20px 16px}.food-form{gap:16px}.dialog-head h2{font-size:21px}.food-form>.dialog-actions{bottom:-20px;padding-bottom:20px;margin-bottom:-20px}.template-form.food-form>.dialog-actions{bottom:-20px}.form-group{gap:10px}.food-form input,.food-form select{padding:10px 8px}
 }
 @media(max-width:480px){.template-list li{align-items:flex-start;flex-direction:column}.template-list .food-actions{width:100%;justify-content:flex-end}.template-toolbar .secondary{font-size:12px;padding:8px 12px}}
-@media(max-width:350px){.summary-tile{padding:11px 10px}.summary-title{font-size:11px}.food-actions{grid-column:1/-1}.tabs button{padding:8px 10px}.filter-toggle{gap:5px}.header-action{font-size:12px}.brand{gap:8px}}
+@media(max-width:350px){.food-actions{grid-column:1/-1}.tabs button{padding:8px 10px}.filter-toggle{gap:5px}.header-action{font-size:12px}.brand{gap:8px}}
+
+/* Compact inventory and deadline entry */
+summary:focus-visible{outline:3px solid #ca6a24;outline-offset:3px}
+.sort-control select{min-height:44px;max-width:100%;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--muted);padding:6px;font-size:12px}
+.list-toolbar{flex-wrap:wrap}
+.tabs button{min-height:44px}
+.deadline-filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.deadline-filters button{min-height:44px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);font-size:12px;color:var(--muted)}
+.deadline-filters button[aria-pressed=true]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);color:var(--accent)}
+.food-details summary{min-height:72px;padding:12px 16px;cursor:pointer;list-style:none;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:center}
+.food-details summary::-webkit-details-marker{display:none}
+.food-details summary::after{content:'詳細';font-size:12px;color:var(--muted);grid-column:2;grid-row:1/3}
+.food-details[open] summary::after{content:'閉じる'}
+.food-details .food-primary{margin:0;grid-column:1}
+.food-deadline{display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:13px;grid-column:1}
+.food-deadline time{font-variant-numeric:tabular-nums}
+.food-expanded{padding:0 16px 12px;display:flex;flex-direction:column;gap:12px}
+.food-actions{flex-wrap:wrap}
+.place-heading{font-size:15px;margin:18px 0 8px}
+.deadline-entry{display:flex;gap:8px;margin-top:7px}
+.deadline-entry input{flex:1;width:0}
+.deadline-input .form-help{margin:8px 0}
+.candidate-toggle{white-space:normal;text-align:left}
+.candidates{margin-top:12px}
+@media(max-width:760px){.food-details summary{padding:10px 12px}.food-expanded{padding:0 12px 12px}}
