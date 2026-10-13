@@ -1,0 +1,184 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="855" viewBox="0 0 1200 855"><rect width="1200" height="855" fill="#eaf0eb"/>
+<text x="25" y="35" font-size="23" font-weight="800" fill="#233632" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">たべどき — 在庫・買い物 UXモック</text>
+<text x="1175" y="35" font-size="12" font-weight="500" fill="#61776b" text-anchor="end" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">2026.10.14  /  Review draft</text>
+<rect x="20" y="68" width="365" height="754" rx="20" fill="#f6f8f8" stroke="#cddbd2" stroke-width="1"/>
+<rect x="20" y="68" width="365" height="56" rx="20" fill="#fff" stroke="none" stroke-width="1"/>
+<rect x="20" y="104" width="365" height="20" rx="0" fill="#fff" stroke="none" stroke-width="1"/>
+<path d="M20,124 L385,124" stroke="#e4ebe7" stroke-width="1"/>
+<rect x="37" y="82" width="29" height="29" rx="8" fill="#116b60" stroke="none" stroke-width="1"/>
+<text x="51" y="103" font-size="18" font-weight="700" fill="#fff" text-anchor="middle" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">▤</text>
+<text x="75" y="104" font-size="18" font-weight="800" fill="#233632" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">たべどき</text>
+<text x="364" y="103" font-size="10" font-weight="400" fill="#72857a" text-anchor="end" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">UXモック</text>
+<rect x="20" y="756" width="365" height="66" rx="0" fill="#fff" stroke="none" stroke-width="1"/>
+<path d="M20,756 L385,756" stroke="#e4ebe7" stroke-width="1"/>
+<rect x="31" y="763" width="167" height="51" rx="9" fill="#e9f5ef" stroke="none" stroke-width="1"/>
+<text x="114" y="783" font-size="20" font-weight="500" fill="#116b60" text-anchor="middle" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">▤</text>
+<text x="114" y="801" font-size="11" font-weight="700" fill="#116b60" text-anchor="middle" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">在庫</text>
+<text x="293" y="783" font-size="20" font-weight="500" fill="#768a80" text-anchor="middle" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">▦</text>
+<text x="293" y="801" font-size="11" font-weight="700" fill="#768a80" text-anchor="middle" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">買い物</text>
+<text x="38" y="164" font-size="25" font-weight="800" fill="#233632" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">在庫一覧</text>
+<text x="38" y="185" font-size="11" font-weight="400" fill="#62776f" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">9件の食品</text>
+<rect x="301" y="139" width="66" height="40" rx="9" fill="#116b60" stroke="none" stroke-width="1"/>
+<text x="334" y="165" font-size="13" font-weight="700" fill="#fff" text-anchor="middle" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">＋ 登録</text>
+<rect x="38" y="205" width="105" height="85" rx="10" fill="#fff" stroke="#dce4e1" stroke-width="1"/>
+<text x="48" y="225" font-size="11" font-weight="500" fill="#63776e" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">期限切れ</text>
+<text x="48" y="266" font-size="28" font-weight="800" fill="#ab433c" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">1</text>
+<rect x="149" y="205" width="105" height="85" rx="10" fill="#fff" stroke="#116b60" stroke-width="1.5"/>
+<text x="159" y="225" font-size="11" font-weight="500" fill="#63776e" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">14日以内</text>
+<text x="159" y="266" font-size="28" font-weight="800" fill="#233632" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">3</text>
+<rect x="260" y="205" width="105" height="85" rx="10" fill="#fff" stroke="#dce4e1" stroke-width="1"/>
+<text x="270" y="225" font-size="11" font-weight="500" fill="#63776e" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">15〜30日</text>
+<text x="270" y="266" font-size="28" font-weight="800" fill="#233632" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">1</text>
+<rect x="38" y="305" width="244" height="43" rx="9" fill="#fff" stroke="#dce4e1" stroke-width="1"/>
+<text x="51" y="332" font-size="13" font-weight="400" fill="#899a91" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">⌕  食品を検索</text>
+<rect x="292" y="305" width="75" height="43" rx="9" fill="#fff" stroke="#dce4e1" stroke-width="1"/>
+<text x="329" y="332" font-size="11" font-weight="600" fill="#395249" text-anchor="middle" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">場所別 ↕</text>
+<text x="40" y="375" font-size="14" font-weight="700" fill="#3b5145" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">すべての食品</text>
+<text x="364" y="375" font-size="10" font-weight="600" fill="#116b60" text-anchor="end" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">残りわずか 2件 →</text>
+<text x="40" y="400" font-size="12" font-weight="700" fill="#3a5147" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">冷蔵</text>
+<rect x="38" y="412" width="329" height="269" rx="11" fill="#fff" stroke="#dce4e1" stroke-width="1"/>
+<rect x="39" y="413" width="328" height="54" rx="0" fill="#fff" stroke="none" stroke-width="1"/>
+<path d="M39,467 L367,467" stroke="#e4ebe7" stroke-width="1"/>
+<text x="51" y="435" font-size="13" font-weight="700" fill="#233632" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">ごまドレッシング</text>
+<text x="51" y="453" font-size="10" font-weight="400" fill="#71857a" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">1本 · 調味料</text>
+<text x="290" y="435" font-size="12" font-weight="700" fill="#233632" text-anchor="end" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">10/12</text>
+<text x="290" y="453" font-size="10" font-weight="700" fill="#ab4939" text-anchor="end" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">2日超過</text>
+<rect x="306" y="422" width="35" height="35" rx="8" fill="#eff8f3" stroke="#c6dbd0" stroke-width="1"/>
+<text x="323" y="446" font-size="19" font-weight="500" fill="#116b60" text-anchor="middle" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">＋</text>
+<rect x="39" y="466" width="328" height="54" rx="0" fill="#fff" stroke="none" stroke-width="1"/>
+<path d="M39,520 L367,520" stroke="#e4ebe7" stroke-width="1"/>
+<text x="51" y="488" font-size="13" font-weight="700" fill="#233632" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">味噌</text>
+<text x="51" y="506" font-size="10" font-weight="400" fill="#71857a" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">1個 · 調味料</text>
+<text x="290" y="488" font-size="12" font-weight="700" fill="#233632" text-anchor="end" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">10/17</text>
+<text x="290" y="506" font-size="10" font-weight="700" fill="#ab4939" text-anchor="end" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">あと3日</text>
+<rect x="306" y="475" width="35" height="35" rx="8" fill="#eff8f3" stroke="#c6dbd0" stroke-width="1"/>
+<text x="323" y="499" font-size="19" font-weight="500" fill="#116b60" text-anchor="middle" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">＋</text>
+<rect x="39" y="519" width="328" height="54" rx="0" fill="#fff" stroke="none" stroke-width="1"/>
+<path d="M39,573 L367,573" stroke="#e4ebe7" stroke-width="1"/>
+<text x="51" y="541" font-size="13" font-weight="700" fill="#233632" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">マヨネーズ</text>
+<text x="51" y="559" font-size="10" font-weight="400" fill="#71857a" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">1本 · 調味料</text>
+<text x="290" y="541" font-size="12" font-weight="700" fill="#233632" text-anchor="end" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">10/20</text>
+<text x="290" y="559" font-size="10" font-weight="700" fill="#ab4939" text-anchor="end" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">あと6日</text>
+<rect x="306" y="528" width="35" height="35" rx="8" fill="#eff8f3" stroke="#c6dbd0" stroke-width="1"/>
+<text x="323" y="552" font-size="19" font-weight="500" fill="#116b60" text-anchor="middle" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">＋</text>
+<rect x="39" y="572" width="328" height="54" rx="0" fill="#fff" stroke="none" stroke-width="1"/>
+<path d="M39,626 L367,626" stroke="#e4ebe7" stroke-width="1"/>
+<text x="51" y="594" font-size="13" font-weight="700" fill="#233632" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">ポン酢</text>
+<rect x="89.37" y="581" width="60" height="19" rx="4" fill="#fff2d7" stroke="none" stroke-width="1"/>
+<text x="119.37" y="595" font-size="9" font-weight="700" fill="#956321" text-anchor="middle" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">残りわずか</text>
+<text x="51" y="612" font-size="10" font-weight="400" fill="#71857a" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">1本 · 調味料</text>
+<text x="290" y="594" font-size="12" font-weight="700" fill="#233632" text-anchor="end" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">10/26</text>
+<text x="290" y="612" font-size="10" font-weight="400" fill="#71857a" text-anchor="end" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">あと12日</text>
+<rect x="306" y="581" width="35" height="35" rx="8" fill="#eff8f3" stroke="#c6dbd0" stroke-width="1"/>
+<text x="323" y="605" font-size="19" font-weight="500" fill="#116b60" text-anchor="middle" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">＋</text>
+<rect x="39" y="625" width="328" height="54" rx="0" fill="#fff" stroke="none" stroke-width="1"/>
+<path d="M39,679 L367,679" stroke="#e4ebe7" stroke-width="1"/>
+<text x="51" y="647" font-size="13" font-weight="700" fill="#233632" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">めんつゆ</text>
+<text x="51" y="665" font-size="10" font-weight="400" fill="#71857a" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">1本 · 調味料</text>
+<text x="290" y="647" font-size="12" font-weight="700" fill="#233632" text-anchor="end" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">12/18</text>
+<text x="290" y="665" font-size="10" font-weight="400" fill="#71857a" text-anchor="end" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">あと65日</text>
+<rect x="306" y="634" width="35" height="35" rx="8" fill="#eff8f3" stroke="#c6dbd0" stroke-width="1"/>
+<text x="323" y="658" font-size="19" font-weight="500" fill="#116b60" text-anchor="middle" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">＋</text>
+<text x="40" y="707" font-size="12" font-weight="700" fill="#3a5147" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">常温</text>
+<rect x="38" y="719" width="329" height="35" rx="9" fill="#fff" stroke="#dce4e1" stroke-width="1"/>
+<text x="50" y="741" font-size="12" font-weight="700" fill="#233632" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">しょうゆ     1本 · 調味料</text>
+<text x="330" y="741" font-size="11" font-weight="700" fill="#71857a" text-anchor="end" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">11/7</text>
+<rect x="418" y="68" width="365" height="754" rx="20" fill="#f6f8f8" stroke="#cddbd2" stroke-width="1"/>
+<rect x="418" y="68" width="365" height="56" rx="20" fill="#fff" stroke="none" stroke-width="1"/>
+<rect x="418" y="104" width="365" height="20" rx="0" fill="#fff" stroke="none" stroke-width="1"/>
+<path d="M418,124 L783,124" stroke="#e4ebe7" stroke-width="1"/>
+<rect x="435" y="82" width="29" height="29" rx="8" fill="#116b60" stroke="none" stroke-width="1"/>
+<text x="449" y="103" font-size="18" font-weight="700" fill="#fff" text-anchor="middle" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">▤</text>
+<text x="473" y="104" font-size="18" font-weight="800" fill="#233632" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">たべどき</text>
+<text x="762" y="103" font-size="10" font-weight="400" fill="#72857a" text-anchor="end" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">UXモック</text>
+<rect x="418" y="756" width="365" height="66" rx="0" fill="#fff" stroke="none" stroke-width="1"/>
+<path d="M418,756 L783,756" stroke="#e4ebe7" stroke-width="1"/>
+<rect x="605" y="763" width="167" height="51" rx="9" fill="#e9f5ef" stroke="none" stroke-width="1"/>
+<text x="512" y="783" font-size="20" font-weight="500" fill="#768a80" text-anchor="middle" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">▤</text>
+<text x="512" y="801" font-size="11" font-weight="700" fill="#768a80" text-anchor="middle" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">在庫</text>
+<text x="691" y="783" font-size="20" font-weight="500" fill="#116b60" text-anchor="middle" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">▦</text>
+<text x="691" y="801" font-size="11" font-weight="700" fill="#116b60" text-anchor="middle" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">買い物</text>
+<text x="436" y="164" font-size="25" font-weight="800" fill="#233632" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">買い物リスト</text>
+<text x="436" y="185" font-size="11" font-weight="400" fill="#62776f" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">未購入 3件</text>
+<rect x="699" y="139" width="66" height="40" rx="9" fill="#116b60" stroke="none" stroke-width="1"/>
+<text x="732" y="165" font-size="13" font-weight="700" fill="#fff" text-anchor="middle" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">＋ 追加</text>
+<text x="436" y="221" font-size="14" font-weight="700" fill="#3b5145" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">買うもの</text>
+<rect x="436" y="235" width="329" height="174" rx="11" fill="#fff" stroke="#dce4e1" stroke-width="1"/>
+<rect x="437" y="236" width="327" height="57" rx="0" fill="#fff" stroke="none" stroke-width="1"/>
+<rect x="452" y="255" width="19" height="19" rx="5" fill="#fff" stroke="#aabdb1" stroke-width="1.5"/>
+<text x="483" y="261" font-size="14" font-weight="700" fill="#233632" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">食パン</text>
+<text x="746" y="270" font-size="17" font-weight="400" fill="#a26057" text-anchor="end" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">×</text>
+<path d="M437,293 L765,293" stroke="#e4ebe7" stroke-width="1"/>
+<rect x="437" y="293" width="327" height="57" rx="0" fill="#fff" stroke="none" stroke-width="1"/>
+<rect x="452" y="312" width="19" height="19" rx="5" fill="#fff" stroke="#aabdb1" stroke-width="1.5"/>
+<text x="483" y="318" font-size="14" font-weight="700" fill="#233632" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">牛乳</text>
+<text x="746" y="327" font-size="17" font-weight="400" fill="#a26057" text-anchor="end" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">×</text>
+<path d="M437,350 L765,350" stroke="#e4ebe7" stroke-width="1"/>
+<rect x="437" y="350" width="327" height="57" rx="0" fill="#fff" stroke="none" stroke-width="1"/>
+<rect x="452" y="369" width="19" height="19" rx="5" fill="#fff" stroke="#aabdb1" stroke-width="1.5"/>
+<text x="483" y="375" font-size="14" font-weight="700" fill="#233632" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">ポン酢</text>
+<text x="483" y="392" font-size="10" font-weight="400" fill="#6f8577" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">在庫から追加</text>
+<text x="746" y="384" font-size="17" font-weight="400" fill="#a26057" text-anchor="end" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">×</text>
+<path d="M437,407 L765,407" stroke="#e4ebe7" stroke-width="1"/>
+<text x="436" y="446" font-size="14" font-weight="700" fill="#3b5145" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">購入済み</text>
+<rect x="436" y="460" width="329" height="60" rx="11" fill="#fff" stroke="#dce4e1" stroke-width="1"/>
+<rect x="451" y="480" width="19" height="19" rx="5" fill="#116b60" stroke="none" stroke-width="1"/>
+<text x="460" y="494" font-size="13" font-weight="700" fill="#fff" text-anchor="middle" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">✓</text>
+<text x="484" y="494" font-size="14" font-weight="700" fill="#83968b" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">しょうゆ</text>
+<rect x="634" y="473" width="114" height="34" rx="8" fill="#edf7f2" stroke="#c6ded2" stroke-width="1"/>
+<text x="691" y="495" font-size="11" font-weight="700" fill="#116b60" text-anchor="middle" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">在庫に登録</text>
+<rect x="436" y="543" width="329" height="132" rx="11" fill="#fff" stroke="#dce4e1" stroke-width="1"/>
+<text x="450" y="567" font-size="13" font-weight="700" fill="#233632" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">残りわずかの食品</text>
+<text x="450" y="604" font-size="13" font-weight="500" fill="#233632" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">ケチャップ</text>
+<rect x="649" y="584" width="101" height="30" rx="7" fill="#ecf6f1" stroke="#c6ded2" stroke-width="1"/>
+<text x="700" y="604" font-size="11" font-weight="700" fill="#116b60" text-anchor="middle" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">＋ リストへ</text>
+<path d="M450,618 L749,618" stroke="#e4ebe7" stroke-width="1"/>
+<text x="450" y="648" font-size="13" font-weight="400" fill="#233632" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">ポン酢</text>
+<text x="746" y="648" font-size="11" font-weight="600" fill="#116b60" text-anchor="end" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">追加済み ✓</text>
+<rect x="436" y="694" width="329" height="48" rx="9" fill="#e9f3ee" stroke="none" stroke-width="1"/>
+<text x="448" y="715" font-size="11" font-weight="500" fill="#456c59" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">購入後、「在庫に登録」で期限入力へ。</text>
+<text x="448" y="733" font-size="11" font-weight="400" fill="#456c59" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">期限は自動で決めません。</text>
+<rect x="816" y="68" width="365" height="754" rx="20" fill="#f6f8f8" stroke="#cddbd2" stroke-width="1"/>
+<rect x="816" y="68" width="365" height="56" rx="20" fill="#fff" stroke="none" stroke-width="1"/>
+<rect x="816" y="104" width="365" height="20" rx="0" fill="#fff" stroke="none" stroke-width="1"/>
+<path d="M816,124 L1181,124" stroke="#e4ebe7" stroke-width="1"/>
+<rect x="833" y="82" width="29" height="29" rx="8" fill="#116b60" stroke="none" stroke-width="1"/>
+<text x="847" y="103" font-size="18" font-weight="700" fill="#fff" text-anchor="middle" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">▤</text>
+<text x="871" y="104" font-size="18" font-weight="800" fill="#233632" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">たべどき</text>
+<text x="1160" y="103" font-size="10" font-weight="400" fill="#72857a" text-anchor="end" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">UXモック</text>
+<rect x="816" y="756" width="365" height="66" rx="0" fill="#fff" stroke="none" stroke-width="1"/>
+<path d="M816,756 L1181,756" stroke="#e4ebe7" stroke-width="1"/>
+<rect x="827" y="763" width="167" height="51" rx="9" fill="#e9f5ef" stroke="none" stroke-width="1"/>
+<text x="910" y="783" font-size="20" font-weight="500" fill="#116b60" text-anchor="middle" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">▤</text>
+<text x="910" y="801" font-size="11" font-weight="700" fill="#116b60" text-anchor="middle" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">在庫</text>
+<text x="1089" y="783" font-size="20" font-weight="500" fill="#768a80" text-anchor="middle" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">▦</text>
+<text x="1089" y="801" font-size="11" font-weight="700" fill="#768a80" text-anchor="middle" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">買い物</text>
+<text x="834" y="164" font-size="25" font-weight="800" fill="#233632" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">在庫一覧</text>
+<text x="834" y="185" font-size="11" font-weight="400" fill="#62776f" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">購入済みから登録する流れ</text>
+<rect x="816" y="124" width="365" height="631" rx="0" fill="#142c2477" stroke="none" stroke-width="1"/>
+<rect x="824" y="209" width="349" height="545" rx="18" fill="#fff" stroke="none" stroke-width="1"/>
+<text x="843" y="247" font-size="19" font-weight="800" fill="#233632" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">食品を登録</text>
+<text x="1148" y="247" font-size="20" font-weight="400" fill="#63776f" text-anchor="end" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">×</text>
+<text x="844" y="287" font-size="12" font-weight="700" fill="#233632" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">食品名</text>
+<rect x="843" y="298" width="311" height="46" rx="9" fill="#fff" stroke="#cbd9d1" stroke-width="1"/>
+<text x="857" y="327" font-size="15" font-weight="400" fill="#233632" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">しょうゆ</text>
+<text x="844" y="370" font-size="12" font-weight="700" fill="#233632" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">期限の種類</text>
+<text x="1004" y="370" font-size="12" font-weight="700" fill="#233632" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">保存場所</text>
+<rect x="843" y="381" width="148" height="45" rx="9" fill="#fff" stroke="#cbd9d1" stroke-width="1"/>
+<text x="856" y="409" font-size="14" font-weight="400" fill="#233632" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">賞味期限</text>
+<text x="974" y="409" font-size="13" font-weight="400" fill="#70847c" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">⌄</text>
+<rect x="1002" y="381" width="152" height="45" rx="9" fill="#fff" stroke="#cbd9d1" stroke-width="1"/>
+<text x="1014" y="409" font-size="14" font-weight="400" fill="#233632" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">常温</text>
+<text x="1137" y="409" font-size="13" font-weight="400" fill="#70847c" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">⌄</text>
+<text x="844" y="464" font-size="12" font-weight="700" fill="#233632" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">期限の日付</text>
+<rect x="843" y="478" width="242" height="47" rx="9" fill="#fff" stroke="#116b60" stroke-width="2"/>
+<text x="857" y="509" font-size="19" font-weight="600" fill="#233632" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">20271231</text>
+<rect x="1094" y="478" width="60" height="47" rx="9" fill="#fff" stroke="#bdcec6" stroke-width="1"/>
+<text x="1124" y="507" font-size="22" font-weight="500" fill="#116b60" text-anchor="middle" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">▦</text>
+<text x="844" y="546" font-size="12" font-weight="700" fill="#116b60" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">2027年12月31日として登録</text>
+<text x="844" y="578" font-size="11" font-weight="400" fill="#6b8174" text-anchor="start" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">数字8桁を入力、またはカレンダーで選択</text>
+<rect x="966" y="680" width="188" height="47" rx="9" fill="#116b60" stroke="none" stroke-width="1"/>
+<text x="1060" y="710" font-size="14" font-weight="700" fill="#fff" text-anchor="middle" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">登録する</text>
+<rect x="843" y="680" width="111" height="47" rx="9" fill="#fff" stroke="#b6cbc0" stroke-width="1"/>
+<text x="898" y="710" font-size="12" font-weight="700" fill="#116b60" text-anchor="middle" font-family="Noto Sans JP, Hiragino Sans, system-ui, sans-serif">キャンセル</text>
+</svg>
