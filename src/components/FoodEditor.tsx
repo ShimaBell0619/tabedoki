@@ -1,0 +1,118 @@
+import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { applyFoodCandidate, categories, initialFoodForm, previousFoods, units, places, kinds, type DeadlineKind, type Food, type FoodCategory, type FoodForm, type FoodTemplate, type QuantityUnit, type StoragePlace } from '../food';
+import { TemplateManager } from './TemplateManager';
+import { Icon } from './Icon';
+
+type Props = {
+  item?: Food;
+  templatesOnly: boolean;
+  items: Food[];
+  templates: FoodTemplate[];
+  blocked: boolean;
+  formError: string;
+  setFormError: (message: string) => void;
+  onClose: () => void;
+  onSave: (form: FoodForm) => boolean;
+  onSaveTemplates: (templates: FoodTemplate[]) => boolean;
+};
+
+export function FoodEditor({ item, templatesOnly, items, templates, blocked, formError, setFormError, onClose, onSave, onSaveTemplates }: Props) {
+  const editingId = item?.id;
+  const [form, setForm] = useState<FoodForm>(() => item ? {
+    name: item.name, category: item.category, kind: item.kind, deadline: item.deadline,
+    quantity: item.quantity, unit: item.unit, place: item.place,
+  } : initialFoodForm());
+  const [managingTemplates, setManagingTemplates] = useState(templatesOnly);
+  const returnToFood = useRef(false);
+  const [selectedCandidate, setSelectedCandidate] = useState<string | null>(null);
+  const dialog = useRef<HTMLDialogElement>(null);
+  const previous = previousFoods(items);
+  useEffect(() => { dialog.current?.showModal(); }, []);
+  useEffect(() => {
+    dialog.current?.querySelector<HTMLButtonElement>('button')?.focus();
+    if (dialog.current) dialog.current.scrollTop = 0;
+  }, [managingTemplates]);
+  function saveFood(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (onSave(form)) dialog.current?.close();
+  }
+  function openTemplates(fromFood = false) {
+    returnToFood.current = fromFood;
+    setFormError(''); setSelectedCandidate(null); setManagingTemplates(true);
+    if (!dialog.current?.open) dialog.current?.showModal();
+  }
+  function closeTemplates() {
+    setFormError('');
+    if (returnToFood.current) setManagingTemplates(false);
+    else dialog.current?.close();
+  }
+  function saveTemplates(next: FoodTemplate[]): boolean {
+    if (!onSaveTemplates(next)) return false;
+    setFormError('');
+    return true;
+  }
+  function chooseCandidate(candidate: FoodTemplate | Food, source: 'template' | 'food') {
+    setSelectedCandidate(`${source}:${candidate.id}`);
+    setForm(current => applyFoodCandidate(current, candidate));
+    setFormError('');
+  }
+  return (
+    <dialog ref={dialog} className="food-dialog" aria-labelledby="dialog-heading" onClose={onClose} onCancel={event => { if (managingTemplates && returnToFood.current) { event.preventDefault(); closeTemplates(); } }}>
+      {managingTemplates ? <TemplateManager templates={templates} blocked={blocked} error={formError} onError={setFormError} onSave={saveTemplates} onDone={closeTemplates} returning={returnToFood.current}/> : <form onSubmit={saveFood} className="food-form">
+        <div className="dialog-head">
+          <h2 id="dialog-heading">{editingId ? '食品を編集' : '食品を登録'}</h2>
+          <button className="close icon-button" type="button" onClick={() => dialog.current?.close()} aria-label="閉じる">
+          <Icon name="x" />
+          </button>
+          </div>
+        {!editingId && <div className="candidates">
+          <section aria-label="定番食品">
+          <div className="candidate-heading">
+          <h3>定番食品</h3>
+          <button type="button" className="manage-link" onClick={() => openTemplates(true)}>定番を編集</button>
+          </div>
+            {templates.length === 0 && <p className="form-help">よく買う食品を追加できます。</p>}
+            <div className="candidate-list">{templates.map(candidate => <button key={candidate.id} type="button" className="candidate-button" aria-pressed={selectedCandidate === `template:${candidate.id}`} aria-label={`定番の${candidate.name}`} onClick={() => chooseCandidate(candidate, 'template')}>{candidate.name}</button>)}</div>
+          </section>
+          {previous.length > 0 && <section aria-label="前に登録した食品">
+          <h3>前に登録した食品</h3>
+          <div className="candidate-list">{previous.map(candidate => <button key={candidate.id} type="button" className="candidate-button" aria-pressed={selectedCandidate === `food:${candidate.id}`} aria-label={`以前の${candidate.name}`} onClick={() => chooseCandidate(candidate, 'food')}>{candidate.name}</button>)}</div>
+          </section>}
+        </div>}
+        <label>
+          <span>食品名 <span className="required">必須</span>
+          </span>
+          <input required maxLength={80} placeholder="例：牛乳" value={form.name} onChange={event => { setForm({ ...form, name: event.target.value }); setSelectedCandidate(null); }}/>
+          </label>
+        <div className="form-group">
+          <label>期限の種類<select value={form.kind} onChange={event => setForm({ ...form, kind: event.target.value as DeadlineKind })}>{Object.entries(kinds).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
+          </label>
+          <label>
+          <span>期限の日付 <span className="required">必須</span>
+          </span>
+          <input type="date" required min="1000-01-01" max="9999-12-31" value={form.deadline} onChange={event => setForm({ ...form, deadline: event.target.value })}/>
+          </label>
+          </div>
+        <p className="form-help">期限は未開封・指定の保存方法が前提です。商品の表示を確認してください。</p>
+        <div className="form-group">
+          <label>数量<input type="number" required min="1" max="999" step="1" value={form.quantity || ''} onChange={event => setForm({ ...form, quantity: Number(event.target.value) })}/>
+          </label>
+          <label>数量の単位<select value={form.unit} onChange={event => setForm({ ...form, unit: event.target.value as QuantityUnit })}>{Object.entries(units).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
+          </label>
+          </div>
+        {form.unit === 'pack' && <p className="form-help">3個組の納豆なら1パック。個別に数える場合は「個」に変更してください。</p>}
+        <div className="form-group">
+          <label>保存場所<select value={form.place} onChange={event => setForm({ ...form, place: event.target.value as StoragePlace })}>{Object.entries(places).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
+          </label>
+          <label>食品カテゴリ<select value={form.category} onChange={event => setForm({ ...form, category: event.target.value as FoodCategory })}>{Object.entries(categories).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
+          </label>
+          </div>
+        {(formError) && <p className="form-error" role="alert">{formError}</p>}
+        <div className="dialog-actions">
+          <button type="button" className="secondary outline" onClick={() => dialog.current?.close()}>キャンセル</button>
+          <button type="submit" className="primary" disabled={blocked}>{editingId ? '変更を保存' : '登録する'}</button>
+          </div>
+      </form>}
+    </dialog>
+  );
+}

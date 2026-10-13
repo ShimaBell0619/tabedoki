@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { defaultTemplates, STORAGE_KEY } from '../../src/food.ts';
+import { defaultTemplates } from '../../src/food.ts';
+import { STORAGE_KEY } from '../../src/storage.ts';
 
 async function seed(page) {
   await page.clock.install({ time: new Date('2026-10-11T12:00:00') });
