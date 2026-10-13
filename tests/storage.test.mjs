@@ -4,7 +4,7 @@ import { defaultTemplates, MAX_ITEMS, MAX_TEMPLATES } from '../src/food.ts';
 import { MAX_SHOPPING, shoppingFrom, registerPurchase } from '../src/shopping.ts';
 import {
   STORAGE_KEY, RECOVERY_KEY, V2_STORAGE_KEY, LEGACY_STORAGE_KEY, BACKUP_MAX_BYTES,
-  readData, writeData, replaceData, previousData, validateBackup, makeBackup, applyBackup,
+  readData, writeData, replaceData, previousData, previousRaw, validateBackup, makeBackup, applyBackup,
 } from '../src/storage.ts';
 
 const food = { id: 'food', name: ' 牛乳 ', category: 'eggs-dairy', kind: 'use-by', deadline: '2026-12-31', quantity: 3, unit: 'bottle', place: 'chilled', status: 'active', lowStock: true };
@@ -90,6 +90,7 @@ test('置換前の退避・初期化・直前復元は一世代だけ保持し�
     assert.equal(fail.map.get(STORAGE_KEY), raw);
   }
   assert.throws(() => previousData(storage({ [RECOVERY_KEY]: '{broken' })));
+  assert.equal(previousRaw(storage({ [RECOVERY_KEY]: '{broken' })), '{broken');
 });
 
 test('購入登録+買い物削除は検証して正本へ1回保存し、失敗/再試行/二重登録を保護する', () => {

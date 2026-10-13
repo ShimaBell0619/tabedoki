@@ -46,7 +46,9 @@ export function replenishmentCandidates(foods: readonly Food[], shopping: readon
   for (const food of foods) {
     if (food.status !== 'active') continue;
     const name = normalizedName(food.name);
-    groups.set(name, [...(groups.get(name) ?? []), food]);
+    const group = groups.get(name);
+    if (group) group.push(food);
+    else groups.set(name, [food]);
   }
   const listed = new Set(shopping.map(item => normalizedName(item.name)));
   return [...groups.entries()].filter(([name, group]) => !listed.has(name) && group.every(food => food.lowStock)).map(([, group]) => group[0]);

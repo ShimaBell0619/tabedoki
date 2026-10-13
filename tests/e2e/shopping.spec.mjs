@@ -164,6 +164,9 @@ test('破損原文を実ファイルに退避し、退避失敗で置換せず�
   expect((await saved(page)).items[0].lowStock).toBe(false);
   await openBackup(page); await page.getByRole('button', { name: '直前の置換前データを復元' }).click();
   await expect(page.getByRole('status')).toContainText('復元できません');
+  const previousDownload = page.waitForEvent('download');
+  await page.getByRole('button', { name: '直前の置換前データを退避' }).click();
+  expect(readFileSync(await (await previousDownload).path(), 'utf8')).toBe(raw);
   // A later validated replacement makes that valid generation available for explicit recovery.
   await restoreBackup(page, { name: 'v4.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(initial([], []))) });
   await openBackup(page); page.once('dialog', dialog => dialog.accept());

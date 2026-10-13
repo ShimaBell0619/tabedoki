@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { MAX_ITEMS, defaultTemplates, isFood, localDate, normalizedName, type Food, type FoodForm, type FoodStatus, type FoodTemplate } from './food';
-import { READ_ERROR, SAVE_ERROR, applyBackup, previousData, readData, replaceData, writeData, type AppData, type BackupData } from './storage';
+import { READ_ERROR, SAVE_ERROR, applyBackup, previousData, previousRaw, readData, replaceData, writeData, type AppData, type BackupData } from './storage';
 import { addShopping, registerPurchase, setBought, shoppingFrom, type ShoppingItem } from './shopping';
 import { InventoryPage } from './components/InventoryPage';
 import { FoodEditor } from './components/FoodEditor';
@@ -177,7 +177,7 @@ export function App() {
       </div>
       <BackupPanel data={data} today={today} blocked={blocked} canExport={!blocked || initial.canExport}
         raw={blocked ? initial.raw : null} onNotice={setNotice} onRestore={restore}
-        onRestorePrevious={restorePrevious} onReset={clearCorrupt} />
+        onRestorePrevious={restorePrevious} onReadPreviousRaw={() => previousRaw(window.localStorage)} onReset={clearCorrupt} />
     </main>
     <div className="mobile-create-bar mobile-navigation">
       <nav className="screen-navigation" aria-label="画面選択">{navigation}</nav>

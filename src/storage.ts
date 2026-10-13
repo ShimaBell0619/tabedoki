@@ -77,9 +77,13 @@ export function replaceData(storage: DataStorage, data: AppData): AppData {
 }
 
 export function previousData(storage: Pick<Storage, 'getItem'>): AppData {
+  return decodeStored(previousRaw(storage));
+}
+
+export function previousRaw(storage: Pick<Storage, 'getItem'>): string {
   const raw = storage.getItem(RECOVERY_KEY);
   if (raw === null) throw new Error('直前の置換前データはありません。');
-  return decodeStored(raw);
+  return raw;
 }
 
 export function readData(storage: DataStorage): ReadDataResult {
