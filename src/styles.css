@@ -203,3 +203,8 @@ summary:focus-visible{outline:3px solid #ca6a24;outline-offset:3px}
 .mobile-navigation .screen-navigation button{padding:8px;font-size:12px}
 .shopping-actions .secondary{font-size:12px;padding:8px 10px}
 }
+.auth-panel { max-width: 620px; display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
+.auth-panel p { margin: 0; overflow-wrap: anywhere; }
+.auth-panel button { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.account-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 20px; font-size: 14px; }
+.account-bar > span:first-child { overflow-wrap: anywhere; flex: 1 1 180px; }

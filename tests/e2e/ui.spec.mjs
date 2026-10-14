@@ -1,5 +1,6 @@
+import { cloudData } from './helpers/cloud.mjs';
 import { openCandidates, openFoodActions } from './helpers/inventory.mjs';
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helpers/cloud.mjs';
 import { defaultTemplates } from '../../src/food.ts';
 import { V3_STORAGE_KEY } from '../../src/storage.ts';
 

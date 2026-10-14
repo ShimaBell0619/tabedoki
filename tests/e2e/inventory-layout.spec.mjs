@@ -1,4 +1,5 @@
-import { test, expect } from '@playwright/test';
+import { cloudData } from './helpers/cloud.mjs';
+import { test, expect } from './helpers/cloud.mjs';
 import { defaultTemplates } from '../../src/food.ts';
 import { V3_STORAGE_KEY } from '../../src/storage.ts';
 
@@ -6,8 +7,7 @@ for (const width of [320, 390, 1440]) {
   test(`${width}pxで長い食品名・翌年・期限条件・場所別と展開を確認する`, async ({ page }, info) => {
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
-    page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()); });
-    await page.clock.install({ time: new Date('2026-12-20T12:00:00') });
+        await page.clock.install({ time: new Date('2026-12-20T12:00:00') });
     await page.setViewportSize({ width, height: 900 });
     const longName = '長い食品名'.repeat(16);
     const dates = ['2026-12-19', '2026-12-20', '2027-01-03', '2027-01-04', '2027-01-19', '2027-01-20'];

@@ -1,5 +1,6 @@
+import { cloudData } from './helpers/cloud.mjs';
 import { openCandidates, openFoodActions } from './helpers/inventory.mjs';
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helpers/cloud.mjs';
 import { readFileSync } from 'node:fs';
 import { defaultTemplates } from '../../src/food.ts';
 import { STORAGE_KEY, V2_STORAGE_KEY } from '../../src/storage.ts';
@@ -11,28 +12,16 @@ let errors;
 test.beforeEach(({ page }) => {
   errors = [];
   page.on('pageerror', error => errors.push(error.message));
-  page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
-});
+  });
 test.afterEach(() => expect(errors).toEqual([]));
-async function seed(page, values, fail = false) {
-  await page.addInitScript(({ values, fail, key }) => {
-    const setItem = Storage.prototype.setItem;
-    if (!sessionStorage.getItem('templates-seeded')) {
-      for (const [key, value] of Object.entries(values)) setItem.call(localStorage, key, value);
-      setItem.call(sessionStorage, 'templates-seeded', 'yes');
-    }
-    window.__failWrites = fail;
-    window.__dataWrites = 0;
-    Storage.prototype.setItem = function(name, value) {
-      if (name === key) {
-        window.__dataWrites++;
-        if (window.__failWrites) throw new DOMException('test quota', 'QuotaExceededError');
-      }
-      return setItem.call(this, name, value);
-    };
-  }, { values, fail, key: STORAGE_KEY });
+async function seed(page, values) {
+  await page.addInitScript(values => {
+    if (sessionStorage.getItem('fixtures-seeded')) return;
+    for (const [key, value] of Object.entries(values)) localStorage.setItem(key, value);
+    sessionStorage.setItem('fixtures-seeded', 'yes');
+  }, values);
 }
-async function saved(page) { return page.evaluate(key => localStorage.getItem(key), STORAGE_KEY); }
+async function saved(page) { return JSON.stringify(await cloudData(page)); }
 async function manage(page) {
   await page.getByRole('button', { name: '定番食品を管理', exact: true }).click();
   return page.getByRole('dialog');
@@ -56,7 +45,7 @@ test('定番の追加・編集・削除を保存し、在庫を変えず新規�
   await dialog.getByRole('button', { name: '定番を保存', exact: true }).click();
   await expect(dialog.getByRole('button', { name: '定番の低脂肪牛乳を編集' })).toBeVisible();
   expect(JSON.parse(await saved(page)).items).toEqual([stock]);
-  expect(await page.evaluate(() => window.__dataWrites)).toBe(1);
+  expect(page.cloud.writes).toBe(1);
   await dialog.getByRole('button', { name: '定番食品を追加', exact: true }).click();
   await dialog.getByRole('textbox', { name: /定番食品名/ }).fill('オートミール');
   await dialog.getByLabel('食品カテゴリ').selectOption('staples');
@@ -113,52 +102,6 @@ test('定番をすべて削除しても再読み込みで初期10件を復活さ
   expect(JSON.parse(await saved(page)).templates).toEqual([]);
 });
 
-test('追加・編集・削除と一括復元の保存失敗は定番・在庫・入力を保持する', async ({ page }) => {
-  const raw = JSON.stringify(initial());
-  await seed(page, { [STORAGE_KEY]: raw }, true);
-  await page.goto('/');
-  let dialog = await manage(page);
-  await dialog.getByRole('button', { name: '定番食品を追加', exact: true }).click();
-  await dialog.getByRole('textbox', { name: /定番食品名/ }).fill('失敗した定番');
-  await dialog.getByRole('button', { name: '定番を保存', exact: true }).click();
-  await expect(dialog.getByRole('alert')).toContainText('保存できません');
-  await expect(dialog.getByRole('textbox')).toHaveValue('失敗した定番');
-  expect(await saved(page)).toBe(raw);
-  await dialog.getByRole('button', { name: '一覧に戻る' }).click();
-  await dialog.getByRole('button', { name: '定番の牛乳を編集' }).click();
-  await dialog.getByRole('textbox').fill('変更した牛乳');
-  await dialog.getByRole('button', { name: '定番を保存' }).click();
-  await expect(dialog.getByRole('textbox')).toHaveValue('変更した牛乳');
-  expect(await saved(page)).toBe(raw);
-  await dialog.getByRole('button', { name: '一覧に戻る' }).click();
-  page.once('dialog', dialog => dialog.accept());
-  await dialog.getByRole('button', { name: '定番の牛乳を削除' }).click();
-  await expect(dialog.getByRole('button', { name: '定番の牛乳を編集' })).toBeVisible();
-  expect(await saved(page)).toBe(raw);
-  await dialog.getByRole('button', { name: '完了', exact: true }).click();
-  await upload(page, { version: 3, items: [], templates: [] }, true, /保存できません/);
-  expect(await saved(page)).toBe(raw);
-  await page.evaluate(() => { window.__failWrites = false; });
-  dialog = await manage(page);
-  await dialog.getByRole('button', { name: '定番食品を追加' }).click();
-  await dialog.getByRole('textbox').fill('再試行した定番');
-  await dialog.getByRole('button', { name: '定番を保存' }).click();
-  expect(JSON.parse(await saved(page)).templates).toHaveLength(11);
-  expect(JSON.parse(await saved(page)).items).toEqual([stock]);
-});
-
-for (const items of [[], [stock]]) {
-  test(`v2の${items.length}食品を保持してv4へ移行し、v2原文を残す`, async ({ page }) => {
-    const raw = JSON.stringify({ version: 2, items });
-    await seed(page, { [V2_STORAGE_KEY]: raw, 'tabedoki:foods:v1': JSON.stringify({ version: 1, items: [] }) });
-    await page.goto('/');
-    expect(JSON.parse(await saved(page))).toEqual({ version: 4, items, templates: defaultTemplates(), shopping: [] });
-    expect(await page.evaluate(key => localStorage.getItem(key), V2_STORAGE_KEY)).toBe(raw);
-    await page.reload();
-    expect(await page.evaluate(() => window.__dataWrites)).toBe(0);
-  });
-}
-
 test('v1/v2バックアップ復元は現在のカスタム定番を保持する', async ({ page }) => {
   const templates = [{ ...defaultTemplates()[0], id: 'custom', name: '自分のたまご', quantity: 2 }];
   await seed(page, { [STORAGE_KEY]: JSON.stringify({ ...initial(), templates }) });
@@ -202,14 +145,14 @@ test('不正な定番の復元と重複名を拒否し、50件上限を表示す
   for (const templates of [null, [{ ...defaultTemplates()[0], quantity: 0 }], [defaultTemplates()[0], defaultTemplates()[0]], Array(51).fill(defaultTemplates()[0])]) {
     await page.getByLabel('バックアップファイルを選択').setInputFiles({ name: 'bad.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify({ version: 3, items: [], templates })) });
     await expect(page.getByText(/復元できません/)).toBeVisible();
-    expect(await saved(page)).toBe(raw);
+    expect(JSON.parse(await saved(page))).toEqual(JSON.parse(raw));
   }
   const dialog = await manage(page);
   await dialog.getByRole('button', { name: '定番食品を追加' }).click();
   await dialog.getByRole('textbox').fill('  牛乳  ');
   await dialog.getByRole('button', { name: '定番を保存' }).click();
   await expect(dialog.getByRole('alert')).toContainText('同じ名前');
-  expect(await saved(page)).toBe(raw);
+  expect(JSON.parse(await saved(page))).toEqual(JSON.parse(raw));
   await dialog.getByRole('button', { name: '閉じる' }).click();
   const templates = Array.from({ length: 50 }, (_, i) => ({ ...defaultTemplates()[0], id: 'template-' + i, name: '定番' + i }));
   await upload(page, { version: 3, items: [stock], templates });

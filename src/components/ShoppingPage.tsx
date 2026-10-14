@@ -7,7 +7,7 @@ type Props = {
   foods: Food[];
   templates: FoodTemplate[];
   blocked: boolean;
-  onAdd: (source: string | Food | FoodTemplate) => boolean;
+  onAdd: (source: string | Food | FoodTemplate) => Promise<boolean>;
   onBought: (item: ShoppingItem, bought: boolean) => void;
   onRemove: (item: ShoppingItem) => void;
   onRegister: (item: ShoppingItem) => void;
@@ -16,9 +16,9 @@ type Props = {
 export function ShoppingPage({ items, foods, templates, blocked, onAdd, onBought, onRemove, onRegister }: Props) {
   const [name, setName] = useState('');
   const suggestions = replenishmentCandidates(foods, items);
-  function add(event: FormEvent<HTMLFormElement>) {
+  async function add(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (onAdd(name)) setName('');
+    if (await onAdd(name)) setName('');
   }
   return <section className="shopping-page" aria-labelledby="shopping-heading">
     <div className="page-heading"><h1 id="shopping-heading">買い物リスト <span className="total">{items.filter(item => !item.bought).length}件未購入</span></h1></div>
