@@ -1,4 +1,4 @@
-import { useRef, useState, type ChangeEvent } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { BACKUP_MAX_BYTES, makeBackup, validateBackup, type AppData, type BackupData } from '../storage';
 import { Icon } from './Icon';
 
@@ -21,6 +21,8 @@ export function BackupPanel({ data, today, blocked, busy, hasPrevious, onNotice,
   current.current = data;
   const [reading, setReading] = useState(false);
   const readingRef = useRef(false);
+  const active = useRef(true);
+  useEffect(() => { active.current = true; return () => { active.current = false; }; }, []);
   function download(text: string, filename: string, type = 'application/json') {
     const url = URL.createObjectURL(new Blob([text], { type }));
     const anchor = document.createElement('a');
@@ -43,6 +45,7 @@ export function BackupPanel({ data, today, blocked, busy, hasPrevious, onNotice,
     readingRef.current = true; setReading(true);
     try {
       const incoming = validateBackup(JSON.parse(await file.text()));
+      if (!active.current) return;
       const now = current.current;
       const templates = incoming.templates !== undefined ? `定番${now.templates.length}件を${incoming.templates.length}件で置き換えます。` : `定番${now.templates.length}件を保持します。`;
       const shopping = incoming.shopping !== undefined ? `買い物${now.shopping.length}件を${incoming.shopping.length}件で置き換えます。` : `買い物${now.shopping.length}件を保持します。残りわずかは解除されます。`;

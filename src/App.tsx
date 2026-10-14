@@ -21,7 +21,8 @@ export function App({ store, initial, email, onLogout }: Props) {
   const [screen, setScreen] = useState<'inventory' | 'shopping'>('inventory');
   const [editor, setEditor] = useState<{ item?: Food; purchase?: ShoppingItem; templatesOnly: boolean } | null>(null);
   const foodSaved = useRef(false);
-  const [blocked, setBlocked] = useState(false);
+  const [blocked, setBlockedState] = useState(false);
+  const blockedRef = useRef(false);
   const [notice, setNotice] = useState('');
   const [formError, setFormError] = useState('');
   const [today, setToday] = useState(localDate);
@@ -49,8 +50,9 @@ export function App({ store, initial, email, onLogout }: Props) {
     setNotice(message);
     if (editor) setFormError(message);
   }
+  function setBlocked(value: boolean) { blockedRef.current = value; setBlockedState(value); }
   async function commitData(next: AppData, replacement = false): Promise<boolean> {
-    if (blocked || pending.current) return false;
+    if (!active.current || blockedRef.current || pending.current) return false;
     pending.current = true; setSaving(true);
     try {
       const saved = await store.save(next, replacement);
@@ -64,7 +66,7 @@ export function App({ store, initial, email, onLogout }: Props) {
     } finally { pending.current = false; if (active.current) setSaving(false); }
   }
   async function refresh() {
-    if (pending.current) return;
+    if (!active.current || pending.current) return;
     pending.current = true; setSaving(true);
     try {
       const saved = await store.load();

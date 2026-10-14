@@ -62,3 +62,12 @@ test('異なるユーザーの応答と読み込み障害では在庫を表示�
  page.cloud.row={user_id:'foreign',data:{version:4,...empty,items:[food]},revision:1,write_id:'existing',previous:null};await page.goto('/');await expect(page.getByRole('alert')).toBeVisible();await expect(page.getByRole('heading',{name:food.name})).toHaveCount(0);
  page.cloud.offline=true;await page.getByRole('button',{name:'クラウドを再取得'}).click();await expect(page.getByRole('alert')).toContainText('読み込めません');
 });
+test('復元ファイル読取中にログアウトしたら遅延結果を新アカウントへ保存しない',async({page})=>{
+ await page.goto('/');await page.addScriptTag({content:"File.prototype.text = function() { return new Promise(resolve => { window.finishBackupRead = () => resolve(JSON.stringify({version:4,items:[],templates:[],shopping:[]})); }); };"});
+ await page.locator('.backup-panel > summary').click();
+ await page.getByLabel('バックアップファイルを選択').setInputFiles({name:'test.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({version:4,...empty}))});
+ await expect(page.getByRole('button',{name:'バックアップから復元',exact:true})).toBeDisabled();
+ await page.getByRole('button',{name:'ログアウト',exact:true}).click();await expect(page.getByRole('button',{name:'Googleでログイン'})).toBeVisible();
+ let dialogs=0;page.on('dialog',async dialog=>{dialogs++;await dialog.dismiss();});await page.evaluate(()=>window.finishBackupRead());
+ await expect(page.getByRole('button',{name:'Googleでログイン'})).toBeVisible();expect(page.cloud.writes).toBe(0);expect(dialogs).toBe(0);
+});
