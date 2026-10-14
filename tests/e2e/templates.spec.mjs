@@ -65,7 +65,7 @@ test('定番の追加・編集・削除を保存し、在庫を変えず新規�
   await dialog.getByLabel('数量の単位').selectOption('bag');
   await dialog.getByRole('button', { name: '定番を保存', exact: true }).click();
   const after = JSON.parse(await saved(page));
-  expect(after.templates).toHaveLength(9);
+  expect(after.templates).toHaveLength(11);
   await page.reload();
   expect(JSON.parse(await saved(page))).toEqual(after);
   dialog = await newFood(page);
@@ -83,7 +83,7 @@ test('定番の追加・編集・削除を保存し、在庫を変えず新規�
   dialog = await manage(page);
   page.once('dialog', dialog => dialog.dismiss());
   await dialog.getByRole('button', { name: '定番の低脂肪牛乳を削除', exact: true }).click();
-  expect(JSON.parse(await saved(page)).templates).toHaveLength(9);
+  expect(JSON.parse(await saved(page)).templates).toHaveLength(11);
   page.once('dialog', dialog => dialog.accept());
   await dialog.getByRole('button', { name: '定番の低脂肪牛乳を削除', exact: true }).click();
   expect(JSON.parse(await saved(page)).items).toEqual(foods);
@@ -95,7 +95,7 @@ test('定番の追加・編集・削除を保存し、在庫を変えず新規�
   await expect(dialog.getByRole('button', { name: '以前の低脂肪牛乳', exact: true })).toBeVisible();
 });
 
-test('定番をすべて削除しても再読み込みで初期8件を復活させない', async ({ page }) => {
+test('定番をすべて削除しても再読み込みで初期10件を復活させない', async ({ page }) => {
   await seed(page, { [STORAGE_KEY]: JSON.stringify({ ...initial(), templates: [defaultTemplates()[0]] }) });
   await page.goto('/');
   const dialog = await manage(page);
@@ -143,7 +143,7 @@ test('追加・編集・削除と一括復元の保存失敗は定番・在庫�
   await dialog.getByRole('button', { name: '定番食品を追加' }).click();
   await dialog.getByRole('textbox').fill('再試行した定番');
   await dialog.getByRole('button', { name: '定番を保存' }).click();
-  expect(JSON.parse(await saved(page)).templates).toHaveLength(9);
+  expect(JSON.parse(await saved(page)).templates).toHaveLength(11);
   expect(JSON.parse(await saved(page)).items).toEqual([stock]);
 });
 

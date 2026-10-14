@@ -28,7 +28,9 @@ for (const width of [320, 390, 1440]) {
     await page.getByRole('button', { name: '15〜30日 2件', exact: true }).click();
     await expect(page.locator('.food-row')).toHaveCount(2);
     await page.getByRole('button', { name: '条件をクリア' }).click();
-    await page.getByLabel('食品の表示順').selectOption('place');
+    await expect(page.getByRole('heading', { name: '調味料', exact: true })).toBeVisible();
+    await expect(page.locator('.group-count')).toHaveText('6件');
+    await page.getByLabel('一覧の表示方法').selectOption('place');
     await expect(page.getByRole('heading', { name: '冷蔵', exact: true })).toBeVisible();
     await expect(page.getByRole('heading', { name: '常温', exact: true })).toBeVisible();
     await page.getByRole('searchbox').fill('食品');

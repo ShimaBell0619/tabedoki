@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { daysLeft, deadlineState, validDate, localDate, MAX_ITEMS, MAX_TEMPLATES, validateTemplates, defaultTemplates, initialFoodForm, applyFoodCandidate, previousFoods, isFood } from '../src/food.ts';
+import { daysLeft, deadlineState, validDate, localDate, categories, MAX_ITEMS, MAX_TEMPLATES, validateTemplates, defaultTemplates, initialFoodForm, applyFoodCandidate, previousFoods, isFood } from '../src/food.ts';
 import { validateBackup, makeBackup, readData, writeData, STORAGE_KEY, V3_STORAGE_KEY, V2_STORAGE_KEY, LEGACY_STORAGE_KEY, BACKUP_MAX_BYTES } from '../src/storage.ts';
 const foodTemplates = defaultTemplates();
 const item = { id: '1', name: '牛乳', category: 'eggs-dairy', kind: 'use-by', deadline: '2026-10-12', quantity: 1, unit: 'bottle', place: 'chilled', status: 'active', lowStock: false };
@@ -196,4 +196,17 @@ test('最大の食品と定番の出力を5MiB以内で往復する', () => {
   assert.ok(Buffer.byteLength(backup) > 1024 * 1024);
   assert.ok(Buffer.byteLength(backup) < BACKUP_MAX_BYTES);
   assert.deepEqual(validateBackup(JSON.parse(backup)), data);
+});
+
+test('主食の既存カテゴリキーとレトルトカテゴリを使え、初期定番の入力値も整合する', () => {
+  assert.equal(categories.staples, '主食・麺・パン');
+  assert.equal(categories['retort-canned'], 'レトルト・缶詰');
+  assert.equal(isFood({ ...item, category: 'retort-canned', place: 'pantry' }), true);
+  const pasta = foodTemplates.find(value => value.name === 'パスタ');
+  const retort = foodTemplates.find(value => value.name === 'レトルトカレー');
+  assert.deepEqual(pasta && [pasta.category, pasta.place, pasta.unit], ['staples', 'pantry', 'bag']);
+  assert.deepEqual(retort && [retort.category, retort.place, retort.unit], ['retort-canned', 'pantry', 'piece']);
+  assert.deepEqual(validateTemplates(foodTemplates), foodTemplates);
+  const data = { items: [{ ...item, category: 'staples' }, { ...item, id: '2', category: 'retort-canned' }], templates: foodTemplates, shopping: [] };
+  assert.deepEqual(validateBackup(JSON.parse(makeBackup(data))), data);
 });
