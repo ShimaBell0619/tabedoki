@@ -15,14 +15,16 @@ type Props = {
   items: Food[];
   templates: FoodTemplate[];
   blocked: boolean;
+  canRefresh: boolean;
+  onRefresh: () => Promise<void>;
   formError: string;
   setFormError: (message: string) => void;
   onClose: () => void;
-  onSave: (form: FoodForm) => boolean;
-  onSaveTemplates: (templates: FoodTemplate[]) => boolean;
+  onSave: (form: FoodForm) => Promise<boolean>;
+  onSaveTemplates: (templates: FoodTemplate[]) => Promise<boolean>;
 };
 
-export function FoodEditor({ item, purchase, templatesOnly, items, templates, blocked, formError, setFormError, onClose, onSave, onSaveTemplates }: Props) {
+export function FoodEditor({ item, purchase, templatesOnly, items, templates, blocked, canRefresh, onRefresh, formError, setFormError, onClose, onSave, onSaveTemplates }: Props) {
   const editingId = item?.id;
   const [form, setForm] = useState<FoodForm>(() => item ? {
     name: item.name, category: item.category, kind: item.kind, deadline: item.deadline,
@@ -44,7 +46,7 @@ export function FoodEditor({ item, purchase, templatesOnly, items, templates, bl
     if (dialog.current) dialog.current.scrollTop = 0;
   }, [managingTemplates, purchase]);
 
-  function saveFood(event: FormEvent<HTMLFormElement>) {
+  async function saveFood(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const deadline = parseDeadline(form.deadline);
     if (!deadline) {
@@ -52,7 +54,7 @@ export function FoodEditor({ item, purchase, templatesOnly, items, templates, bl
       deadlineInput.current?.focus();
       return;
     }
-    if (onSave({ ...form, deadline })) dialog.current?.close();
+    if (await onSave({ ...form, deadline })) dialog.current?.close();
   }
   function openTemplates() {
     returnToFood.current = true;
@@ -63,8 +65,8 @@ export function FoodEditor({ item, purchase, templatesOnly, items, templates, bl
     if (returnToFood.current) setManagingTemplates(false);
     else dialog.current?.close();
   }
-  function saveTemplates(next: FoodTemplate[]): boolean {
-    if (!onSaveTemplates(next)) return false;
+  async function saveTemplates(next: FoodTemplate[]): Promise<boolean> {
+    if (!await onSaveTemplates(next)) return false;
     setFormError('');
     return true;
   }
@@ -137,5 +139,6 @@ export function FoodEditor({ item, purchase, templatesOnly, items, templates, bl
           <button type="submit" className="primary" disabled={blocked}>{editingId ? '変更を保存' : '登録する'}</button>
         </div>
       </form>}
+    {canRefresh && <div className="dialog-actions"><button type="button" className="secondary" onClick={onRefresh}>クラウドを再取得</button></div>}
   </dialog>;
 }

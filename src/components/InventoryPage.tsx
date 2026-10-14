@@ -18,7 +18,7 @@ type Props = {
   onRemove: (item: Food) => void;
   shopping: ShoppingItem[];
   onLowStock: (item: Food, lowStock: boolean) => void;
-  onAddShopping: (item: Food) => boolean;
+  onAddShopping: (item: Food) => Promise<boolean>;
 };
 
 export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatus, onRemove, shopping, onLowStock, onAddShopping }: Props) {

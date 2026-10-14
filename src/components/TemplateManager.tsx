@@ -13,7 +13,7 @@ type Props = {
   blocked: boolean;
   error: string;
   onError: (message: string) => void;
-  onSave: (templates: FoodTemplate[]) => boolean;
+  onSave: (templates: FoodTemplate[]) => Promise<boolean>;
   onDone: () => void;
   returning: boolean;
 };
@@ -35,18 +35,18 @@ export function TemplateManager({ templates, blocked, error, onError, onSave, on
     } : blankDraft());
     onError(''); setEditing(true);
   }
-  function save(event: FormEvent<HTMLFormElement>) {
+  async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const template = { ...draft, name: draft.name.trim(), id: editingId ?? crypto.randomUUID() };
     const next = editingId ? templates.map(value => value.id === editingId ? template : value) : [...templates, template];
     try { validateTemplates(next); }
     catch (cause) { onError(cause instanceof Error ? cause.message : '入力項目を確認してください。'); return; }
-    if (!onSave(next)) return;
+    if (!await onSave(next)) return;
     setEditing(false); onError('');
   }
-  function remove(template: FoodTemplate) {
+  async function remove(template: FoodTemplate) {
     if (!window.confirm(`定番食品「${template.name}」を削除しますか？\n登録済みの食品には影響しません。定番の削除は取り消せません。`)) return;
-    if (onSave(templates.filter(value => value.id !== template.id))) closeButton.current?.focus();
+    if (await onSave(templates.filter(value => value.id !== template.id))) closeButton.current?.focus();
   }
   return <div className="template-manager">
     <div className="dialog-head">

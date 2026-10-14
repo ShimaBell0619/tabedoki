@@ -1,5 +1,6 @@
+import { cloudData } from './helpers/cloud.mjs';
 import { openCandidates, openFoodActions } from './helpers/inventory.mjs';
-import { test, expect } from '@playwright/test';
+import { test, expect } from './helpers/cloud.mjs';
 import { writeFileSync } from 'node:fs';
 import { restoreBackup, openBackup } from './helpers/backup.mjs';
 
@@ -7,8 +8,7 @@ let errors = [];
 test.beforeEach(async ({ page }) => {
   errors = [];
   page.on('pageerror', error => errors.push(error.message));
-  page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()); });
-});
+  });
 test.afterEach(() => expect(errors, 'ブラウザエラーがない').toEqual([]));
 
 async function register(page, name, date, kind = '賞味期限', place = '冷蔵') {

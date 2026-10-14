@@ -15,5 +15,5 @@ export async function restoreBackup(page, files, { accept = true, notice = /^\d+
     handled,
     page.getByLabel('バックアップファイルを選択').setInputFiles(files),
   ]);
-  if (accept) await expect(page.getByRole('status')).toContainText(notice);
+  if (accept) await expect(page.locator('.notice[role=status]')).toContainText(notice);
 }

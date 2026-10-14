@@ -1,10 +1,10 @@
-import { test, expect } from '@playwright/test';
+import { cloudData } from './helpers/cloud.mjs';
+import { test, expect } from './helpers/cloud.mjs';
 
 test.beforeEach(async ({ page }) => {
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
-  page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
-  page.__deadlineErrors = errors;
+    page.__deadlineErrors = errors;
 });
 test.afterEach(async ({ page }) => expect(page.__deadlineErrors).toEqual([]));
 

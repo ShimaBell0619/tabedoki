@@ -1,4 +1,5 @@
-import { test, expect } from '@playwright/test';
+import { cloudData } from './helpers/cloud.mjs';
+import { test, expect } from './helpers/cloud.mjs';
 import { defaultTemplates } from '../../src/food.ts';
 import { STORAGE_KEY } from '../../src/storage.ts';
 
@@ -67,7 +68,7 @@ test('パスタ・レトルトカレーを初期定番から登録し、新カ�
     await dialog.getByRole('button', { name: '登録する', exact: true }).click();
     await expect(dialog).not.toBeVisible();
   }
-  const stored = await page.evaluate(key => JSON.parse(localStorage.getItem(key)), STORAGE_KEY);
+  const stored = await cloudData(page);
   expect(stored.version).toBe(4);
   expect(stored.items.map(({ name, category }) => ({ name, category }))).toEqual([
     { name: 'パスタ', category: 'staples' },
