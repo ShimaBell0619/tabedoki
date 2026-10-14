@@ -2,7 +2,6 @@ import { cloudData } from './helpers/cloud.mjs';
 import { openCandidates, openFoodActions } from './helpers/inventory.mjs';
 import { test, expect } from './helpers/cloud.mjs';
 import { writeFileSync } from 'node:fs';
-import { restoreBackup, openBackup } from './helpers/backup.mjs';
 
 let errors = [];
 test.beforeEach(async ({ page }) => {
@@ -67,7 +66,7 @@ for (const width of [320, 390, 1440]) {
   });
 }
 
-test('期限境界・バックアップ復元・不正JSON拒否・上書き確認', async ({ page }) => {
+test('期限境界と絞り込みを確認する', async ({ page }) => {
   await page.clock.install({ time: new Date('2026-10-11T12:00:00') });
   await page.goto('/');
   await register(page, '昨日のヨーグルト', '2026-10-10');
@@ -81,22 +80,12 @@ test('期限境界・バックアップ復元・不正JSON拒否・上書き確�
   await expect(page.getByRole('heading', { name: '4日後の卵' })).toBeVisible();
   await openFilters(page);
   await page.getByLabel('期限状態で絞り込み').selectOption('all');
-  const downloadWait = page.waitForEvent('download');
-  await openBackup(page);
-  await page.getByRole('button', { name: 'バックアップを保存' }).click();
-  const download = await downloadWait;
-  const path = await download.path();
-  await restoreBackup(page, path, { accept: false });
-  await expect(page.getByRole('heading', { name: '昨日のヨーグルト' })).toBeVisible();
-  const bad = Buffer.from('{"version":1,"items":[{"id":"bad"}]}');
-  await page.getByLabel('バックアップファイルを選択').setInputFiles({ name: 'broken.json', mimeType: 'application/json', buffer: bad });
-  await expect(page.getByText(/復元できません/)).toBeVisible();
-  await restoreBackup(page, path);
-  await expect(page.getByText('2件を復元しました。')).toBeVisible();
+
 });
 
 test('キーボード・Escapeとフォーカス表示', async ({ page }) => {
   await page.goto('/');
+  await expect(page.getByRole('heading', { name: /食品一覧/ })).toBeVisible();
   await page.keyboard.press('Tab');
   const focused = page.locator(':focus');
   await expect(focused).toHaveCSS('outline-style', 'solid');

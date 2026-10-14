@@ -1,10 +1,8 @@
-import { cloudData } from './helpers/cloud.mjs';
+import { cloudData, setCloudData } from './helpers/cloud.mjs';
 import { test, expect } from './helpers/cloud.mjs';
-import { readFileSync } from 'node:fs';
 import { defaultTemplates } from '../../src/food.ts';
-import { STORAGE_KEY, V3_STORAGE_KEY, RECOVERY_KEY, BACKUP_MAX_BYTES } from '../../src/storage.ts';
+import { STORAGE_KEY } from '../../src/storage.ts';
 import { shoppingFrom } from '../../src/shopping.ts';
-import { openBackup, restoreBackup } from './helpers/backup.mjs';
 
 const food = { id: 'stock', name: '牛乳', category: 'eggs-dairy', kind: 'use-by', deadline: '2026-12-20', quantity: 9, unit: 'bottle', place: 'chilled', status: 'active', lowStock: false };
 const initial = (items = [food], shopping = []) => ({ version: 4, items, templates: defaultTemplates(), shopping });
@@ -112,18 +110,14 @@ test('NFKC重複・購入済みへの再追加・解除競合・定番からの�
   expect((await saved(page)).shopping.find(item => item.name === '牛乳')).toMatchObject({ category: 'eggs-dairy', unit: 'bottle', place: 'chilled' });
 });
 
-test('最大v4を実JSONで往復し300件在庫の検索・追加・最後の行を確認する', async ({ page }, info) => {
+test('最大データを読み込み300件在庫の検索・追加・最後の行を確認する', async ({ page }, info) => {
   test.setTimeout(60000);
   const items = Array.from({ length: 3000 }, (_, i) => ({ ...food, id: String(i), name: 'あ'.repeat(80), status: 'used' }));
   const shoppingItems = Array.from({ length: 300 }, (_, i) => shoppingFrom('買い物' + i, String(i)));
   const value = { ...initial(items, shoppingItems), templates: Array.from({ length: 50 }, (_, i) => ({ ...defaultTemplates()[0], id: 'template-' + i, name: '最大定番' + i })) };
-  await seed(page, value); await page.goto('/'); await openBackup(page);
-  const waiting = page.waitForEvent('download'); await page.getByRole('button', { name: 'バックアップを保存', exact: true }).click();
-  const path = await (await waiting).path();
-  expect(readFileSync(path).byteLength).toBeLessThan(BACKUP_MAX_BYTES);
-  await restoreBackup(page, path); expect(await saved(page)).toEqual(value);
+  await seed(page, value); await page.goto('/'); expect(await saved(page)).toEqual(value);
   const representative = initial(Array.from({ length: 300 }, (_, i) => ({ ...food, id: String(i), name: '代表食品' + i })));
-  await restoreBackup(page, { name: 'representative.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(representative)) });
+  await setCloudData(page, representative);
   await page.getByRole('searchbox').fill('代表食品299');
   await expect(page.locator('.food-row')).toHaveCount(1);
   await page.getByLabel('代表食品299の詳細').click();

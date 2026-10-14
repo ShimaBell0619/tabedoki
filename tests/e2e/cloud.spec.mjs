@@ -6,7 +6,7 @@ const food={id:'local',name:'移行する牛乳',category:'eggs-dairy',kind:'use
 const empty={items:[],templates:[],shopping:[]};
 test('ログイン前に在庫を表示せず、ログアウトで画面の個人データを破棄する',async({page})=>{
  await page.goto('/');await expect(page.getByRole('heading',{name:/食品一覧/})).toBeVisible();
- await page.getByRole('button',{name:'ログアウト',exact:true}).click();await expect(page.getByRole('button',{name:'Googleでログイン'})).toBeVisible();
+ await page.getByRole('button',{name:'アカウント',exact:true}).click();await page.getByRole('button',{name:'ログアウト',exact:true}).click();await expect(page.getByRole('button',{name:'Googleでログイン'})).toBeVisible();
  await expect(page.getByRole('heading',{name:/食品一覧/})).toHaveCount(0);await page.reload();await expect(page.getByRole('button',{name:'Googleでログイン'})).toBeVisible();
 });
 for(const [key,version] of [[LEGACY_STORAGE_KEY,1],[V2_STORAGE_KEY,2],[V3_STORAGE_KEY,3],[STORAGE_KEY,4]]) {
@@ -15,7 +15,7 @@ for(const [key,version] of [[LEGACY_STORAGE_KEY,1],[V2_STORAGE_KEY,2],[V3_STORAG
   const raw=JSON.stringify({version,items:[item],...(version>=3?{templates:[]}:{}),...(version===4?{shopping:[]}:{} )});
   await page.addInitScript(({key,raw})=>localStorage.setItem(key,raw),{key,raw});await page.goto('/');
   await expect(page.getByRole('button',{name:'test@example.com に移行'})).toBeVisible();expect(page.cloud.writes).toBe(0);
-  const download=page.waitForEvent('download');await page.getByRole('button',{name:'旧データを退避'}).click();await download;
+  await expect(page.getByRole('button',{name:/退避|バックアップ/})).toHaveCount(0);
   await page.getByRole('button',{name:'test@example.com に移行'}).click();await expect(page.getByRole('heading',{name:food.name,exact:true})).toBeVisible();
   expect(page.cloud.writes).toBe(1);expect(await page.evaluate(key=>localStorage.getItem(key),key)).toBe(raw);
   await page.reload();await expect(page.getByRole('heading',{name:food.name,exact:true})).toBeVisible();expect(page.cloud.writes).toBe(1);
@@ -61,13 +61,4 @@ test('保存中の二重送信を止め、応答消失後も照合した1回だ�
 test('異なるユーザーの応答と読み込み障害では在庫を表示しない',async({page})=>{
  page.cloud.row={user_id:'foreign',data:{version:4,...empty,items:[food]},revision:1,write_id:'existing',previous:null};await page.goto('/');await expect(page.getByRole('alert')).toBeVisible();await expect(page.getByRole('heading',{name:food.name})).toHaveCount(0);
  page.cloud.offline=true;await page.getByRole('button',{name:'クラウドを再取得'}).click();await expect(page.getByRole('alert')).toContainText('読み込めません');
-});
-test('復元ファイル読取中にログアウトしたら遅延結果を新アカウントへ保存しない',async({page})=>{
- await page.goto('/');await page.addScriptTag({content:"File.prototype.text = function() { return new Promise(resolve => { window.finishBackupRead = () => resolve(JSON.stringify({version:4,items:[],templates:[],shopping:[]})); }); };"});
- await page.locator('.backup-panel > summary').click();
- await page.getByLabel('バックアップファイルを選択').setInputFiles({name:'test.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({version:4,...empty}))});
- await expect(page.getByRole('button',{name:'バックアップから復元',exact:true})).toBeDisabled();
- await page.getByRole('button',{name:'ログアウト',exact:true}).click();await expect(page.getByRole('button',{name:'Googleでログイン'})).toBeVisible();
- let dialogs=0;page.on('dialog',async dialog=>{dialogs++;await dialog.dismiss();});await page.evaluate(()=>window.finishBackupRead());
- await expect(page.getByRole('button',{name:'Googleでログイン'})).toBeVisible();expect(page.cloud.writes).toBe(0);expect(dialogs).toBe(0);
 });

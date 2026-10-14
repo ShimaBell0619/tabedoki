@@ -17,6 +17,12 @@ a{color:inherit}
 .header-action{border:0;background:transparent;display:flex;align-items:center;gap:7px;min-height:44px;padding:8px;color:var(--muted);font-size:13px;font-weight:650;border-radius:8px}
 .header-action:hover{background:#edf3f1}
 .header-action .icon{width:18px;height:18px;opacity:.7}
+.header-actions{display:flex;align-items:center;gap:4px}
+.account-menu{position:fixed;inset:64px max(16px,calc((100vw - 1040px)/2 + 32px)) auto auto;margin:0;width:min(280px,calc(100vw - 32px));padding:8px;border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 30px #203d2926;background:var(--surface);color:#233632}
+.account-menu p{margin:4px 8px 8px;padding-bottom:12px;border-bottom:1px solid var(--border);overflow-wrap:anywhere;font-size:13px;color:var(--muted)}
+.account-menu button{display:block;width:100%;min-height:44px;text-align:left;border:0;border-radius:8px;padding:8px;background:transparent;color:inherit;font-size:14px}
+.account-menu button:hover{background:#edf3f1}
+.cloud-pending{margin:0 0 16px;font-size:13px;color:var(--muted)}
 .main{max-width:1040px;padding:32px 32px 40px;margin:auto}
 .page-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px}
 h1{font-size:29px;letter-spacing:-.04em;line-height:1.3;margin:0;font-weight:800}
@@ -81,12 +87,6 @@ h1{font-size:29px;letter-spacing:-.04em;line-height:1.3;margin:0;font-weight:800
 .empty-icon{display:grid;place-items:center;width:52px;height:52px;background:#edf4ef;border-radius:14px}
 .empty-icon .icon{width:28px;height:28px;opacity:.6}
 .empty h2{font-size:16px;margin:0;font-weight:650}
-.data-section{border-top:1px solid var(--border);padding:24px 0 0;display:flex;align-items:center;justify-content:space-between;gap:24px}
-.data-section h2{font-size:15px;font-weight:700;margin:0 0 6px}
-.data-section p{font-size:12px;line-height:1.8;color:var(--muted);margin:0}
-.backup-buttons{display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0}
-.backup-buttons button{font-size:12px;padding:10px 12px}
-.backup-buttons .icon{width:17px;height:17px;opacity:.7}
 .mobile-create-bar{display:none}
 .food-dialog{padding:0;width:min(94vw,540px);border:1px solid var(--border);border-radius:18px;box-shadow:0 24px 90px #122c3840;max-height:min(92dvh,820px);overflow:auto;scroll-padding-block:24px 104px;color:#233632;background:#fff}
 .food-dialog::backdrop{background:#19312db3}
@@ -131,7 +131,7 @@ h1{font-size:29px;letter-spacing:-.04em;line-height:1.3;margin:0;font-weight:800
 .tabs button{padding:8px 12px;font-size:12px;min-height:42px}.sort-label{font-size:11px}.list-toolbar{margin-bottom:14px}.search-toolbar{gap:8px}.filter-toggle{font-size:12px;padding:10px}.filter-toggle .icon{width:17px;height:17px}
 .filters{grid-template-columns:1fr 1fr;gap:12px;padding:12px}.filters>label:last-child{grid-column:1/-1}
 .food-row{padding:0}.food-primary{gap:7px;margin-bottom:6px}.food-primary h3{font-size:16px}.food-meta{gap:6px 8px}.quantity{font-size:12px}.deadline-chip{font-size:11px}.food-actions{grid-column:2;justify-content:flex-end;gap:5px}.food-actions button{font-size:12px;padding:8px 10px}.food-actions .icon-button{padding:0;width:44px}
-.data-section{display:block;padding-top:20px}.backup-buttons{margin-top:16px;gap:8px}.backup-buttons button{flex:1;padding:10px 8px}
+.account-menu{top:58px;right:16px}
 .mobile-create-bar{display:block;position:fixed;bottom:0;left:0;right:0;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:#fffffff2;border-top:1px solid var(--border);z-index:4}.mobile-create{width:100%;min-height:48px}
 .food-dialog{width:calc(100vw - 24px);max-height:94dvh;border-radius:16px}.food-form,.template-manager{padding:20px 16px}.food-form{gap:16px}.dialog-head h2{font-size:21px}.food-form>.dialog-actions{bottom:-20px;padding-bottom:20px;margin-bottom:-20px}.template-form.food-form>.dialog-actions{bottom:-20px}.form-group{gap:10px}.food-form input,.food-form select{padding:10px 8px}
 }
@@ -174,7 +174,7 @@ summary:focus-visible{outline:3px solid #ca6a24;outline-offset:3px}
 .shopping-add>div{display:flex;gap:8px}
 .shopping-add input{flex:1;min-width:0;min-height:46px;border:1px solid var(--border);border-radius:9px;padding:10px 12px;font-size:16px;background:var(--surface)}
 .shopping-templates{margin-bottom:20px}
-.shopping-templates summary,.backup-panel>summary{min-height:44px;cursor:pointer;padding:10px 0;font-weight:650;font-size:14px}
+.shopping-templates summary{min-height:44px;cursor:pointer;padding:10px 0;font-weight:650;font-size:14px}
 .shopping-templates .candidate-list{margin-top:12px}
 .shopping-page h2{font-size:16px;margin:18px 0 8px}
 .shopping-list{padding:0;margin:0;list-style:none;background:var(--surface);border:1px solid var(--border);border-radius:13px}
@@ -192,10 +192,6 @@ summary:focus-visible{outline:3px solid #ca6a24;outline-offset:3px}
 .stock-controls{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .stock-controls label{display:flex;align-items:center;min-height:44px;font-size:13px;cursor:pointer}
 .stock-controls button{font-size:13px}
-.backup-panel{border-top:1px solid var(--border);margin-top:24px}
-.backup-panel>summary h2{display:inline;font-size:15px}
-.backup-panel .data-section{border:0;padding-top:10px;flex-direction:column;align-items:stretch;gap:12px}
-.backup-panel .backup-buttons{margin-top:0}
 @media(max-width:760px){
 .desktop-navigation{display:none}
 .mobile-navigation{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px calc(8px + env(safe-area-inset-bottom))}
@@ -206,5 +202,4 @@ summary:focus-visible{outline:3px solid #ca6a24;outline-offset:3px}
 .auth-panel { max-width: 620px; display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
 .auth-panel p { margin: 0; overflow-wrap: anywhere; }
 .auth-panel button { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
-.account-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 20px; font-size: 14px; }
-.account-bar > span:first-child { overflow-wrap: anywhere; flex: 1 1 180px; }
+.auth-links{display:flex;gap:16px;font-size:12px;color:var(--muted)}

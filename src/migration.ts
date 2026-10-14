@@ -7,7 +7,7 @@ export function localSource(storage: Pick<Storage, 'getItem'>): LocalSource | nu
     const raw = storage.getItem(key);
     if (raw !== null) {
       try { return { raw, data: decodeStored(raw, version), error: '' }; }
-      catch { return { raw, data: null, error: 'このブラウザの旧データを読み込めません。原文を退避してください。' }; }
+      catch { return { raw, data: null, error: 'このブラウザの旧データを読み込めません。元のデータを保持しています。' }; }
     }
   }
   return null;
@@ -27,5 +27,5 @@ export function claimMigration(storage: Store, project: string, userId: string, 
   if (owner) return;
   const claim = JSON.stringify({ userId, raw: source.raw });
   storage.setItem(migrationKey(project), claim);
-  if (storage.getItem(migrationKey(project)) !== claim) throw new Error('移行前の退避を確認できません。');
+  if (storage.getItem(migrationKey(project)) !== claim) throw new Error('移行先を記録できません。元のデータを保持しています。');
 }
