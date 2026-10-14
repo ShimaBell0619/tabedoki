@@ -16,12 +16,12 @@ export function downloadBackup(text: string, raw = false) {
 }
 function LocalBackup({ source }: { source: LocalSource | null }) {
   if (!source) return null;
-  return <button type="button" onClick={() => downloadBackup(source.data ? makeBackup(source.data) : source.raw, !source.data)}>旧データを退避</button>;
+  return <button className="secondary outline" type="button" onClick={() => downloadBackup(source.data ? makeBackup(source.data) : source.raw, !source.data)}>旧データを退避</button>;
 }
 function PreviousLocalBackup() {
   const [raw] = useState(() => { try { return previousRaw(window.localStorage); } catch { return null; } });
   if (raw === null) return null;
-  return <button type="button" onClick={() => {
+  return <button className="secondary outline" type="button" onClick={() => {
     try { downloadBackup(makeBackup(decodeStored(raw))); }
     catch { downloadBackup(raw, true); }
   }}>旧版の置換前データを退避</button>;
@@ -70,10 +70,8 @@ function AccountData({ user, onLogout }: { user: User; onLogout: () => void }) {
     catch (cause) { if (alive.current) setError(cause instanceof Error ? cause.message : '再取得できません。'); }
     finally { pending.current = false; if (alive.current) setBusy(false); }
   }
-  if (snapshot) return <>
-    <App store={store} initial={snapshot} email={user.email ?? 'Googleアカウント'} onLogout={onLogout} />
-    {(!owner || owner === user.id) && <div className="legacy-backup"><LocalBackup source={source} /><PreviousLocalBackup /></div>}
-  </>;
+  if (snapshot) return <App store={store} initial={snapshot} email={user.email ?? 'Googleアカウント'} onLogout={onLogout}
+    legacyBackup={(!owner || owner === user.id) ? <><LocalBackup source={source} /><PreviousLocalBackup /></> : undefined} />;
   const allowed = source?.data && (!owner || owner === user.id);
   return <Shell>
     <h1>{loaded ? 'クラウドを使い始める' : 'クラウドを読み込み中…'}</h1>

@@ -9,8 +9,8 @@ import { ShoppingPage } from './components/ShoppingPage';
 import { BackupPanel } from './components/BackupPanel';
 import { Icon } from './components/Icon';
 
-type Props = { store: CloudStore; initial: Snapshot; email: string; onLogout: () => void };
-export function App({ store, initial, email, onLogout }: Props) {
+type Props = { store: CloudStore; initial: Snapshot; email: string; onLogout: () => void; legacyBackup?: React.ReactNode };
+export function App({ store, initial, email, onLogout, legacyBackup }: Props) {
   const [data, setData] = useState<AppData>(initial.data);
   const committed = useRef(data);
   const pending = useRef(false);
@@ -176,7 +176,7 @@ export function App({ store, initial, email, onLogout }: Props) {
     </div></header>
     <main className="main">
       <div className="account-bar"><span>{email}</span><span role="status" aria-label="保存状態">{saving ? '保存・読み込み中…' : blocked ? '要確認' : 'クラウド保存'}</span>
-        <button type="button" disabled={saving} onClick={refresh}>再取得</button><button type="button" disabled={saving} onClick={onLogout}>ログアウト</button>
+        <button className="secondary outline" type="button" disabled={saving} onClick={refresh}>再取得</button><button className="secondary outline" type="button" disabled={saving} onClick={onLogout}>ログアウト</button>
       </div>
       {notice && <div className={`notice ${blocked ? 'notice-error' : ''}`} role="status">
         <span>{notice}</span>
@@ -196,7 +196,7 @@ export function App({ store, initial, email, onLogout }: Props) {
       </>
       <BackupPanel data={data} today={today} blocked={blocked} busy={saving}
         hasPrevious={hasPrevious} onNotice={setNotice} onRestore={restore}
-        onRestorePrevious={restorePrevious} onReadPreviousRaw={() => makeBackup(previous!)} account={email} />
+        onRestorePrevious={restorePrevious} onReadPreviousRaw={() => makeBackup(previous!)} account={email} legacyBackup={legacyBackup} />
     </main>
     <div className="mobile-create-bar mobile-navigation">
       <nav className="screen-navigation" aria-label="画面選択">{navigation}</nav>

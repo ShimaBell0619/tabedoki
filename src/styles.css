@@ -208,4 +208,3 @@ summary:focus-visible{outline:3px solid #ca6a24;outline-offset:3px}
 .auth-panel button { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
 .account-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 20px; font-size: 14px; }
 .account-bar > span:first-child { overflow-wrap: anywhere; flex: 1 1 180px; }
-.legacy-backup { max-width: 1040px; margin: 0 auto; padding: 0 20px 100px; }

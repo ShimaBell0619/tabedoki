@@ -13,9 +13,10 @@ type Props = {
   onRestorePrevious: () => void;
   onReadPreviousRaw: () => string;
   account: string;
+  legacyBackup?: React.ReactNode;
 };
 
-export function BackupPanel({ data, today, blocked, busy, hasPrevious, onNotice, onRestore, onRestorePrevious, onReadPreviousRaw, account }: Props) {
+export function BackupPanel({ data, today, blocked, busy, hasPrevious, onNotice, onRestore, onRestorePrevious, onReadPreviousRaw, account, legacyBackup }: Props) {
   const upload = useRef<HTMLInputElement>(null);
   const current = useRef(data);
   current.current = data;
@@ -68,6 +69,7 @@ export function BackupPanel({ data, today, blocked, busy, hasPrevious, onNotice,
             onNotice('直前の置換前データをJSONで退避しました。');
           } catch (error) { onNotice(`退避できません：${error instanceof Error ? error.message : '原文を取得できません。'}`); }
         }}>直前の置換前データを退避</button>}
+        {legacyBackup}
         <input className="sr-only" type="file" ref={upload} disabled={reading || blocked || busy} accept=".json,application/json"
           aria-label="バックアップファイルを選択" onChange={importBackup} />
       </div>
