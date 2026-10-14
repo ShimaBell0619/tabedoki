@@ -28,7 +28,7 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
   const [categoryFilter, setCategoryFilter] = useState<'all' | FoodCategory>('all');
   const [placeFilter, setPlaceFilter] = useState<'all' | StoragePlace>('all');
   const [deadlineFilter, setDeadlineFilter] = useState<DeadlineFilter>('all');
-  const [sort, setSort] = useState<'deadline' | 'place'>('deadline');
+  const [sort, setSort] = useState<'category' | 'deadline' | 'place'>('category');
   const matching = items.filter(item =>
     item.name.toLocaleLowerCase('ja').includes(search.trim().toLocaleLowerCase('ja')) &&
     (categoryFilter === 'all' || item.category === categoryFilter) &&
@@ -38,8 +38,14 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
     (view === 'all' || (view === 'active' ? item.status === 'active' : item.status !== 'active')) &&
     matchesDeadline(item.deadline, today, deadlineFilter)
   ).sort((a, b) => a.deadline.localeCompare(b.deadline) || a.name.localeCompare(b.name, 'ja'));
-  const groups = sort === 'deadline' ? [{ place: null, items: displayed }] :
-    (Object.keys(places) as StoragePlace[]).map(place => ({ place, items: displayed.filter(item => item.place === place) }));
+  const groups = sort === 'deadline' ? [{ name: null, items: displayed }] :
+    sort === 'category'
+      ? (Object.keys(categories) as FoodCategory[]).map(category => ({
+        name: categories[category], items: displayed.filter(item => item.category === category),
+      }))
+      : (Object.keys(places) as StoragePlace[]).map(place => ({
+        name: places[place], items: displayed.filter(item => item.place === place),
+      }));
   const filterCount = Number(categoryFilter !== 'all') + Number(placeFilter !== 'all') + Number(deadlineFilter !== 'all');
   const hasFilters = filterCount > 0 || Boolean(search.trim());
   const listed = new Set(shopping.filter(item => !item.bought).map(item => normalizedName(item.name)));
@@ -62,9 +68,9 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
               {{ active: '管理中', finished: '完了', all: 'すべて' }[value]}
             </button>)}
         </div>
-        <label className="sort-control"><span className="sr-only">食品の表示順</span>
+        <label className="sort-control"><span className="sr-only">一覧の表示方法</span>
           <select value={sort} onChange={event => setSort(event.target.value as typeof sort)}>
-            <option value="deadline">期限順</option><option value="place">保存場所別</option>
+            <option value="category">カテゴリ別</option><option value="deadline">期限順</option><option value="place">保存場所別</option>
           </select>
         </label>
       </div>
@@ -114,8 +120,8 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
         {!hasFilters && view !== 'finished' && <button className="secondary" type="button" disabled={blocked} onClick={onCreate}>
           <Icon name="plus" />食品を登録する
         </button>}
-      </div> : groups.filter(group => group.items.length > 0).map(group => <div key={group.place ?? 'deadline'}>
-        {group.place && <h2 className="place-heading">{places[group.place]}</h2>}
+      </div> : groups.filter(group => group.items.length > 0).map(group => <div key={group.name ?? 'deadline'}>
+        {group.name && <h2 className="group-heading" aria-label={group.name}>{group.name}<span className="group-count" aria-hidden="true">{group.items.length}件</span></h2>}
         <ul className="food-list">{group.items.map(item => {
           const state = item.status === 'active' ? deadlineState(item.deadline, today) : 'later';
           const date = `${item.deadline.slice(0, 4) !== today.slice(0, 4) ? item.deadline.slice(0, 4) + '/' : ''}${Number(item.deadline.slice(5, 7))}/${Number(item.deadline.slice(8))}`;
