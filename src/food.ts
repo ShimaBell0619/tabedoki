@@ -4,7 +4,8 @@ export type FoodStatus = 'active' | 'used' | 'discarded';
 
 export const categories = {
   'eggs-dairy': '卵・乳製品', produce: '野菜・果物', 'meat-fish': '肉・魚',
-  soy: '大豆製品', staples: '主食・パン', condiments: '調味料', other: 'その他',
+  soy: '大豆製品', staples: '主食・麺・パン', 'retort-canned': 'レトルト・缶詰',
+  condiments: '調味料', other: 'その他',
 } as const;
 export const places = { chilled: '冷蔵', frozen: '冷凍', pantry: '常温' } as const;
 export const kinds = { 'best-before': '賞味期限', 'use-by': '消費期限' } as const;
@@ -37,6 +38,8 @@ const starterTemplates: readonly Pick<FoodTemplate, 'name' | 'category' | 'place
   { name: '食パン', category: 'staples', place: 'pantry', unit: 'bag' },
   { name: '豆腐', category: 'soy', place: 'chilled', unit: 'pack' },
   { name: 'ハム', category: 'meat-fish', place: 'chilled', unit: 'pack' },
+  { name: 'パスタ', category: 'staples', place: 'pantry', unit: 'bag' },
+  { name: 'レトルトカレー', category: 'retort-canned', place: 'pantry', unit: 'piece' },
 ];
 
 export function defaultTemplates(): FoodTemplate[] {
