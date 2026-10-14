@@ -148,7 +148,7 @@ export function App() {
     } catch (error) { showError(`復元できません：${error instanceof Error ? error.message : '退避が不正です。'}`); }
   }
   function clearCorrupt() {
-    if (!window.confirm('読み込めなかった原文を退避し、食品と買い物を空にして定番食品を初期8件に戻しますか？')) return;
+    if (!window.confirm('読み込めなかった原文を退避し、食品と買い物を空にして定番食品を初期10件に戻しますか？')) return;
     if (commitData({ items: [], templates: defaultTemplates(), shopping: [] }, true)) setNotice('空の状態から開始しました。');
   }
   const navigation = <>
