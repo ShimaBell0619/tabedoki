@@ -1,0 +1,10 @@
+:root{font-family:system-ui,sans-serif;color:#233632;background:#f6f8f8;line-height:1.8}
+*{box-sizing:border-box}
+body{margin:0}
+main{max-width:720px;margin:auto;padding:32px 20px 64px}
+h1{font-size:26px;line-height:1.4}
+h2{font-size:18px;margin-top:28px}
+a{color:#116b60;overflow-wrap:anywhere}
+a:focus-visible{outline:3px solid #ca6a24;outline-offset:3px}
+p{overflow-wrap:anywhere}
+footer{margin-top:32px;font-size:14px;color:#586c66}

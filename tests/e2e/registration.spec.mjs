@@ -1,16 +1,12 @@
 import { cloudData } from './helpers/cloud.mjs';
 import { openCandidates, openFoodActions } from './helpers/inventory.mjs';
 import { test, expect } from './helpers/cloud.mjs';
-import { readFileSync } from 'node:fs';
-import { restoreBackup, openBackup } from './helpers/backup.mjs';
 import { defaultTemplates } from '../../src/food.ts';
-import { BACKUP_MAX_BYTES, STORAGE_KEY, V3_STORAGE_KEY } from '../../src/storage.ts';
+import { STORAGE_KEY, V3_STORAGE_KEY } from '../../src/storage.ts';
 
 const key = STORAGE_KEY;
 const v3Key = V3_STORAGE_KEY;
-const legacyKey = 'tabedoki:foods:v1';
 const item = { id: 'old-id', name: '以前の納豆', kind: 'use-by', deadline: '2020-01-01', quantity: 7, place: 'frozen', status: 'used', category: 'soy', unit: 'piece', lowStock: false };
-const { category, unit, lowStock, ...legacy } = item;
 let errors;
 test.beforeEach(async ({ page }) => {
   errors = [];
@@ -28,11 +24,6 @@ async function seed(page, values = {}) {
 async function openNew(page) {
   await page.getByRole('button', { name: '食品を登録', exact: true }).last().click();
   return page.getByRole('dialog', { name: '食品を登録' });
-}
-async function upload(page, value) {
-  await page.getByLabel('バックアップファイルを選択').setInputFiles({
-    name: 'backup.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(value)),
-  });
 }
 async function readSaved(page) { return JSON.stringify(await cloudData(page)); }
 
@@ -81,7 +72,7 @@ test('定番と以前の食品から、今回の期限・新ID・数量1で登�
   await page.screenshot({ path: info.outputPath('registration-390.png') });
 });
 
-test('カテゴリ・場所・検索のAND絞り込み、復元の不正データと上限を検証する', async ({ page }) => {
+test('カテゴリ・場所・検索をANDで絞り込む', async ({ page }) => {
   const original = JSON.stringify({ version: 4, shopping: [], templates: defaultTemplates(), items: [
     { ...item, status: 'active' },
     { ...item, id: 'milk', name: '牛乳', category: 'eggs-dairy', place: 'chilled', unit: 'bottle', status: 'active' },
@@ -98,37 +89,9 @@ test('カテゴリ・場所・検索のAND絞り込み、復元の不正デー�
   await page.getByLabel('保存場所で絞り込み').selectOption('frozen');
   await page.getByRole('searchbox').fill('納豆');
   await expect(page.getByRole('heading', { name: item.name })).toBeVisible();
-  for (const value of [
-    { version: 2, items: [{ ...item, category: 'unknown' }] },
-    { version: 2, items: [{ ...item, unit: 'kg' }] },
-    { version: 2, items: [item, item] },
-    { version: 2, items: Array(3001).fill(item) },
-  ]) {
-    await upload(page, value);
-    await expect(page.getByText(/復元できません/)).toBeVisible();
-    expect(JSON.parse(await readSaved(page))).toEqual(JSON.parse(original));
-  }
-  await page.getByLabel('バックアップファイルを選択').setInputFiles({ name: 'large.json', mimeType: 'application/json', buffer: Buffer.alloc(BACKUP_MAX_BYTES + 1, ' ') });
-  await expect(page.getByText(/5MB以下/)).toBeVisible();
-  expect(JSON.parse(await readSaved(page))).toEqual(JSON.parse(original));
+
 });
 
-test('最大3,000件のアプリ出力を実ファイルとして復元できる', async ({ page }) => {
-  test.setTimeout(60000);
-  const items = Array.from({ length: 3000 }, (_, i) => ({ ...item, id: String(i), name: 'あ'.repeat(80), status: 'used' }));
-  await seed(page, { [v3Key]: JSON.stringify({ version: 3, templates: defaultTemplates(), items }) });
-  await page.goto('/');
-  const downloadWait = page.waitForEvent('download');
-  await openBackup(page);
-  await page.getByRole('button', { name: 'バックアップを保存', exact: true }).click();
-  const path = await (await downloadWait).path();
-  const text = readFileSync(path, 'utf8');
-  expect(Buffer.byteLength(text)).toBeGreaterThan(1024 * 1024);
-  expect(Buffer.byteLength(text)).toBeLessThan(BACKUP_MAX_BYTES);
-  await restoreBackup(page, path);
-  await expect(page.getByText('3000件を復元しました。')).toBeVisible();
-  expect(JSON.parse(await readSaved(page)).items).toEqual(items);
-});
 
 for (const width of [320, 390, 1440]) {
   test(width + 'pxの登録候補・フォームが収まり、キーボードで選択できる', async ({ page }, info) => {

@@ -2,30 +2,12 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { App } from './App';
 import { CloudStore, type Snapshot } from './cloud';
-import { defaultTemplates, localDate } from './food';
-import { decodeStored, makeBackup, previousRaw } from './storage';
-import { claimMigration, localSource, migrationOwner, type LocalSource } from './migration';
+import { defaultTemplates } from './food';
+import { claimMigration, localSource, migrationOwner } from './migration';
 import { projectUrl, supabase } from './supabase';
 import { Icon } from './components/Icon';
+import { AccountMenu } from './components/AccountMenu';
 
-export function downloadBackup(text: string, raw = false) {
-  const url = URL.createObjectURL(new Blob([text], { type: raw ? 'text/plain' : 'application/json' }));
-  const anchor = document.createElement('a');
-  anchor.href = url; anchor.download = `tabedoki-${raw ? 'original' : 'backup'}-${localDate()}.${raw ? 'txt' : 'json'}`;
-  anchor.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-function LocalBackup({ source }: { source: LocalSource | null }) {
-  if (!source) return null;
-  return <button className="secondary outline" type="button" onClick={() => downloadBackup(source.data ? makeBackup(source.data) : source.raw, !source.data)}>旧データを退避</button>;
-}
-function PreviousLocalBackup() {
-  const [raw] = useState(() => { try { return previousRaw(window.localStorage); } catch { return null; } });
-  if (raw === null) return null;
-  return <button className="secondary outline" type="button" onClick={() => {
-    try { downloadBackup(makeBackup(decodeStored(raw))); }
-    catch { downloadBackup(raw, true); }
-  }}>旧版の置換前データを退避</button>;
-}
 function AccountData({ user, onLogout }: { user: User; onLogout: () => void }) {
   const store = useMemo(() => new CloudStore(supabase!, user.id), [user.id]);
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
@@ -70,29 +52,24 @@ function AccountData({ user, onLogout }: { user: User; onLogout: () => void }) {
     catch (cause) { if (alive.current) setError(cause instanceof Error ? cause.message : '再取得できません。'); }
     finally { pending.current = false; if (alive.current) setBusy(false); }
   }
-  if (snapshot) return <App store={store} initial={snapshot} email={user.email ?? 'Googleアカウント'} onLogout={onLogout}
-    legacyBackup={(!owner || owner === user.id) ? <><LocalBackup source={source} /><PreviousLocalBackup /></> : undefined} />;
+  if (snapshot) return <App store={store} initial={snapshot} email={user.email ?? 'Googleアカウント'} onLogout={onLogout} />;
   const allowed = source?.data && (!owner || owner === user.id);
-  return <Shell>
+  return <Shell account={<AccountMenu email={user.email ?? 'Googleアカウント'} busy={busy} refreshDisabled={!loaded && !error} onRefresh={reload} onLogout={onLogout} />}>
     <h1>{loaded ? 'クラウドを使い始める' : 'クラウドを読み込み中…'}</h1>
-    <p className="account-email">{user.email}</p>
     {error && <p role="alert">{error}</p>}
     {loaded && source && <>
       {(!owner || owner === user.id) && <>
         {source.error ? <p>{source.error}</p> : <p>旧データ：食品{source.data!.items.length}件・定番{source.data!.templates.length}件・買い物{source.data!.shopping.length}件</p>}
-        <LocalBackup source={source} />
-        <PreviousLocalBackup />
       </>}
-      {allowed ? <button className="primary" disabled={busy || Boolean(error)} onClick={() => start(true)}>{user.email} に移行</button> : <p>旧データは移行できません。紐付け済みのアカウントでログインするか、退避したJSONを確認して復元してください。</p>}
+      {allowed ? <button className="primary" disabled={busy || Boolean(error)} onClick={() => start(true)}>{user.email} に移行</button> : <p>旧データは移行できません。紐付け済みのアカウントでログインしてください。</p>}
     </>}
     {loaded && <button className={source ? 'secondary' : 'primary'} disabled={busy || Boolean(error)} onClick={() => start(false)}>{source ? '旧データを使わず開始' : '開始する'}</button>}
-    {(error || loaded) && <button disabled={busy} onClick={reload}>クラウドを再取得</button>}
-    <button disabled={busy} onClick={onLogout}>ログアウト</button>
+    {error && <button disabled={busy} onClick={reload}>クラウドを再取得</button>}
     {busy && <p role="status">保存・確認中…</p>}
   </Shell>;
 }
-function Shell({ children }: { children: React.ReactNode }) {
-  return <div className="page"><header className="topbar"><div className="topbar-inner"><a className="brand" href="/"><span className="brand-mark"><Icon name="cooking-pot" /></span>たべどき</a></div></header><main className="main auth-panel">{children}</main></div>;
+function Shell({ children, account }: { children: React.ReactNode; account?: React.ReactNode }) {
+  return <div className="page"><header className="topbar"><div className="topbar-inner"><a className="brand" href="/"><span className="brand-mark"><Icon name="cooking-pot" /></span>たべどき</a>{account}</div></header><main className="main auth-panel">{children}</main></div>;
 }
 export function AuthGate() {
   const [user, setUser] = useState<User | null>(null);
@@ -133,8 +110,9 @@ export function AuthGate() {
   if (loading) return <Shell><p role="status">認証を確認中…</p></Shell>;
   if (!supabase) return <Shell><h1>接続設定が必要です</h1><p>クラウド接続設定を確認してください。</p></Shell>;
   if (user) return <>{error && <p role="alert" className="notice notice-error">{error}</p>}<div inert={busy}><AccountData key={user.id} user={user} onLogout={logout} /></div>{busy && <p role="status">ログアウト中…</p>}</>;
-  return <Shell><h1>ログイン</h1><p>同じGoogleアカウントで、スマートフォンとPCから利用できます。</p>
+  return <Shell><h1>ログイン</h1><p>食品の期限を記録し、同じGoogleアカウントでスマートフォンとPCから利用できます。</p>
     {error && <p role="alert">{error}</p>}
     <button className="primary" disabled={busy} onClick={login}>{busy ? 'Googleへ移動中…' : 'Googleでログイン'}</button>
+    <p className="auth-links"><a href="/privacy.html">プライバシー</a><a href="/terms.html">利用条件</a></p>
   </Shell>;
 }

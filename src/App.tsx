@@ -1,22 +1,21 @@
 import { useEffect, useRef, useState } from 'react';
 import { MAX_ITEMS, isFood, localDate, normalizedName, type Food, type FoodForm, type FoodStatus, type FoodTemplate } from './food';
-import { applyBackup, makeBackup, type AppData, type BackupData } from './storage';
+import type { AppData } from './storage';
 import { CloudStore, type Snapshot } from './cloud';
 import { addShopping, registerPurchase, setBought, shoppingFrom, type ShoppingItem } from './shopping';
 import { InventoryPage } from './components/InventoryPage';
 import { FoodEditor } from './components/FoodEditor';
 import { ShoppingPage } from './components/ShoppingPage';
-import { BackupPanel } from './components/BackupPanel';
+import { AccountMenu } from './components/AccountMenu';
 import { Icon } from './components/Icon';
 
-type Props = { store: CloudStore; initial: Snapshot; email: string; onLogout: () => void; legacyBackup?: React.ReactNode };
-export function App({ store, initial, email, onLogout, legacyBackup }: Props) {
+type Props = { store: CloudStore; initial: Snapshot; email: string; onLogout: () => void };
+export function App({ store, initial, email, onLogout }: Props) {
   const [data, setData] = useState<AppData>(initial.data);
   const committed = useRef(data);
   const pending = useRef(false);
   const active = useRef(true);
   const [saving, setSaving] = useState(false);
-  const [previous, setPrevious] = useState(initial.previous);
   useEffect(() => { active.current = true; return () => { active.current = false; }; }, []);
   const [screen, setScreen] = useState<'inventory' | 'shopping'>('inventory');
   const [editor, setEditor] = useState<{ item?: Food; purchase?: ShoppingItem; templatesOnly: boolean } | null>(null);
@@ -26,7 +25,6 @@ export function App({ store, initial, email, onLogout, legacyBackup }: Props) {
   const [notice, setNotice] = useState('');
   const [formError, setFormError] = useState('');
   const [today, setToday] = useState(localDate);
-  const hasPrevious = previous !== null;
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>;
     const update = () => {
@@ -51,14 +49,14 @@ export function App({ store, initial, email, onLogout, legacyBackup }: Props) {
     if (editor) setFormError(message);
   }
   function setBlocked(value: boolean) { blockedRef.current = value; setBlockedState(value); }
-  async function commitData(next: AppData, replacement = false): Promise<boolean> {
+  async function commitData(next: AppData): Promise<boolean> {
     if (!active.current || blockedRef.current || pending.current) return false;
     pending.current = true; setSaving(true);
     try {
-      const saved = await store.save(next, replacement);
+      const saved = await store.save(next);
       if (!active.current) return false;
       committed.current = saved.data;
-      setData(saved.data); setPrevious(saved.previous);
+      setData(saved.data);
       return true;
     } catch (error) {
       if (active.current) { showError(error instanceof Error ? error.message : '保存できません。'); setBlocked(true); }
@@ -72,7 +70,7 @@ export function App({ store, initial, email, onLogout, legacyBackup }: Props) {
       const saved = await store.load();
       if (!saved) throw new Error('クラウドデータが見つかりません。再ログインしてください。');
       if (!active.current) return;
-      committed.current = saved.data; setData(saved.data); setPrevious(saved.previous); setBlocked(false);
+      committed.current = saved.data; setData(saved.data); setBlocked(false);
       setFormError(''); setNotice('クラウドを再取得しました。入力中の内容は残っています。');
     } catch (error) { if (active.current) { showError(error instanceof Error ? error.message : '再取得できません。'); setBlocked(true); } }
     finally { pending.current = false; if (active.current) setSaving(false); }
@@ -152,16 +150,6 @@ export function App({ store, initial, email, onLogout, legacyBackup }: Props) {
     const current = committed.current;
     if (await commitData({ ...current, shopping: current.shopping.filter(value => value.id !== item.id) })) setNotice('買い物項目を削除しました。');
   }
-  async function restore(backup: BackupData): Promise<boolean> {
-    return commitData(applyBackup(committed.current, backup), true);
-  }
-  async function restorePrevious() {
-    try {
-      if (!previous) return;
-      if (!window.confirm(`直前の置換前データ（食品${previous.items.length}件・定番${previous.templates.length}件・買い物${previous.shopping.length}件）で現在のデータを置き換えますか？\n退避後の変更はこの復元に含まれません。`)) return;
-      if (await commitData(previous, true)) setNotice('直前の置換前データを復元しました。');
-    } catch (error) { showError(`復元できません：${error instanceof Error ? error.message : '退避が不正です。'}`); }
-  }
   const navigation = <>
     <button type="button" aria-pressed={screen === 'inventory'} onClick={() => setScreen('inventory')}>在庫</button>
     <button type="button" aria-pressed={screen === 'shopping'} onClick={() => setScreen('shopping')}>買い物</button>
@@ -171,13 +159,14 @@ export function App({ store, initial, email, onLogout, legacyBackup }: Props) {
     <header className="topbar"><div className="topbar-inner">
       <a href="/" className="brand" aria-label="たべどき ホーム"><span className="brand-mark"><Icon name="cooking-pot" /></span>たべどき</a>
       <nav className="screen-navigation desktop-navigation" aria-label="画面選択">{navigation}</nav>
-      <button className="header-action" type="button" disabled={blocked || saving} aria-label="定番食品を管理"
-        onClick={() => { setFormError(''); setEditor({ templatesOnly: true }); }}><Icon name="bookmark" />定番食品</button>
+      <div className="header-actions">
+        <button className="header-action" type="button" disabled={blocked || saving} aria-label="定番食品を管理"
+          onClick={() => { setFormError(''); setEditor({ templatesOnly: true }); }}><Icon name="bookmark" />定番食品</button>
+        <AccountMenu email={email} busy={saving} onRefresh={refresh} onLogout={onLogout} />
+      </div>
     </div></header>
     <main className="main">
-      <div className="account-bar"><span>{email}</span><span role="status" aria-label="保存状態">{saving ? '保存・読み込み中…' : blocked ? '要確認' : 'クラウド保存'}</span>
-        <button className="secondary outline" type="button" disabled={saving} onClick={refresh}>再取得</button><button className="secondary outline" type="button" disabled={saving} onClick={onLogout}>ログアウト</button>
-      </div>
+      {saving && <p className="cloud-pending" role="status" aria-label="保存状態">保存・読み込み中…</p>}
       {notice && <div className={`notice ${blocked ? 'notice-error' : ''}`} role="status">
         <span>{notice}</span>
         {blocked ? <button type="button" disabled={saving} onClick={refresh}>クラウドを再取得</button> :
@@ -194,9 +183,6 @@ export function App({ store, initial, email, onLogout, legacyBackup }: Props) {
           onAdd={addToShopping} onBought={changeBought} onRemove={removeShopping} onRegister={item => openForm(undefined, item)} />
       </div>
       </>
-      <BackupPanel data={data} today={today} blocked={blocked} busy={saving}
-        hasPrevious={hasPrevious} onNotice={setNotice} onRestore={restore}
-        onRestorePrevious={restorePrevious} onReadPreviousRaw={() => makeBackup(previous!)} account={email} legacyBackup={legacyBackup} />
     </main>
     <div className="mobile-create-bar mobile-navigation">
       <nav className="screen-navigation" aria-label="画面選択">{navigation}</nav>

@@ -1,10 +1,8 @@
-import { cloudData } from './helpers/cloud.mjs';
+import { cloudData, setCloudData } from './helpers/cloud.mjs';
 import { openCandidates, openFoodActions } from './helpers/inventory.mjs';
 import { test, expect } from './helpers/cloud.mjs';
-import { readFileSync } from 'node:fs';
 import { defaultTemplates } from '../../src/food.ts';
-import { STORAGE_KEY, V2_STORAGE_KEY } from '../../src/storage.ts';
-import { restoreBackup, openBackup } from './helpers/backup.mjs';
+import { STORAGE_KEY } from '../../src/storage.ts';
 
 const stock = { id: 'stock-1', name: '在庫の牛乳', kind: 'use-by', deadline: '2026-12-01', quantity: 7, unit: 'bottle', category: 'eggs-dairy', place: 'chilled', status: 'active', lowStock: false };
 const initial = () => ({ version: 4, items: [stock], templates: defaultTemplates(), shopping: [] });
@@ -29,9 +27,6 @@ async function manage(page) {
 async function newFood(page) {
   await page.getByRole('button', { name: '食品を登録', exact: true }).last().click();
   return page.getByRole('dialog');
-}
-async function upload(page, value, accept = true, notice) {
-  await restoreBackup(page, { name: 'templates.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(value)) }, { accept, notice });
 }
 
 test('定番の追加・編集・削除を保存し、在庫を変えず新規登録に設定を使う', async ({ page }) => {
@@ -102,51 +97,12 @@ test('定番をすべて削除しても再読み込みで初期10件を復活さ
   expect(JSON.parse(await saved(page)).templates).toEqual([]);
 });
 
-test('v1/v2バックアップ復元は現在のカスタム定番を保持する', async ({ page }) => {
-  const templates = [{ ...defaultTemplates()[0], id: 'custom', name: '自分のたまご', quantity: 2 }];
-  await seed(page, { [STORAGE_KEY]: JSON.stringify({ ...initial(), templates }) });
-  await page.goto('/');
-  const { category, unit, ...legacy } = stock;
-  for (const value of [{ version: 1, items: [legacy] }, { version: 2, items: [] }]) {
-    await upload(page, value);
-    expect(JSON.parse(await saved(page)).templates).toEqual(templates);
-  }
-});
 
-test('v4の実バックアップは食品と定番を一緒に復元し、取消しでは変えない', async ({ page }) => {
-  // 待機の代用ではなく、読取りが次の操作より遅れる条件を再現する。
-  await page.addInitScript(() => {
-    const read = File.prototype.text;
-    File.prototype.text = async function() {
-      await new Promise(resolve => setTimeout(resolve, 100));
-      return read.call(this);
-    };
-  });
-  const data = { ...initial(), templates: [{ ...defaultTemplates()[0], id: 'custom', name: '自分のたまご', quantity: 4 }] };
-  await seed(page, { [STORAGE_KEY]: JSON.stringify(data) });
-  await page.goto('/');
-  const waiting = page.waitForEvent('download');
-  await openBackup(page);
-  await page.getByRole('button', { name: 'バックアップを保存', exact: true }).click();
-  const path = await (await waiting).path();
-  const exported = JSON.parse(readFileSync(path, 'utf8'));
-  expect(exported).toMatchObject(data);
-  await upload(page, { version: 3, items: [], templates: [] }, false);
-  expect(JSON.parse(await saved(page))).toEqual(data);
-  await upload(page, { version: 3, items: [], templates: [] });
-  await restoreBackup(page, path);
-  await expect.poll(async () => JSON.parse(await saved(page))).toEqual(data);
-});
 
-test('不正な定番の復元と重複名を拒否し、50件上限を表示する', async ({ page }) => {
+test('定番の重複名を拒否し、50件上限を表示する', async ({ page }) => {
   const raw = JSON.stringify(initial());
   await seed(page, { [STORAGE_KEY]: raw });
   await page.goto('/');
-  for (const templates of [null, [{ ...defaultTemplates()[0], quantity: 0 }], [defaultTemplates()[0], defaultTemplates()[0]], Array(51).fill(defaultTemplates()[0])]) {
-    await page.getByLabel('バックアップファイルを選択').setInputFiles({ name: 'bad.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify({ version: 3, items: [], templates })) });
-    await expect(page.getByText(/復元できません/)).toBeVisible();
-    expect(JSON.parse(await saved(page))).toEqual(JSON.parse(raw));
-  }
   const dialog = await manage(page);
   await dialog.getByRole('button', { name: '定番食品を追加' }).click();
   await dialog.getByRole('textbox').fill('  牛乳  ');
@@ -155,7 +111,7 @@ test('不正な定番の復元と重複名を拒否し、50件上限を表示す
   expect(JSON.parse(await saved(page))).toEqual(JSON.parse(raw));
   await dialog.getByRole('button', { name: '閉じる' }).click();
   const templates = Array.from({ length: 50 }, (_, i) => ({ ...defaultTemplates()[0], id: 'template-' + i, name: '定番' + i }));
-  await upload(page, { version: 3, items: [stock], templates });
+  await setCloudData(page, { version: 4, items: [stock], templates, shopping: [] });
   await manage(page);
   await expect(page.getByRole('button', { name: '定番食品を追加' })).toBeDisabled();
   await expect(page.getByText('50 / 50件')).toBeVisible();
