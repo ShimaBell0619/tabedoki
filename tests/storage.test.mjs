@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { defaultTemplates, MAX_ITEMS, MAX_TEMPLATES } from '../src/domain/food.ts';
+import { defaultTemplates, MAX_TEMPLATES } from '../src/domain/templates.ts';
+import { MAX_ITEMS } from '../src/domain/food.ts';
 import { MAX_SHOPPING, shoppingFrom, registerPurchase } from '../src/domain/shopping.ts';
 import {
   STORAGE_KEY, V3_STORAGE_KEY, RECOVERY_KEY, V2_STORAGE_KEY, LEGACY_STORAGE_KEY, BACKUP_MAX_BYTES,

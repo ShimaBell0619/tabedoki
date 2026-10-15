@@ -1,10 +1,8 @@
-import {
-  MAX_ITEMS, defaultTemplates, isFood, isV3Food, isLegacyFood, validateTemplates,
-  type Food, type FoodTemplate, type LegacyFood,
-} from '../domain/food.ts';
+import type { AppData } from '../domain/app-data.ts';
+import { MAX_ITEMS, isFood, isV3Food, isLegacyFood, type Food, type FoodTemplate, type LegacyFood } from '../domain/food.ts';
+import { defaultTemplates, validateTemplates } from '../domain/templates.ts';
 import { validateShopping, type ShoppingItem } from '../domain/shopping.ts';
 
-export type AppData = { items: Food[]; templates: FoodTemplate[]; shopping: ShoppingItem[] };
 export const LEGACY_STORAGE_KEY = 'tabedoki:foods:v1';
 export const V2_STORAGE_KEY = 'tabedoki:foods:v2';
 // A separate key prevents stale v3 tabs from overwriting v4 data.

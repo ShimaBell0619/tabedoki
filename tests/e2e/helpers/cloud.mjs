@@ -1,6 +1,6 @@
 import { test as base, expect } from '@playwright/test';
 import { decodeStored } from '../../../src/data/storage.ts';
-import { defaultTemplates } from '../../../src/domain/food.ts';
+import { defaultTemplates } from '../../../src/domain/templates.ts';
 export { expect };
 export const userId = '00000000-0000-4000-a000-000000000001';
 export const test = base.extend({

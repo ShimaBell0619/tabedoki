@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from './database.types.ts';
-import { validateData, type AppData } from './storage.ts';
+import { validateData } from './storage.ts';
+import type { AppData } from '../domain/app-data.ts';
 
 export type CloudRow = { user_id: string; data: unknown; revision: number; write_id: string; previous: unknown | null };
 export type Snapshot = { data: AppData; revision: number; previous: AppData | null; writeId: string };

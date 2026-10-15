@@ -1,5 +1,5 @@
 import { test, expect, userId } from './helpers/cloud.mjs';
-import { defaultTemplates } from '../../src/domain/food.ts';
+import { defaultTemplates } from '../../src/domain/templates.ts';
 import { STORAGE_KEY, V3_STORAGE_KEY, V2_STORAGE_KEY, LEGACY_STORAGE_KEY } from '../../src/data/storage.ts';
 import { migrationKey } from '../../src/data/migration.ts';
 const food={id:'local',name:'移行する牛乳',category:'eggs-dairy',kind:'use-by',deadline:'2026-12-31',quantity:2,unit:'bottle',place:'chilled',status:'active',lowStock:true};

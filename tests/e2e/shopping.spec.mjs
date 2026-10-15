@@ -1,6 +1,6 @@
 import { cloudData, setCloudData } from './helpers/cloud.mjs';
 import { test, expect } from './helpers/cloud.mjs';
-import { defaultTemplates } from '../../src/domain/food.ts';
+import { defaultTemplates } from '../../src/domain/templates.ts';
 import { STORAGE_KEY } from '../../src/data/storage.ts';
 import { shoppingFrom } from '../../src/domain/shopping.ts';
 

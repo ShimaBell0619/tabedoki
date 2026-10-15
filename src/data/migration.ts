@@ -1,4 +1,5 @@
-import { decodeStored, STORAGE_KEY, V3_STORAGE_KEY, V2_STORAGE_KEY, LEGACY_STORAGE_KEY, type AppData } from './storage.ts';
+import { decodeStored, STORAGE_KEY, V3_STORAGE_KEY, V2_STORAGE_KEY, LEGACY_STORAGE_KEY } from './storage.ts';
+import type { AppData } from '../domain/app-data.ts';
 type Store = Pick<Storage, 'getItem' | 'setItem'>;
 export type LocalSource = { raw: string; data: AppData | null; error: string };
 /** Read without upgrading or touching any legacy key, even for v1-v3. */

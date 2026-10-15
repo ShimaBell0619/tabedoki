@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { defaultTemplates } from '../src/domain/food.ts';
+import { defaultTemplates } from '../src/domain/templates.ts';
 import { MAX_SHOPPING, validateShopping, shoppingFrom, addShopping, setBought, replenishmentCandidates, foodFormFromShopping, registerPurchase } from '../src/domain/shopping.ts';
 const food = { ...defaultTemplates()[2], deadline: '2020-01-01', status: 'active', lowStock: true, quantity: 9 };
 
