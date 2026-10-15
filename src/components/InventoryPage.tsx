@@ -137,7 +137,7 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
           const amount = view === 'all' && group.finishedQuantity > 0
             ? (group.activeQuantity > 0 ? '管理中 ' + group.activeQuantity + units[group.unit] + '・' : '') +
               '完了 ' + group.finishedQuantity + units[group.unit]
-            : (view === 'finished' ? '完了 ' : '合計 ') + group.quantity + units[group.unit];
+            : group.quantity + units[group.unit];
           return <li className={'food-row' + (group.activeQuantity === 0 ? ' completed' : '')} key={group.key}>
             <details className="food-details">
               <summary aria-label={group.name + 'の詳細、' + amount + '、' + kinds[group.kind] + ' ' + main.deadline + '、' +
@@ -148,7 +148,7 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
                   {group.lowStock && <span className="low-stock">残りわずか</span>}
                 </div>
                 <div className="food-deadline">
-                  <span className="deadline-prefix">{main.status === 'active' ? '最短期限' : '期限'}</span>
+                  {group.items.length > 1 && <span className="deadline-prefix">{main.status === 'active' ? '最短期限' : '期限'}</span>}
                   <time dateTime={main.deadline} aria-label={kinds[group.kind] + ' ' + main.deadline}>{date}</time>
                   <span className={'deadline-chip state-' + state}>
                     {main.status === 'active' ? deadlineLabel(main.deadline, today) :
@@ -158,7 +158,7 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
               </summary>
               <div className="food-expanded">
                 <div className="food-meta"><span>{kinds[group.kind]}</span>{sort !== 'category' && <span>{categories[group.category]}</span>}</div>
-                <h4 className="stock-heading">期限別の在庫</h4>
+                {group.items.length > 1 && <h4 className="stock-heading">期限別の在庫</h4>}
                 <ul className="stock-lot-list">{group.items.map(item => <li className="stock-lot" key={item.id}>
                   <div className="stock-lot-info">
                     <time dateTime={item.deadline} aria-label={kinds[item.kind] + ' ' + item.deadline}>
