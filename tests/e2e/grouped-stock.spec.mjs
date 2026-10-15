@@ -27,7 +27,7 @@ for (const width of [320, 390, 1440]) {
     await page.clock.install({ time: new Date('2026-10-15T12:00:00') });
     await setup(page);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('食品一覧 3件');
-    const row = page.locator('.food-row').filter({ has: page.getByRole('heading', { name: 'しょうゆ', exact: true }) }).first();
+    const row = page.locator('.food-row').filter({ has: page.locator('summary[aria-label*="賞味期限"]') }).filter({ has: page.getByRole('heading', { name: 'しょうゆ', exact: true }) });
     await expect(row.locator('.quantity')).toHaveText('合計 3本');
     await expect(row.locator('summary time')).toHaveAttribute('datetime', '2026-10-31');
     await row.locator('summary').click();
@@ -68,7 +68,7 @@ for (const width of [320, 390, 1440]) {
 
     await page.reload();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('食品一覧 3件');
-    await expect(page.locator('.food-row').filter({ has: page.getByRole('heading', { name: 'しょうゆ', exact: true }) }).first().locator('.quantity')).toHaveText('合計 5本');
+    await expect(page.locator('.food-row').filter({ has: page.locator('summary[aria-label*="賞味期限"]') }).filter({ has: page.getByRole('heading', { name: 'しょうゆ', exact: true }) }).locator('.quantity')).toHaveText('合計 5本');
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
   });
 }
@@ -77,17 +77,18 @@ test('カテゴリ・単位・期限種別が異なる食品を合算せず、�
   await setup(page);
   await page.getByRole('button', { name: 'すべて', exact: true }).first().click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('食品一覧 3件');
-  const row = page.locator('.food-row').filter({ has: page.getByRole('heading', { name: 'しょうゆ', exact: true }) }).first();
+  const row = page.locator('.food-row').filter({ has: page.locator('summary[aria-label*="賞味期限"]') }).filter({ has: page.getByRole('heading', { name: 'しょうゆ', exact: true }) });
   await row.locator('summary').click();
   await expect(row.locator('.stock-lot')).toHaveCount(3);
   await expect(row.locator('.quantity')).toHaveText('管理中 3本・完了 5本');
   await page.getByRole('button', { name: '完了', exact: true }).click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('食品一覧 1件');
   const completed = page.locator('.food-row').first();
-  await completed.locator('summary').click();
-  await completed.getByRole('button', { name: '戻す' }).click();
+  const restore = completed.getByRole('button', { name: '戻す' });
+  if (!await restore.isVisible()) await completed.locator('summary').click();
+  await restore.click();
   await page.getByRole('button', { name: '管理中', exact: true }).click();
-  const restored = page.locator('.food-row').filter({ has: page.getByRole('heading', { name: 'しょうゆ', exact: true }) }).first();
+  const restored = page.locator('.food-row').filter({ has: page.locator('summary[aria-label*="賞味期限"]') }).filter({ has: page.getByRole('heading', { name: 'しょうゆ', exact: true }) });
   await expect(restored.locator('.quantity')).toHaveText('合計 8本');
   await page.getByRole('button', { name: /^絞り込み/ }).click();
   await page.getByLabel('保存場所で絞り込み').selectOption('chilled');

@@ -148,6 +148,7 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
                   {group.lowStock && <span className="low-stock">残りわずか</span>}
                 </div>
                 <div className="food-deadline">
+                  <span className="deadline-prefix">{main.status === 'active' ? '最短期限' : '期限'}</span>
                   <time dateTime={main.deadline} aria-label={kinds[group.kind] + ' ' + main.deadline}>{date}</time>
                   <span className={'deadline-chip state-' + state}>
                     {main.status === 'active' ? deadlineLabel(main.deadline, today) :

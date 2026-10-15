@@ -239,3 +239,5 @@ summary:focus-visible{outline:3px solid #ca6a24;outline-offset:3px}
   .stock-add-form{padding:10px}
   .stock-lot-controls .food-actions{justify-content:flex-end}
 }
+
+.deadline-prefix{font-size:12px;color:var(--muted)}
