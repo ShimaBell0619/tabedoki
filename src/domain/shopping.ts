@@ -1,5 +1,5 @@
 import { initialFoodForm, isFood, normalizedName, type Food, type FoodForm, type FoodTemplate } from './food.ts';
-import type { AppData } from './storage.ts';
+import type { AppData } from '../data/storage.ts';
 
 export type ShoppingItem = FoodTemplate & { bought: boolean };
 export const MAX_SHOPPING = 300;

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { defaultTemplates } from '../src/food.ts';
-import { MAX_SHOPPING, validateShopping, shoppingFrom, addShopping, setBought, replenishmentCandidates, foodFormFromShopping, registerPurchase } from '../src/shopping.ts';
+import { defaultTemplates } from '../src/domain/food.ts';
+import { MAX_SHOPPING, validateShopping, shoppingFrom, addShopping, setBought, replenishmentCandidates, foodFormFromShopping, registerPurchase } from '../src/domain/shopping.ts';
 const food = { ...defaultTemplates()[2], deadline: '2020-01-01', status: 'active', lowStock: true, quantity: 9 };
 
 test('在庫は数量1、定番は設定数量を写し、購入の期限は常に空欄', () => {

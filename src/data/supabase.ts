@@ -1,4 +1,4 @@
-import type { Database } from './database.types';
+import type { Database } from './database.types.ts';
 import { createClient } from '@supabase/supabase-js';
 const env = (import.meta as ImportMeta & { env: Record<string, string> }).env;
 export const projectUrl = env.VITE_SUPABASE_URL;

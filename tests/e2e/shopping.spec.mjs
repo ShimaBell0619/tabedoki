@@ -1,8 +1,8 @@
 import { cloudData, setCloudData } from './helpers/cloud.mjs';
 import { test, expect } from './helpers/cloud.mjs';
-import { defaultTemplates } from '../../src/food.ts';
-import { STORAGE_KEY } from '../../src/storage.ts';
-import { shoppingFrom } from '../../src/shopping.ts';
+import { defaultTemplates } from '../../src/domain/food.ts';
+import { STORAGE_KEY } from '../../src/data/storage.ts';
+import { shoppingFrom } from '../../src/domain/shopping.ts';
 
 const food = { id: 'stock', name: '牛乳', category: 'eggs-dairy', kind: 'use-by', deadline: '2026-12-20', quantity: 9, unit: 'bottle', place: 'chilled', status: 'active', lowStock: false };
 const initial = (items = [food], shopping = []) => ({ version: 4, items, templates: defaultTemplates(), shopping });

@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
-import { units, type Food, type FoodTemplate } from '../food';
-import { replenishmentCandidates, type ShoppingItem } from '../shopping';
+import { units, type Food, type FoodTemplate } from '../../domain/food';
+import { replenishmentCandidates, type ShoppingItem } from '../../domain/shopping';
 
 type Props = {
   items: ShoppingItem[];

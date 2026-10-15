@@ -2,11 +2,11 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import {
   applyFoodCandidate, categories, initialFoodForm, previousFoods, parseDeadline, units, places, kinds,
   type DeadlineKind, type Food, type FoodCategory, type FoodForm, type FoodTemplate, type QuantityUnit, type StoragePlace,
-} from '../food';
-import { TemplateManager } from './TemplateManager';
+} from '../../domain/food';
+import { TemplateManager } from '../templates/TemplateManager';
 import { DeadlineInput } from './DeadlineInput';
-import { Icon } from './Icon';
-import { foodFormFromShopping, type ShoppingItem } from '../shopping';
+import { Icon } from '../../components/Icon';
+import { foodFormFromShopping, type ShoppingItem } from '../../domain/shopping';
 
 type Props = {
   item?: Food;

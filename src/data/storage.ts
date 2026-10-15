@@ -1,8 +1,8 @@
 import {
   MAX_ITEMS, defaultTemplates, isFood, isV3Food, isLegacyFood, validateTemplates,
   type Food, type FoodTemplate, type LegacyFood,
-} from './food.ts';
-import { validateShopping, type ShoppingItem } from './shopping.ts';
+} from '../domain/food.ts';
+import { validateShopping, type ShoppingItem } from '../domain/shopping.ts';
 
 export type AppData = { items: Food[]; templates: FoodTemplate[]; shopping: ShoppingItem[] };
 export const LEGACY_STORAGE_KEY = 'tabedoki:foods:v1';

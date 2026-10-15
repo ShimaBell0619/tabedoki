@@ -1,8 +1,8 @@
 import { cloudData } from './helpers/cloud.mjs';
 import { openCandidates, openFoodActions } from './helpers/inventory.mjs';
 import { test, expect } from './helpers/cloud.mjs';
-import { defaultTemplates } from '../../src/food.ts';
-import { V3_STORAGE_KEY } from '../../src/storage.ts';
+import { defaultTemplates } from '../../src/domain/food.ts';
+import { V3_STORAGE_KEY } from '../../src/data/storage.ts';
 
 async function seed(page) {
   await page.clock.install({ time: new Date('2026-10-11T12:00:00') });

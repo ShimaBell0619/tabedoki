@@ -37,11 +37,20 @@ checkはReact Hooks規則とeffect依存を含み、design:lintはlockfileで固
 
 買い物は名前を入力するか在庫・定番から追加します。在庫で「残りわずか」を設定すると、同名の管理中在庫がすべて残りわずかで、買い物に未掲載の場合に補充候補を表示します。購入済みのチェックだけでは在庫は増えません。「在庫に登録」で今回の期限を入力し、保存が成功すると買い物から消えます。
 
+## ソース構成
+
+- `src/app`：認証後の起動と画面編成。
+- `src/features/inventory`、`shopping`、`templates`、`auth`：各機能の画面・操作。
+- `src/domain`：食品・買い物の型とルール。
+- `src/data`：Supabase接続、クラウド保存、保存形式の検証と旧データ移行。
+- `src/components`：機能に依存しない共有表示部品。
+- `src/styles`：視覚設計に対応するスタイル。
+
 ## 接続設定・本番切替
 
 `.env.example` の2変数を `.env.local` に設定します。Vercelでは同名変数を対象環境に設定してください。ブラウザへ渡すのはURLとPublishable Keyのみです。Google Client SecretはSupabaseのGoogle Providerに保存し、Vercel・GitHub・ソースに置きません。
 
-- DB変更：`supabase/migrations`。本人のみのRLS、列単位GRANT、DB側revision加算。実DB権限テスト：`supabase/tests/user_data.sql`（全変更をrollback）。型は実DBから生成した `src/database.types.ts`。
+- DB変更：`supabase/migrations`。本人のみのRLS、列単位GRANT、DB側revision加算。実DB権限テスト：`supabase/tests/user_data.sql`（全変更をrollback）。型は実DBから生成した `src/data/database.types.ts`。
 - Supabase Auth：Googleのみ有効。Google Web OAuthのリダイレクトは `https://<project-ref>.supabase.co/auth/v1/callback`。SupabaseのSite URLは本番公開元、Redirect URLsは本番・対象Preview・localhostの正確なURLを登録します。公開元全体へのワイルドカードは使いません。
 - E2E：ビルド時に架空の専用URLを設定してAPIをモックします。実Google同意画面や実DBへの接続は自動テストと分けます。
 - Freeには自動バックアップ・SLAがなく、非利用で停止することがあります。停止時は管理者がSupabaseを復旧します。必要なデータ退避は管理者がDBから行います。

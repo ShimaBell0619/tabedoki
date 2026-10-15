@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { daysLeft, deadlineState, validDate, localDate, categories, MAX_ITEMS, MAX_TEMPLATES, validateTemplates, defaultTemplates, initialFoodForm, applyFoodCandidate, previousFoods, isFood, groupFoods, foodGroupKey, addStockToFoods } from '../src/food.ts';
-import { validateBackup, makeBackup, readData, writeData, STORAGE_KEY, V3_STORAGE_KEY, V2_STORAGE_KEY, LEGACY_STORAGE_KEY, BACKUP_MAX_BYTES } from '../src/storage.ts';
+import { daysLeft, deadlineState, validDate, localDate, categories, MAX_ITEMS, MAX_TEMPLATES, validateTemplates, defaultTemplates, initialFoodForm, applyFoodCandidate, previousFoods, isFood, groupFoods, foodGroupKey, addStockToFoods } from '../src/domain/food.ts';
+import { validateBackup, makeBackup, readData, writeData, STORAGE_KEY, V3_STORAGE_KEY, V2_STORAGE_KEY, LEGACY_STORAGE_KEY, BACKUP_MAX_BYTES } from '../src/data/storage.ts';
 const foodTemplates = defaultTemplates();
 const item = { id: '1', name: '牛乳', category: 'eggs-dairy', kind: 'use-by', deadline: '2026-10-12', quantity: 1, unit: 'bottle', place: 'chilled', status: 'active', lowStock: false };
 const { category, unit, lowStock, ...legacyItem } = item;

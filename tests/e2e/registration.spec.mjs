@@ -1,8 +1,8 @@
 import { cloudData } from './helpers/cloud.mjs';
 import { openCandidates, openFoodActions } from './helpers/inventory.mjs';
 import { test, expect } from './helpers/cloud.mjs';
-import { defaultTemplates } from '../../src/food.ts';
-import { STORAGE_KEY, V3_STORAGE_KEY } from '../../src/storage.ts';
+import { defaultTemplates } from '../../src/domain/food.ts';
+import { STORAGE_KEY, V3_STORAGE_KEY } from '../../src/data/storage.ts';
 
 const key = STORAGE_KEY;
 const v3Key = V3_STORAGE_KEY;

@@ -1,5 +1,5 @@
 import { useId, useState, type RefObject } from 'react';
-import { parseDeadline } from '../food';
+import { parseDeadline } from '../../domain/food';
 
 type Props = { value: string; onChange: (value: string) => void; inputRef: RefObject<HTMLInputElement | null> };
 

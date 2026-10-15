@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { App } from './App';
-import { CloudStore, type Snapshot } from './cloud';
-import { defaultTemplates } from './food';
-import { claimMigration, localSource, migrationOwner } from './migration';
-import { projectUrl, supabase } from './supabase';
-import { Icon } from './components/Icon';
-import { AccountMenu } from './components/AccountMenu';
+import { CloudStore, type Snapshot } from '../data/cloud';
+import { defaultTemplates } from '../domain/food';
+import { claimMigration, localSource, migrationOwner } from '../data/migration';
+import { projectUrl, supabase } from '../data/supabase';
+import { Icon } from '../components/Icon';
+import { AccountMenu } from '../features/auth/AccountMenu';
 
 function AccountData({ user, onLogout }: { user: User; onLogout: () => void }) {
   const store = useMemo(() => new CloudStore(supabase!, user.id), [user.id]);

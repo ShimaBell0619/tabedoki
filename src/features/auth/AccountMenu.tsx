@@ -1,5 +1,5 @@
 import { useId, useRef } from 'react';
-import { Icon } from './Icon';
+import { Icon } from '../../components/Icon';
 
 type Props = { email: string; busy: boolean; refreshDisabled?: boolean; onRefresh: () => void; onLogout: () => void };
 export function AccountMenu({ email, busy, refreshDisabled = false, onRefresh, onLogout }: Props) {
