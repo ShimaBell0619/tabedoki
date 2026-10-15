@@ -36,7 +36,7 @@
   button, input, select { font: inherit; }
   button { cursor: pointer; }
   button:disabled { cursor: not-allowed; opacity: .5; }
-  input[type="checkbox"] { margin: 4px 3px 3px 4px; }
+  input[type="checkbox"] { margin: 3px 3px 3px 4px; }
   input::placeholder { color: #757575; opacity: 1; }
   :where(button, input, select, a, summary, [role="menuitem"]):focus-visible {
     outline: 3px solid var(--color-focus);
