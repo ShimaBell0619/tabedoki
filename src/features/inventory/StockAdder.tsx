@@ -1,3 +1,6 @@
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { NativeSelect } from '@/components/ui/native-select';
 import { useRef, useState, type FormEvent } from 'react';
 import { parseDeadline } from '../../domain/deadline';
 import { places, type Food, type StoragePlace } from '../../domain/food';
@@ -34,24 +37,27 @@ export function StockAdder({ base, blocked, onAdd, onClose }: Props) {
     } finally { saving.current = false; }
   }
 
-  return <form className="stock-add-form" aria-label={base.name + 'の在庫を追加'} onSubmit={submit}>
+  return <form className={`stock-add-form [&_input]:min-h-11 [&_input]:rounded-lg [&_input]:px-2.5 [&_input]:py-2 flex flex-col gap-3
+          rounded-[10px] border border-border bg-panel p-3.5 [&_h4]:m-0 [&_h4]:text-sm [&_h4]:font-bold [&_label]:flex
+          [&_label]:flex-col [&_label]:gap-[5px] [&_label]:text-[13px] [&_label]:font-[650]
+          [&_.deadline-input_.form-help]:mt-1.5 [&_.deadline-input_.form-help]:mb-0 tiny:p-2.5`} aria-label={base.name + 'の在庫を追加'} onSubmit={submit}>
     <h4>{base.name}の在庫を追加</h4>
     <DeadlineInput value={deadline} onChange={setDeadline} inputRef={input} />
-    <div className="stock-add-fields">
+    <div className="stock-add-fields grid grid-cols-2 gap-2.5">
       <label>数量
-        <input type="number" min="1" max="999" step="1" required value={quantity}
+        <Input className="min-h-11 rounded-lg px-2.5 py-2 mobile:px-2.5" type="number" min="1" max="999" step="1" required value={quantity}
           onChange={event => setQuantity(event.target.value)} />
       </label>
       <label>保存場所
-        <select value={place} onChange={event => setPlace(event.target.value as StoragePlace)}>
+        <NativeSelect className="min-h-11 rounded-lg px-2.5 py-2 mobile:px-2.5" value={place} onChange={event => setPlace(event.target.value as StoragePlace)}>
           {Object.entries(places).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-        </select>
+        </NativeSelect>
       </label>
     </div>
-    {error && <p className="form-error" role="alert">{error}</p>}
-    <div className="stock-add-actions">
-      <button type="button" className="secondary" onClick={onClose}>キャンセル</button>
-      <button type="submit" className="primary" disabled={blocked}>追加する</button>
+    {error && <p className="form-error m-0 rounded-lg bg-[#fff0ec] p-3 text-[13px] text-[#8e372b] wrap-anywhere" role="alert">{error}</p>}
+    <div className="stock-add-actions flex flex-wrap justify-end gap-2 [&_button]:min-h-11">
+      <Button variant="secondary" type="button" className="secondary" onClick={onClose}>キャンセル</Button>
+      <Button variant="default" type="submit" className="primary" disabled={blocked}>追加する</Button>
     </div>
   </form>;
 }

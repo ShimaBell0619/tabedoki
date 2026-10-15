@@ -6,7 +6,7 @@ const food={id:'local',name:'移行する牛乳',category:'eggs-dairy',kind:'use
 const empty={items:[],templates:[],shopping:[]};
 test('ログイン前に在庫を表示せず、ログアウトで画面の個人データを破棄する',async({page})=>{
  await page.goto('/');await expect(page.getByRole('heading',{name:/食品一覧/})).toBeVisible();
- await page.getByRole('button',{name:'アカウント',exact:true}).click();await page.getByRole('button',{name:'ログアウト',exact:true}).click();await expect(page.getByRole('button',{name:'Googleでログイン'})).toBeVisible();
+ await page.getByRole('button',{name:'アカウント',exact:true}).click();await page.getByRole('menuitem',{name:'ログアウト',exact:true}).click();await expect(page.getByRole('button',{name:'Googleでログイン'})).toBeVisible();
  await expect(page.getByRole('heading',{name:/食品一覧/})).toHaveCount(0);await page.reload();await expect(page.getByRole('button',{name:'Googleでログイン'})).toBeVisible();
 });
 for(const [key,version] of [[LEGACY_STORAGE_KEY,1],[V2_STORAGE_KEY,2],[V3_STORAGE_KEY,3],[STORAGE_KEY,4]]) {

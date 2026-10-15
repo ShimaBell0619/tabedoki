@@ -9,6 +9,7 @@ function scan(dir) {
 }
 const files = [...scan('scripts'), ...scan('tests')];
 if (existsSync('playwright.config.mjs')) files.push('playwright.config.mjs');
+if (existsSync('vite.config.mjs')) files.push('vite.config.mjs');
 for (const file of files.filter(path => path.endsWith('.mjs'))) {
   const result = spawnSync(process.execPath, ['--check', file], { stdio: 'inherit' });
   if (result.status !== 0) process.exit(result.status || 1);
