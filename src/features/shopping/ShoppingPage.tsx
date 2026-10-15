@@ -66,6 +66,5 @@ export function ShoppingPage({ items, foods, templates, blocked, onAdd, onBought
           aria-label={`${food.name}を買い物に追加`}>追加する</Button>
       </li>)}</ul>
     </section>}
-    <p className="form-help mt-[-4px] text-xs leading-[1.7] text-muted">購入済みから「在庫に登録」を選び、今回の期限を入力してください。</p>
   </section>;
 }

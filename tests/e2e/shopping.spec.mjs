@@ -40,6 +40,8 @@ for (const width of [320, 390, 1440]) {
     await expect(page.getByRole('status').filter({ hasText: '買い物に追加済み' })).toBeVisible();
     await expect(page.getByRole('button', { name: '牛乳を買い物に追加', exact: true })).toHaveCount(0);
     await shopping(page);
+    // 購入済みがなくても表示されていた重複案内を廃止。登録操作は購入済み行に残す。
+    await expect(page.getByText('購入済みから「在庫に登録」を選び、今回の期限を入力してください。')).toHaveCount(0);
     await expect(page.getByLabel('補充候補')).toHaveCount(0);
     await page.getByLabel('牛乳の購入状態').click();
     await expect(page.getByLabel('牛乳の購入状態')).toBeChecked();
