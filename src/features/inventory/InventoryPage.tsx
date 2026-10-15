@@ -3,11 +3,11 @@ import {
   categories, units, places, kinds, deadlineState, deadlineLabel, deadlineFilters, matchesDeadline, groupFoods,
   type Food, type FoodGroup, type FoodCategory, type StoragePlace, type FoodStatus, type DeadlineFilter,
   normalizedName,
-} from '../food';
-import type { ShoppingItem } from '../shopping';
+} from '../../domain/food';
+import type { ShoppingItem } from '../../domain/shopping';
 import { FoodActions } from './FoodActions';
 import { StockAdder } from './StockAdder';
-import { Icon } from './Icon';
+import { Icon } from '../../components/Icon';
 
 type Props = {
   items: Food[];

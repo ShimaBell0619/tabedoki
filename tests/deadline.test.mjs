@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { parseDeadline, matchesDeadline } from '../src/food.ts';
+import { parseDeadline, matchesDeadline } from '../src/domain/food.ts';
 
 test('8桁・ISO・閏日・年の範囲を検証し途中入力を補正しない', () => {
   for (const raw of ['20280229', '2028-02-29', ' 20280229 ']) assert.equal(parseDeadline(raw), '2028-02-29');

@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { MAX_ITEMS, isFood, addStockToFoods, localDate, normalizedName, type Food, type FoodForm, type FoodStatus, type FoodTemplate, type StoragePlace } from './food';
-import type { AppData } from './storage';
-import { CloudStore, type Snapshot } from './cloud';
-import { addShopping, registerPurchase, setBought, shoppingFrom, type ShoppingItem } from './shopping';
-import { InventoryPage } from './components/InventoryPage';
-import { FoodEditor } from './components/FoodEditor';
-import { ShoppingPage } from './components/ShoppingPage';
-import { AccountMenu } from './components/AccountMenu';
-import { Icon } from './components/Icon';
+import { MAX_ITEMS, isFood, addStockToFoods, localDate, normalizedName, type Food, type FoodForm, type FoodStatus, type FoodTemplate, type StoragePlace } from '../domain/food';
+import type { AppData } from '../data/storage';
+import { CloudStore, type Snapshot } from '../data/cloud';
+import { addShopping, registerPurchase, setBought, shoppingFrom, type ShoppingItem } from '../domain/shopping';
+import { InventoryPage } from '../features/inventory/InventoryPage';
+import { FoodEditor } from '../features/inventory/FoodEditor';
+import { ShoppingPage } from '../features/shopping/ShoppingPage';
+import { AccountMenu } from '../features/auth/AccountMenu';
+import { Icon } from '../components/Icon';
 
 type Props = { store: CloudStore; initial: Snapshot; email: string; onLogout: () => void };
 export function App({ store, initial, email, onLogout }: Props) {

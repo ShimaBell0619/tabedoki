@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CloudStore, decodeRow } from '../src/cloud.ts';
-import { claimMigration, localSource, migrationOwner } from '../src/migration.ts';
-import { STORAGE_KEY, V3_STORAGE_KEY } from '../src/storage.ts';
+import { CloudStore, decodeRow } from '../src/data/cloud.ts';
+import { claimMigration, localSource, migrationOwner } from '../src/data/migration.ts';
+import { STORAGE_KEY, V3_STORAGE_KEY } from '../src/data/storage.ts';
 const data = { items: [], templates: [], shopping: [] };
 const row = (revision=1, id='A', value=data, write='existing') => ({ user_id:id,data:{version:4,...value},revision,write_id:write,previous:null });
 function client(initial=row()) {

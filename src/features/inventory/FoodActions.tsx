@@ -1,6 +1,6 @@
 import { useId, useRef, useState } from 'react';
-import type { Food } from '../food';
-import { Icon } from './Icon';
+import type { Food } from '../../domain/food';
+import { Icon } from '../../components/Icon';
 
 type Props = {
   item: Food;

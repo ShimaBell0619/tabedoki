@@ -1,7 +1,7 @@
 import { cloudData } from './helpers/cloud.mjs';
 import { test, expect } from './helpers/cloud.mjs';
-import { defaultTemplates } from '../../src/food.ts';
-import { V3_STORAGE_KEY } from '../../src/storage.ts';
+import { defaultTemplates } from '../../src/domain/food.ts';
+import { V3_STORAGE_KEY } from '../../src/data/storage.ts';
 
 for (const width of [320, 390, 1440]) {
   test(`${width}pxで長い食品名・翌年・期限条件・場所別と展開を確認する`, async ({ page }, info) => {

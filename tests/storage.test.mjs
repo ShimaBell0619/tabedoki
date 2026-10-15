@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { defaultTemplates, MAX_ITEMS, MAX_TEMPLATES } from '../src/food.ts';
-import { MAX_SHOPPING, shoppingFrom, registerPurchase } from '../src/shopping.ts';
+import { defaultTemplates, MAX_ITEMS, MAX_TEMPLATES } from '../src/domain/food.ts';
+import { MAX_SHOPPING, shoppingFrom, registerPurchase } from '../src/domain/shopping.ts';
 import {
   STORAGE_KEY, V3_STORAGE_KEY, RECOVERY_KEY, V2_STORAGE_KEY, LEGACY_STORAGE_KEY, BACKUP_MAX_BYTES,
   readData, writeData, replaceData, previousData, previousRaw, validateBackup, makeBackup, applyBackup,
-} from '../src/storage.ts';
+} from '../src/data/storage.ts';
 
 const food = { id: 'food', name: ' 牛乳 ', category: 'eggs-dairy', kind: 'use-by', deadline: '2026-12-31', quantity: 3, unit: 'bottle', place: 'chilled', status: 'active', lowStock: true };
 const data = { items: [food], templates: [], shopping: [shoppingFrom('パン', 'shop')] };

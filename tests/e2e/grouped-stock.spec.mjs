@@ -1,6 +1,6 @@
 import { test, expect, cloudData } from './helpers/cloud.mjs';
-import { STORAGE_KEY } from '../../src/storage.ts';
-import { defaultTemplates } from '../../src/food.ts';
+import { STORAGE_KEY } from '../../src/data/storage.ts';
+import { defaultTemplates } from '../../src/domain/food.ts';
 
 const stock = (id, name, deadline, quantity, place = 'pantry', extra = {}) => ({
   id, name, deadline, quantity, place, category: 'condiments', kind: 'best-before',

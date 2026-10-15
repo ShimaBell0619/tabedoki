@@ -1,7 +1,7 @@
 import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
-for (const path of ['index.html', 'tsconfig.json', 'src/main.tsx', 'src/food.ts', 'package-lock.json']) {
+for (const path of ['index.html', 'tsconfig.json', 'src/main.tsx', 'src/domain/food.ts', 'package-lock.json']) {
   if (!existsSync(path)) throw new Error(`必須ファイルがありません: ${path}`);
 }
 function scan(dir) {
