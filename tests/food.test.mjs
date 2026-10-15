@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { daysLeft, deadlineState, validDate, localDate, categories, MAX_ITEMS, MAX_TEMPLATES, validateTemplates, defaultTemplates, initialFoodForm, applyFoodCandidate, previousFoods, isFood } from '../src/food.ts';
+import { daysLeft, deadlineState, validDate, localDate, categories, MAX_ITEMS, MAX_TEMPLATES, validateTemplates, defaultTemplates, initialFoodForm, applyFoodCandidate, previousFoods, isFood, groupFoods, foodGroupKey, addStockToFoods } from '../src/food.ts';
 import { validateBackup, makeBackup, readData, writeData, STORAGE_KEY, V3_STORAGE_KEY, V2_STORAGE_KEY, LEGACY_STORAGE_KEY, BACKUP_MAX_BYTES } from '../src/storage.ts';
 const foodTemplates = defaultTemplates();
 const item = { id: '1', name: '牛乳', category: 'eggs-dairy', kind: 'use-by', deadline: '2026-10-12', quantity: 1, unit: 'bottle', place: 'chilled', status: 'active', lowStock: false };
@@ -209,4 +209,43 @@ test('主食の既存カテゴリキーとレトルトカテゴリを使え、�
   assert.deepEqual(validateTemplates(foodTemplates), foodTemplates);
   const data = { items: [{ ...item, category: 'staples' }, { ...item, id: '2', category: 'retort-canned' }], templates: foodTemplates, shopping: [] };
   assert.deepEqual(validateBackup(JSON.parse(makeBackup(data))), data);
+});
+
+
+test('同名食品は期限別在庫を1グループに集め、期限順・合計・優先期限を求める', () => {
+  const older = { ...item, id: 'older', name: ' 牛乳 ', quantity: 2, deadline: '2026-10-11', place: 'pantry' };
+  const finished = { ...item, id: 'used', deadline: '2026-10-09', status: 'used', quantity: 5 };
+  const differentUnit = { ...item, id: 'unit', unit: 'pack' };
+  const differentCategory = { ...item, id: 'category', category: 'soy' };
+  const differentKind = { ...item, id: 'kind', kind: 'best-before' };
+  const entries = [item, differentUnit, differentCategory, finished, older, differentKind];
+  const before = structuredClone(entries);
+  const groups = groupFoods(entries);
+  assert.equal(groups.length, 5);
+  const milk = groups.find(group => group.key === foodGroupKey(item));
+  assert.deepEqual(milk.items.map(value => value.id), ['used', 'older', '1']);
+  assert.equal(milk.quantity, 8);
+  assert.equal(milk.activeQuantity, 3);
+  assert.equal(milk.finishedQuantity, 5);
+  assert.equal(milk.primary.id, 'older');
+  assert.deepEqual(entries, before);
+});
+
+test('在庫追加は同一期限・場所の管理中レコードのみを加算し、完了レコードを保持する', () => {
+  const used = { ...item, id: 'old', status: 'used' };
+  const existing = { ...item, id: 'active', quantity: 4, lowStock: true };
+  const base = [used, existing];
+  const merged = addStockToFoods(base, existing, { deadline: existing.deadline, quantity: 2, place: 'chilled' }, 'new');
+  assert.equal(merged.length, 2);
+  assert.equal(merged[0].quantity, 1);
+  assert.equal(merged[1].quantity, 6);
+  assert.equal(merged[1].lowStock, true);
+  assert.equal(base[1].quantity, 4);
+  const separate = addStockToFoods(merged, existing, { deadline: '2027-01-01', quantity: 3, place: 'pantry' }, 'new');
+  assert.equal(separate.length, 3);
+  assert.deepEqual(separate[2], { ...item, id: 'new', quantity: 3, deadline: '2027-01-01', place: 'pantry', status: 'active', lowStock: false });
+  assert.throws(() => addStockToFoods(base, existing, { deadline: existing.deadline, quantity: 996, place: 'chilled' }, 'new'), /999/);
+  assert.throws(() => addStockToFoods(base, existing, { deadline: '2026-02-30', quantity: 1, place: 'pantry' }, 'new'), /期限/);
+  assert.throws(() => addStockToFoods(base, existing, { deadline: '2026-11-01', quantity: 0, place: 'pantry' }, 'new'), /数量/);
+  assert.throws(() => addStockToFoods(Array(MAX_ITEMS).fill(existing), existing, { deadline: '2027-01-01', quantity: 1, place: 'pantry' }, 'new'), /3,000/);
 });
