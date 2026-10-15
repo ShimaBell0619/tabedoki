@@ -221,7 +221,7 @@ test('同名食品は期限別在庫を1グループに集め、期限順・合�
   const entries = [item, differentUnit, differentCategory, finished, older, differentKind];
   const before = structuredClone(entries);
   const groups = groupFoods(entries);
-  assert.equal(groups.length, 5);
+  assert.equal(groups.length, 4);
   const milk = groups.find(group => group.key === foodGroupKey(item));
   assert.deepEqual(milk.items.map(value => value.id), ['used', 'older', '1']);
   assert.equal(milk.quantity, 8);
