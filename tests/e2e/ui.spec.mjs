@@ -57,7 +57,7 @@ for (const width of [320, 390, 1440]) {
     await page.getByRole('button', { name: '牛乳を廃棄' }).click();
     await expect(page.getByRole('heading', { name: '牛乳', exact: true })).toHaveCount(0);
     await page.getByRole('button', { name: '完了', exact: true }).click();
-    await expect(page.getByText('廃棄済み', { exact: true })).toBeVisible();
+    await expect(page.locator('.deadline-chip').getByText('廃棄済み', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: '管理中', exact: true }).click();
     await page.getByRole('button', { name: '食品を登録', exact: true }).last().click();
     const dialog = page.getByRole('dialog');

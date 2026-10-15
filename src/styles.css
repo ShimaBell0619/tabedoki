@@ -203,3 +203,41 @@ summary:focus-visible{outline:3px solid #ca6a24;outline-offset:3px}
 .auth-panel p { margin: 0; overflow-wrap: anywhere; }
 .auth-panel button { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
 .auth-links{display:flex;gap:16px;font-size:12px;color:var(--muted)}
+
+
+/* Grouped food rows: individual lot controls stay inside the expanded list. */
+.stock-heading{font-size:13px;font-weight:700;margin:0}
+.stock-lot-list{list-style:none;padding:0;margin:0;border-top:1px solid var(--border)}
+.stock-lot{padding:12px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.stock-lot-info{display:flex;align-items:center;gap:6px 12px;flex-wrap:wrap;font-size:13px;min-width:0}
+.stock-lot-info time{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+.stock-lot-info span{color:var(--muted)}
+.stock-lot-info .stock-finished{color:#8d5143}
+.stock-lot-controls{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-left:auto}
+.stock-lot-low{display:inline-flex;align-items:center;gap:5px;min-height:44px;font-size:12px;color:var(--muted);white-space:nowrap;cursor:pointer}
+.stock-lot-low input{width:20px;height:20px;accent-color:var(--accent)}
+.stock-group-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.stock-group-actions .secondary{font-size:13px;min-height:44px}
+.stock-group-actions .icon{width:16px;height:16px}
+.stock-add-form{display:flex;flex-direction:column;gap:12px;border:1px solid var(--border);background:#f6faf8;border-radius:10px;padding:14px}
+.stock-add-form h4{margin:0;font-size:14px}
+.stock-add-form label{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:650}
+.stock-add-form input,.stock-add-form select{min-height:44px;min-width:0;width:100%;background:#fff;border:1px solid #cbd8d1;border-radius:8px;padding:8px 10px;color:var(--text,#233632);font-size:16px}
+.stock-add-form .deadline-entry input{flex:1;width:0}
+.stock-add-form .deadline-input .form-help{margin:6px 0 0}
+.stock-add-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stock-add-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.stock-add-actions button{min-height:44px}
+@media(max-width:760px){
+  .stock-lot{display:block}
+  .stock-lot-info{margin-bottom:6px}
+  .stock-lot-controls{justify-content:space-between;margin-left:0}
+  .stock-lot-controls .food-actions{margin-left:auto}
+  .stock-group-actions .secondary{padding:9px 12px}
+}
+@media(max-width:350px){
+  .stock-add-form{padding:10px}
+  .stock-lot-controls .food-actions{justify-content:flex-end}
+}
+
+.deadline-prefix{font-size:12px;color:var(--muted)}

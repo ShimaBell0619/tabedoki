@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { MAX_ITEMS, isFood, localDate, normalizedName, type Food, type FoodForm, type FoodStatus, type FoodTemplate } from './food';
+import { MAX_ITEMS, isFood, addStockToFoods, localDate, normalizedName, type Food, type FoodForm, type FoodStatus, type FoodTemplate, type StoragePlace } from './food';
 import type { AppData } from './storage';
 import { CloudStore, type Snapshot } from './cloud';
 import { addShopping, registerPurchase, setBought, shoppingFrom, type ShoppingItem } from './shopping';
@@ -107,6 +107,18 @@ export function App({ store, initial, email, onLogout }: Props) {
     setNotice(editingId ? '食品を更新しました。' : '食品を登録しました。');
     return true;
   }
+  async function addStock(base: Food, deadline: string, quantity: number, place: StoragePlace): Promise<boolean> {
+    const current = committed.current;
+    const source = current.items.find(item => item.id === base.id);
+    if (!source) { showError('元の食品が見つかりません。クラウドを再取得してください。'); return false; }
+    let items: Food[];
+    try {
+      items = addStockToFoods(current.items, source, { deadline, quantity, place }, crypto.randomUUID());
+    } catch (error) { showError(error instanceof Error ? error.message : '在庫を追加できません。'); return false; }
+    if (!await commitData({ ...current, items })) return false;
+    setNotice('「' + source.name + '」の在庫を追加しました。');
+    return true;
+  }
   async function changeStatus(item: Food, status: FoodStatus) {
     const current = committed.current;
     if (!await commitData({ ...current, items: current.items.map(value => value.id === item.id ? { ...value, status } : value) })) return;
@@ -176,7 +188,7 @@ export function App({ store, initial, email, onLogout }: Props) {
       <div hidden={screen !== 'inventory'}>
         <InventoryPage items={data.items} today={today} blocked={blocked || saving} onCreate={() => openForm()}
           onEdit={openForm} onStatus={changeStatus} onRemove={removeFood} shopping={data.shopping}
-          onLowStock={changeLowStock} onAddShopping={addToShopping} />
+          onLowStock={changeLowStock} onAddShopping={addToShopping} onAddStock={addStock} />
       </div>
       <div hidden={screen !== 'shopping'}>
         <ShoppingPage items={data.shopping} foods={data.items} templates={data.templates} blocked={blocked || saving}
