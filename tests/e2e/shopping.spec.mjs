@@ -37,7 +37,8 @@ for (const width of [320, 390, 1440]) {
     await expect(page.getByLabel('牛乳の残りわずか')).toBeChecked();
     await page.getByRole('button', { name: '牛乳を買い物に追加', exact: true }).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('食品一覧 1件');
-    await expect(page.getByRole('button', { name: '牛乳を買い物に追加', exact: true })).toHaveText('追加済み');
+    await expect(page.getByRole('status').filter({ hasText: '買い物に追加済み' })).toBeVisible();
+    await expect(page.getByRole('button', { name: '牛乳を買い物に追加', exact: true })).toHaveCount(0);
     await shopping(page);
     await expect(page.getByLabel('補充候補')).toHaveCount(0);
     await page.getByLabel('牛乳の購入状態').click();

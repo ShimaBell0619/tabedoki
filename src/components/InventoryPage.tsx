@@ -157,7 +157,7 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
                 </div>
               </summary>
               <div className="food-expanded">
-                <div className="food-meta"><span>{kinds[group.kind]}</span><span>{categories[group.category]}</span></div>
+                <div className="food-meta"><span>{kinds[group.kind]}</span>{sort !== 'category' && <span>{categories[group.category]}</span>}</div>
                 <h4 className="stock-heading">期限別の在庫</h4>
                 <ul className="stock-lot-list">{group.items.map(item => <li className="stock-lot" key={item.id}>
                   <div className="stock-lot-info">
@@ -186,11 +186,12 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
                     aria-expanded={addingKey === group.key} onClick={() => setAddingKey(addingKey === group.key ? null : group.key)}>
                     <Icon name="plus" />在庫を追加
                   </button>
-                  {group.activeQuantity > 0 && <button type="button" className="secondary"
-                    disabled={blocked || listed.has(normalizedName(group.name))}
-                    onClick={() => onAddShopping(main)} aria-label={group.name + 'を買い物に追加'}>
-                    {listed.has(normalizedName(group.name)) ? '追加済み' : '買い物に追加'}
-                  </button>}
+                  {group.activeQuantity > 0 && (listed.has(normalizedName(group.name))
+                    ? <span className="stock-shopping-added" role="status">買い物に追加済み</span>
+                    : <button type="button" className="secondary" disabled={blocked}
+                        onClick={() => onAddShopping(main)} aria-label={group.name + 'を買い物に追加'}>
+                        買い物に追加
+                      </button>)}
                 </div>}
                 {addingKey === group.key && view !== 'finished' && <StockAdder base={main} blocked={blocked}
                   onAdd={onAddStock} onClose={() => setAddingKey(null)} />}
