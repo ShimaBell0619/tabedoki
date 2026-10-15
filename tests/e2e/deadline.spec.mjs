@@ -9,15 +9,26 @@ test.beforeEach(async ({ page }) => {
 test.afterEach(async ({ page }) => expect(page.__deadlineErrors).toEqual([]));
 
 test('数字/ISO/カレンダー・途中入力・不正日付・候補選択を確認する', async ({ page }) => {
+  await page.addInitScript(() => {
+    window.__pickerOpens = 0;
+    HTMLInputElement.prototype.showPicker = function () {
+      if (this.type === 'date') window.__pickerOpens++;
+    };
+  });
   await page.goto('/');
   await page.getByRole('button', { name: '食品を登録', exact: true }).last().click();
   const dialog = page.getByRole('dialog');
   await dialog.getByLabel(/食品名/).fill('数字入力');
   const deadline = dialog.getByLabel(/期限の日付/);
   await deadline.fill('2027022');
-  await dialog.getByRole('button', { name: 'カレンダー', exact: true }).click();
-  await dialog.getByRole('button', { name: 'カレンダー', exact: true }).click();
+  const picker = dialog.getByLabel('カレンダーで期限を選択');
+  await expect(picker).toHaveAttribute('type', 'date');
+  await picker.click();
+  await expect.poll(() => page.evaluate(() => window.__pickerOpens)).toBe(1);
   await expect(deadline).toHaveValue('2027022');
+  await picker.focus();
+  await picker.press('Enter');
+  await expect.poll(() => page.evaluate(() => window.__pickerOpens)).toBe(2);
   await deadline.fill('20270229');
   await dialog.getByRole('button', { name: '登録する', exact: true }).click();
   await expect(dialog.getByRole('alert')).toContainText('実在する日付');
@@ -28,8 +39,7 @@ test('数字/ISO/カレンダー・途中入力・不正日付・候補選択を
   await dialog.getByRole('button', { name: '定番の納豆', exact: true }).click();
   await expect(deadline).toBeFocused();
   await expect(deadline).toHaveValue('2028-02-29');
-  await dialog.getByRole('button', { name: 'カレンダー', exact: true }).click();
-  await dialog.getByLabel('カレンダーで期限を選択').fill('2028-03-01');
+  await picker.fill('2028-03-01');
   await expect(deadline).toHaveValue('20280301');
   await dialog.getByRole('button', { name: '登録する', exact: true }).click();
   await expect(dialog).not.toBeVisible();
