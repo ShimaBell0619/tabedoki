@@ -5,6 +5,14 @@ export { expect };
 export const userId = '00000000-0000-4000-a000-000000000001';
 export const test = base.extend({
   page: async ({ page }, use) => {
+    const browserErrors = [];
+    page.on('pageerror', error => browserErrors.push(error.message));
+    page.on('console', message => {
+      if (message.type() !== 'error') return;
+      // These resource errors are the deliberate offline/conflict responses of this fixture.
+      if (message.location().url.startsWith('https://cloud.tabedoki.test/') && /^Failed to load resource: (the server responded with a status of (503|409)|net::ERR_FAILED)/.test(message.text())) return;
+      browserErrors.push(message.text());
+    });
     page.cloud = { row: undefined, writes: 0, fail: false, lost: false, offline: false, wait: null };
     await page.addInitScript(({ id }) => {
       if (sessionStorage.getItem('cloud-auth-seeded')) return;
@@ -35,6 +43,7 @@ export const test = base.extend({
       await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(db.row?[db.row]:[])});
     });
     await use(page);
+    expect(browserErrors).toEqual([]);
   }
 });
 export async function cloudData(page) { await expect(page.getByRole('heading', {level: 1})).toHaveText(/食品一覧|買い物リスト/); await expect(page.getByLabel('保存状態')).toHaveCount(0); await expect.poll(()=>page.cloud.row?.data).toBeTruthy(); return structuredClone(page.cloud.row.data); }

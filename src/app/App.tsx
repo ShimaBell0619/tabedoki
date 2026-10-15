@@ -1,3 +1,7 @@
+import { Brand } from '../components/Brand';
+import { ScreenNavigation } from './ScreenNavigation';
+import { cn } from '@/components/ui/utils';
+import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import type { CloudStore, Snapshot } from '../data/cloud';
 import { InventoryPage } from '../features/inventory/InventoryPage';
@@ -14,27 +18,24 @@ export function App({ store, initial, email, onLogout }: Props) {
   const [screen, setScreen] = useState<'inventory' | 'shopping'>('inventory');
   const today = useToday();
   const { data, saving, blocked, notice, setNotice, formError, setFormError, editor, setEditor, refresh, openForm, saveTemplates, saveFood, addStock, changeStatus, removeFood, changeLowStock, addToShopping, changeBought, removeShopping } = useAppModel(store, initial);
-  const navigation = <>
-    <button type="button" aria-pressed={screen === 'inventory'} onClick={() => setScreen('inventory')}>在庫</button>
-    <button type="button" aria-pressed={screen === 'shopping'} onClick={() => setScreen('shopping')}>買い物</button>
-  </>;
 
-  return <div className="page">
-    <header className="topbar"><div className="topbar-inner">
-      <a href="/" className="brand" aria-label="たべどき ホーム"><span className="brand-mark"><Icon name="cooking-pot" /></span>たべどき</a>
-      <nav className="screen-navigation desktop-navigation" aria-label="画面選択">{navigation}</nav>
-      <div className="header-actions">
-        <button className="header-action" type="button" disabled={blocked || saving} aria-label="定番食品を管理"
-          onClick={() => { setFormError(''); setEditor({ templatesOnly: true }); }}><Icon name="bookmark" />定番食品</button>
+  return <div className="page min-h-dvh">
+    <header className="topbar h-[68px] border-b border-border bg-white mobile:h-[62px]"><div className="topbar-inner mx-auto flex h-full max-w-[1040px] items-center justify-between gap-4 px-8 mobile:px-[18px]">
+      <Brand />
+      <ScreenNavigation className="desktop-navigation mobile:hidden" screen={screen} onChange={setScreen} />
+      <div className="header-actions flex items-center gap-1">
+        <Button variant="plain" className={`header-action flex min-h-11 items-center gap-[7px] rounded-lg border-0 bg-transparent p-2 text-[13px]
+          font-[650] text-muted hover:bg-[#edf3f1] [&_.icon]:size-[18px] [&_.icon]:opacity-70 tiny:text-xs`} type="button" disabled={blocked || saving} aria-label="定番食品を管理"
+          onClick={() => { setFormError(''); setEditor({ templatesOnly: true }); }}><Icon name="bookmark" />定番食品</Button>
         <AccountMenu email={email} busy={saving} onRefresh={refresh} onLogout={onLogout} />
       </div>
     </div></header>
-    <main className="main">
-      {saving && <p className="cloud-pending" role="status" aria-label="保存状態">保存・読み込み中…</p>}
-      {notice && <div className={`notice ${blocked ? 'notice-error' : ''}`} role="status">
+    <main className="main mx-auto max-w-[1040px] px-8 pt-8 pb-10 mobile:px-4 mobile:pt-6 mobile:pb-[110px]">
+      {saving && <p className="cloud-pending mb-4 text-[13px] text-muted" role="status" aria-label="保存状態">保存・読み込み中…</p>}
+      {notice && <div className={cn('notice mb-5 flex items-center justify-between gap-3 rounded-[10px] bg-panel py-2.5 pr-3 pl-4 text-[13px] text-[#265944] wrap-anywhere', blocked && 'notice-error bg-[#fff0ec] text-[#8e372b]')} role="status">
         <span>{notice}</span>
-        {blocked ? <button type="button" disabled={saving} onClick={refresh}>クラウドを再取得</button> :
-          <button className="icon-button" type="button" aria-label="通知を閉じる" onClick={() => setNotice('')}><Icon name="x" /></button>}
+        {blocked ? <Button variant="ghost" className="min-h-11 text-inherit" type="button" disabled={saving} onClick={refresh}>クラウドを再取得</Button> :
+          <Button variant="ghost" size="icon" className="icon-button border-0 bg-transparent text-inherit" type="button" aria-label="通知を閉じる" onClick={() => setNotice('')}><Icon name="x" /></Button>}
       </div>}
       <>
       <div hidden={screen !== 'inventory'}>
@@ -48,10 +49,12 @@ export function App({ store, initial, email, onLogout }: Props) {
       </div>
       </>
     </main>
-    <div className="mobile-create-bar mobile-navigation">
-      <nav className="screen-navigation" aria-label="画面選択">{navigation}</nav>
-      {screen === 'inventory' ? <button className="primary" disabled={blocked || saving} onClick={() => openForm()} type="button"><Icon name="plus" />食品を登録</button> :
-        <button className="primary" disabled={blocked} type="button" onClick={() => document.getElementById('shopping-name')?.focus()}><Icon name="plus" />買うものを追加</button>}
+    <div className={`mobile-create-bar mobile-navigation fixed inset-x-0 bottom-0 z-4 hidden items-center justify-between gap-2
+          border-t border-border bg-[#fffffff2] px-3 pt-2 pb-[calc(8px+env(safe-area-inset-bottom))] mobile:flex
+          [&>.primary]:min-h-11 [&>.primary]:px-2.5 [&>.primary]:py-2 [&>.primary]:text-xs`}>
+      <ScreenNavigation screen={screen} onChange={setScreen} />
+      {screen === 'inventory' ? <Button variant="default" className="primary" disabled={blocked || saving} onClick={() => openForm()} type="button"><Icon name="plus" />食品を登録</Button> :
+        <Button variant="default" className="primary" disabled={blocked} type="button" onClick={() => document.getElementById('shopping-name')?.focus()}><Icon name="plus" />買うものを追加</Button>}
     </div>
     {editor && <FoodEditor item={editor.item} purchase={editor.purchase} templatesOnly={editor.templatesOnly} items={data.items}
       templates={data.templates} blocked={blocked || saving} canRefresh={blocked && !saving} onRefresh={refresh} formError={formError} setFormError={setFormError} onClose={() => setEditor(null)}

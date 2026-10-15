@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { App } from './App';
@@ -61,10 +62,10 @@ export function AccountData({ user, onLogout }: { user: User; onLogout: () => vo
       {(!owner || owner === user.id) && <>
         {source.error ? <p>{source.error}</p> : <p>旧データ：食品{source.data!.items.length}件・定番{source.data!.templates.length}件・買い物{source.data!.shopping.length}件</p>}
       </>}
-      {allowed ? <button className="primary" disabled={busy || Boolean(error)} onClick={() => start(true)}>{user.email} に移行</button> : <p>旧データは移行できません。紐付け済みのアカウントでログインしてください。</p>}
+      {allowed ? <Button variant="default" className="primary" disabled={busy || Boolean(error)} onClick={() => start(true)}>{user.email} に移行</Button> : <p>旧データは移行できません。紐付け済みのアカウントでログインしてください。</p>}
     </>}
-    {loaded && <button className={source ? 'secondary' : 'primary'} disabled={busy || Boolean(error)} onClick={() => start(false)}>{source ? '旧データを使わず開始' : '開始する'}</button>}
-    {error && <button disabled={busy} onClick={reload}>クラウドを再取得</button>}
+    {loaded && <Button variant={source ? 'secondary' : 'default'} disabled={busy || Boolean(error)} onClick={() => start(false)}>{source ? '旧データを使わず開始' : '開始する'}</Button>}
+    {error && <Button variant="plain" className="border-2 border-[ButtonBorder] bg-[ButtonFace] px-1.5 py-px text-[ButtonText] [border-style:outset]" disabled={busy} onClick={reload}>クラウドを再取得</Button>}
     {busy && <p role="status">保存・確認中…</p>}
   </AuthShell>;
 }

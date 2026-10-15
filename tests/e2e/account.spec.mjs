@@ -6,8 +6,8 @@ for (const width of [320, 390, 1440]) {
     await page.goto('/');
     const before = await cloudData(page);
     await expect(page.getByText('test@example.com', { exact: true })).not.toBeVisible();
-    await expect(page.getByRole('button', { name: '再取得', exact: true })).not.toBeVisible();
-    await expect(page.getByRole('button', { name: 'ログアウト', exact: true })).not.toBeVisible();
+    await expect(page.getByRole('menuitem', { name: '再取得', exact: true })).not.toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'ログアウト', exact: true })).not.toBeVisible();
     await expect(page.getByText('クラウド保存', { exact: true })).toHaveCount(0);
     await expect(page.getByRole('heading', { name: 'バックアップ', exact: true })).toHaveCount(0);
     await expect(page.locator('input[type=file]')).toHaveCount(0);
@@ -15,7 +15,7 @@ for (const width of [320, 390, 1440]) {
     const trigger = page.getByRole('button', { name: 'アカウント', exact: true });
     await trigger.focus(); await page.keyboard.press('Enter');
     await expect(page.getByText('test@example.com', { exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'ログアウト', exact: true })).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'ログアウト', exact: true })).toBeVisible();
     await page.screenshot({ path: info.outputPath(`account-open-${width}.png`) });
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBe(0);
     await page.keyboard.press('Escape');
@@ -25,11 +25,11 @@ for (const width of [320, 390, 1440]) {
     await expect(page.getByText('test@example.com', { exact: true })).not.toBeVisible();
     page.cloud.row.data = { ...before, items: [{ id: 'remote', name: '別画面の牛乳', category: 'eggs-dairy', kind: 'use-by', deadline: '2026-12-31', quantity: 1, unit: 'bottle', place: 'chilled', status: 'active', lowStock: false }] };
     page.cloud.row.revision++;
-    await trigger.click(); await page.getByRole('button', { name: '再取得', exact: true }).click();
+    await trigger.click(); await page.getByRole('menuitem', { name: '再取得', exact: true }).click();
     await expect(page.getByRole('heading', { name: '別画面の牛乳', exact: true })).toBeVisible();
     await expect(page.getByText('test@example.com', { exact: true })).not.toBeVisible();
     expect(page.cloud.writes).toBe(0);
-    await trigger.click(); await page.getByRole('button', { name: 'ログアウト', exact: true }).click();
+    await trigger.click(); await page.getByRole('menuitem', { name: 'ログアウト', exact: true }).click();
     await expect(page.getByRole('button', { name: 'Googleでログイン', exact: true })).toBeVisible();
     await expect(page.getByRole('heading', { name: '別画面の牛乳', exact: true })).toHaveCount(0);
   });
@@ -42,6 +42,6 @@ test('初回開始画面でもバックアップUIを表示せず、アカウン
   await expect(page.getByText('test@example.com', { exact: true })).not.toBeVisible();
   await expect(page.getByRole('button', { name: /バックアップ|退避/ })).toHaveCount(0);
   await page.getByRole('button', { name: 'アカウント', exact: true }).click();
-  await page.getByRole('button', { name: 'ログアウト', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'ログアウト', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Googleでログイン', exact: true })).toBeVisible();
 });

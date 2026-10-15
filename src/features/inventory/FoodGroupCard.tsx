@@ -1,3 +1,5 @@
+import { cn } from '@/components/ui/utils';
+import { Button } from '@/components/ui/button';
 import { categories, units, places, kinds, type Food, type FoodStatus, type StoragePlace } from '../../domain/food';
 import { deadlineState, deadlineLabel } from '../../domain/deadline';
 import type { FoodGroup } from '../../domain/stock';
@@ -36,40 +38,46 @@ export function FoodGroupCard({ group, today, view, sort, listed, adding, onTogg
     ? (group.activeQuantity > 0 ? '管理中 ' + group.activeQuantity + units[group.unit] + '・' : '') +
       '完了 ' + group.finishedQuantity + units[group.unit]
     : group.quantity + units[group.unit];
-  return <li className={'food-row' + (group.activeQuantity === 0 ? ' completed' : '')} key={group.key}>
-    <details className="food-details">
-      <summary aria-label={group.name + 'の詳細、' + amount + '、' + kinds[group.kind] + ' ' + main.deadline + '、' +
+  return <li className={cn('food-row min-w-0 rounded-[13px] border border-border bg-white shadow-[0_2px_8px_rgb(24_49_40/6%)] has-[.food-details[open]]:border-[#a8c7ba] has-[.food-details[open]]:shadow-[0_4px_16px_rgb(24_49_40/10%)]', group.activeQuantity === 0 && 'completed')} key={group.key}>
+    <details className="food-details overflow-hidden rounded-xl open:[&>summary]:bg-white">
+      <summary className="grid min-h-[72px] cursor-pointer list-none grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 px-4 py-3 focus-visible:outline-offset-[-3px] mobile:px-3 mobile:py-2.5" aria-label={group.name + 'の詳細、' + amount + '、' + kinds[group.kind] + ' ' + main.deadline + '、' +
         (main.status === 'active' ? deadlineLabel(main.deadline, today) : main.status === 'used' ? '使い切り済み' : '廃棄済み')}>
-        <div className="food-primary">
+        <div className={`food-primary col-start-1 flex flex-wrap items-baseline gap-2.5 [&_h3]:m-0 [&_h3]:text-[17px]
+          [&_h3]:leading-[1.4] [&_h3]:font-[750] [&_h3]:wrap-anywhere mobile:gap-[7px] mobile:[&_h3]:text-base
+          mobile:[&_h3]:leading-[1.4]`}>
           <h3>{group.name}</h3>
-          <span className="quantity">{amount}</span>
-          {group.lowStock && <span className="low-stock">残りわずか</span>}
+          <span className="quantity text-[13px] whitespace-nowrap text-muted mobile:text-xs">{amount}</span>
+          {group.lowStock && <span className="low-stock text-[11px] font-[650] text-primary">残りわずか</span>}
         </div>
-        <div className="food-deadline">
-          {group.items.length > 1 && <span className="deadline-prefix">{main.status === 'active' ? '最短期限' : '期限'}</span>}
+        <div className="food-deadline col-start-1 flex flex-wrap items-center gap-3 text-[13px] [&_time]:tabular-nums">
+          {group.items.length > 1 && <span className="deadline-prefix text-xs text-muted">{main.status === 'active' ? '最短期限' : '期限'}</span>}
           <time dateTime={main.deadline} aria-label={kinds[group.kind] + ' ' + main.deadline}>{date}</time>
-          <span className={'deadline-chip state-' + state}>
+          <span className={cn('deadline-chip inline-flex items-center rounded-[5px] bg-[#edf4ef] px-[7px] py-[3px] text-xs font-bold whitespace-nowrap text-[#365f4b] mobile:text-[11px]', 'state-' + state, { 'bg-expired-surface text-expired': state === 'expired', 'bg-today-surface text-today': state === 'today', 'bg-[#eef6ed] text-[#386742]': state === 'soon' })}>
             {main.status === 'active' ? deadlineLabel(main.deadline, today) :
               main.status === 'used' ? '使い切り済み' : '廃棄済み'}
           </span>
         </div>
       </summary>
-      <div className="food-expanded">
-        <div className="food-meta"><span>{kinds[group.kind]}</span>{sort !== 'category' && <span>{categories[group.category]}</span>}</div>
-        {group.items.length > 1 && <h4 className="stock-heading">期限別の在庫</h4>}
-        <ul className="stock-lot-list">{group.items.map(item => <li className="stock-lot" key={item.id}>
-          <div className="stock-lot-info">
+      <div className="food-expanded flex flex-col gap-3 border-t border-border bg-panel p-4 mobile:p-3">
+        <div className="food-meta flex flex-wrap items-center gap-x-2.5 gap-y-[7px] text-xs text-muted mobile:gap-x-2 mobile:gap-y-1.5"><span>{kinds[group.kind]}</span>{sort !== 'category' && <span>{categories[group.category]}</span>}</div>
+        {group.items.length > 1 && <h4 className="stock-heading m-0 text-[13px] font-bold text-[#36584c]">期限別の在庫</h4>}
+        <ul className="stock-lot-list m-0 flex list-none flex-col gap-2 p-0">{group.items.map(item => <li className="stock-lot grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 rounded-[10px] border border-border bg-white p-3 shadow-[0_1px_3px_rgb(24_49_40/4%)] compact:grid-cols-1" key={item.id}>
+          <div className={`stock-lot-info flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1.5 text-[13px] [&_time]:font-bold
+          [&_time]:whitespace-nowrap [&_time]:tabular-nums [&>span:not(.stock-finished)]:text-muted mobile:mb-1.5`}>
             <time dateTime={item.deadline} aria-label={kinds[item.kind] + ' ' + item.deadline}>
               {item.deadline.replaceAll('-', '/')}
             </time>
             <span>{item.quantity}{units[item.unit]}</span>
             <span>{places[item.place]}</span>
-            {item.status !== 'active' && <span className="stock-finished">
+            {item.status !== 'active' && <span className="stock-finished text-[#8d5143]">
               {item.status === 'used' ? '使い切り済み' : '廃棄済み'}
             </span>}
           </div>
-          <div className="stock-lot-controls">
-            {item.status === 'active' && <label className="stock-lot-low">
+          <div className={`stock-lot-controls m-0 flex min-w-0 items-center gap-x-2.5 gap-y-1 [&_.food-actions]:m-0
+          [&_.food-actions]:flex-nowrap [&_.food-actions]:gap-1 compact:w-full compact:flex-wrap compact:justify-between
+          narrow:flex-col narrow:items-stretch narrow:gap-1 narrow:[&_.food-actions]:justify-end
+          narrow:[&_.food-actions_button]:flex-[0_0_auto]`}>
+            {item.status === 'active' && <label className="stock-lot-low inline-flex min-h-11 cursor-pointer items-center gap-[5px] text-xs whitespace-nowrap text-muted [&_input]:size-5 [&_input]:accent-primary narrow:self-start">
               <input type="checkbox" checked={item.lowStock} disabled={blocked}
                 onChange={event => onLowStock(item, event.target.checked)}
                 aria-label={item.name + 'の残りわずか'} />残りわずか
@@ -79,17 +87,18 @@ export function FoodGroupCard({ group, today, view, sort, listed, adding, onTogg
               onDiscard={() => onStatus(item, 'discarded')} onRemove={() => onRemove(item)} />
           </div>
         </li>)}</ul>
-        {view !== 'finished' && <div className="stock-group-actions">
-          <button type="button" className="secondary" disabled={blocked}
+        {view !== 'finished' && <div className={`stock-group-actions flex flex-wrap items-center justify-between gap-2 [&_.secondary]:min-h-11
+          [&_.secondary]:text-[13px] [&_.icon]:size-4 mobile:[&_.secondary]:px-3 mobile:[&_.secondary]:py-[9px]`}>
+          <Button variant="secondary" type="button" className="secondary" disabled={blocked}
             aria-expanded={adding} onClick={() => onToggleAdd()}>
             <Icon name="plus" />在庫を追加
-          </button>
+          </Button>
           {group.activeQuantity > 0 && (listed
-            ? <span className="stock-shopping-added" role="status">買い物に追加済み</span>
-            : <button type="button" className="secondary" disabled={blocked}
+            ? <span className="stock-shopping-added text-xs font-[650] text-muted wrap-anywhere" role="status">買い物に追加済み</span>
+            : <Button variant="secondary" type="button" className="secondary" disabled={blocked}
                 onClick={() => onAddShopping(main)} aria-label={group.name + 'を買い物に追加'}>
                 買い物に追加
-              </button>)}
+              </Button>)}
         </div>}
         {adding && view !== 'finished' && <StockAdder base={main} blocked={blocked}
           onAdd={onAddStock} onClose={() => onCloseAdd()} />}

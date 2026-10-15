@@ -58,7 +58,7 @@ for (const width of [320, 390, 1440]) {
     page.once('dialog', dialog => dialog.accept());
     await openFoodActions(page);
     await page.getByRole('button', { name: '低脂肪牛乳のその他の操作' }).click();
-    await page.getByRole('button', { name: '低脂肪牛乳を削除' }).click();
+    await page.getByRole('menuitem', { name: '低脂肪牛乳を削除' }).click();
     await expect(page.getByRole('heading', { name: '低脂肪牛乳' })).toHaveCount(0);
     await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
     await page.screenshot({ path: info.outputPath(`tabedoki-${width}.png`), fullPage: true });
