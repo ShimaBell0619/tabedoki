@@ -147,9 +147,9 @@ for (const width of [320, 390, 1440]) {
     await expect(single.locator('.food-meta')).toHaveText('賞味期限');
     await expect(single.locator('.stock-lot')).toHaveCount(1);
     const lot = single.locator('.stock-lot');
-    const info = await lot.locator('.stock-lot-info').boundingBox();
+    const infoBox = await lot.locator('.stock-lot-info').boundingBox();
     const actions = await lot.locator('.stock-lot-controls').boundingBox();
-    if (width <= 390) expect(actions.y).toBeGreaterThanOrEqual(info.y + info.height - 1);
+    if (width <= 390) expect(actions.y).toBeGreaterThanOrEqual(infoBox.y + infoBox.height - 1);
     const edit = await lot.getByRole('button',{name:'みそを編集'}).boundingBox();
     const use = await lot.getByRole('button',{name:'みそを使い切り'}).boundingBox();
     const more = await lot.getByRole('button',{name:'みそのその他の操作'}).boundingBox();
