@@ -1,6 +1,6 @@
 import { cloudData } from './helpers/cloud.mjs';
 import { test, expect } from './helpers/cloud.mjs';
-import { defaultTemplates } from '../../src/domain/food.ts';
+import { defaultTemplates } from '../../src/domain/templates.ts';
 import { V3_STORAGE_KEY } from '../../src/data/storage.ts';
 
 for (const width of [320, 390, 1440]) {

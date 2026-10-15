@@ -39,12 +39,14 @@ checkはReact Hooks規則とeffect依存を含み、design:lintはlockfileで固
 
 ## ソース構成
 
-- `src/app`：認証後の起動と画面編成。
+- `src/app`：セッションとアカウント初期化、画面編成、保存ゲートと業務操作。
 - `src/features/inventory`、`shopping`、`templates`、`auth`：各機能の画面・操作。
-- `src/domain`：食品・買い物の型とルール。
+- `src/domain`：食品・買い物の型、期限計算、在庫集約、定番と入力候補のルール。
 - `src/data`：Supabase接続、クラウド保存、保存形式の検証と旧データ移行。
 - `src/components`：機能に依存しない共有表示部品。
 - `src/styles`：視覚設計に対応するスタイル。
+
+依存は `app → features / data / domain`、`features → domain / components`、`data → domain` とします。逆方向のimportはESLintで検査します。保存済みの状態はappの保存ゲートが所有し、フォーム・絞り込み・画面選択はローカル状態で管理します。標準dialogとdetailsの振る舞いを維持し、形式的な共通化やbarrelは追加しません。
 
 ## 接続設定・本番切替
 

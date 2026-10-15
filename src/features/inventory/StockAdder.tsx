@@ -1,5 +1,6 @@
 import { useRef, useState, type FormEvent } from 'react';
-import { parseDeadline, places, type Food, type StoragePlace } from '../../domain/food';
+import { parseDeadline } from '../../domain/deadline';
+import { places, type Food, type StoragePlace } from '../../domain/food';
 import { DeadlineInput } from './DeadlineInput';
 
 type Props = {

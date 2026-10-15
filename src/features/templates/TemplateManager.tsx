@@ -1,6 +1,7 @@
 import { Icon } from '../../components/Icon';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { categories, units, places, kinds, MAX_TEMPLATES, initialFoodForm, validateTemplates, type FoodTemplate } from '../../domain/food';
+import { categories, units, places, kinds, initialFoodForm, type FoodTemplate } from '../../domain/food';
+import { MAX_TEMPLATES, validateTemplates } from '../../domain/templates';
 
 type Draft = Omit<FoodTemplate, 'id'>;
 function blankDraft(): Draft {

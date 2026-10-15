@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { daysLeft, deadlineState, validDate, localDate, categories, MAX_ITEMS, MAX_TEMPLATES, validateTemplates, defaultTemplates, initialFoodForm, applyFoodCandidate, previousFoods, isFood, groupFoods, foodGroupKey, addStockToFoods } from '../src/domain/food.ts';
+import { daysLeft, deadlineState, validDate, localDate } from '../src/domain/deadline.ts';
+import { categories, MAX_ITEMS, initialFoodForm, isFood } from '../src/domain/food.ts';
+import { MAX_TEMPLATES, validateTemplates, defaultTemplates, applyFoodCandidate, previousFoods } from '../src/domain/templates.ts';
+import { groupFoods, foodGroupKey, addStockToFoods } from '../src/domain/stock.ts';
 import { validateBackup, makeBackup, readData, writeData, STORAGE_KEY, V3_STORAGE_KEY, V2_STORAGE_KEY, LEGACY_STORAGE_KEY, BACKUP_MAX_BYTES } from '../src/data/storage.ts';
 const foodTemplates = defaultTemplates();
 const item = { id: '1', name: '牛乳', category: 'eggs-dairy', kind: 'use-by', deadline: '2026-10-12', quantity: 1, unit: 'bottle', place: 'chilled', status: 'active', lowStock: false };

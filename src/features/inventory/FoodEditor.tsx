@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import {
-  applyFoodCandidate, categories, initialFoodForm, previousFoods, parseDeadline, units, places, kinds,
-  type DeadlineKind, type Food, type FoodCategory, type FoodForm, type FoodTemplate, type QuantityUnit, type StoragePlace,
-} from '../../domain/food';
+import { applyFoodCandidate, previousFoods } from '../../domain/templates';
+import { categories, initialFoodForm, units, places, kinds, type DeadlineKind, type Food, type FoodCategory, type FoodForm, type FoodTemplate, type QuantityUnit, type StoragePlace } from '../../domain/food';
+import { parseDeadline } from '../../domain/deadline';
 import { TemplateManager } from '../templates/TemplateManager';
 import { DeadlineInput } from './DeadlineInput';
 import { Icon } from '../../components/Icon';

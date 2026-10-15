@@ -1,7 +1,7 @@
 import { cloudData, setCloudData } from './helpers/cloud.mjs';
 import { openCandidates, openFoodActions } from './helpers/inventory.mjs';
 import { test, expect } from './helpers/cloud.mjs';
-import { defaultTemplates } from '../../src/domain/food.ts';
+import { defaultTemplates } from '../../src/domain/templates.ts';
 import { STORAGE_KEY } from '../../src/data/storage.ts';
 
 const stock = { id: 'stock-1', name: '在庫の牛乳', kind: 'use-by', deadline: '2026-12-01', quantity: 7, unit: 'bottle', category: 'eggs-dairy', place: 'chilled', status: 'active', lowStock: false };
