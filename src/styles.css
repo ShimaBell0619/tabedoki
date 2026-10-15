@@ -241,3 +241,57 @@ summary:focus-visible{outline:3px solid #ca6a24;outline-offset:3px}
 }
 
 .deadline-prefix{font-size:12px;color:var(--muted)}
+
+
+/* Each food is a distinct, softly elevated surface; the open panel is inset. */
+.food-list{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+}
+.food-row,.food-row:first-child,.food-row:last-child{
+  border:1px solid var(--border);
+  border-radius:13px;
+  background:var(--surface);
+  box-shadow:0 2px 8px rgb(24 49 40 / 6%);
+}
+.food-row:has(.food-details[open]){
+  border-color:#a8c7ba;
+  box-shadow:0 4px 16px rgb(24 49 40 / 10%);
+}
+.food-details{border-radius:12px;overflow:hidden}
+.food-details summary:focus-visible{outline-offset:-3px}
+.food-details[open] summary{background:#fff}
+.food-details[open] .food-expanded{
+  padding:16px;
+  border-top:1px solid var(--border);
+  background:#f0f5f2;
+  gap:12px;
+}
+.food-details[open] .stock-heading{color:#36584c}
+.stock-lot-list{display:flex;flex-direction:column;gap:8px;border:0}
+.stock-lot,.stock-lot:last-child{
+  border:1px solid #dce6df;
+  border-radius:10px;
+  background:var(--surface);
+  padding:12px;
+  box-shadow:0 1px 3px rgb(24 49 40 / 4%);
+}
+.stock-lot-info{gap:6px 10px}
+.stock-lot-controls{row-gap:4px}
+.stock-lot-controls .food-actions .edit-food{border-color:#d9e4dc;background:#fff;color:var(--muted)}
+.stock-lot-controls .food-actions .finish-food{
+  background:var(--accent);
+  color:#fff;
+  border-color:var(--accent);
+}
+.stock-lot-controls .food-actions .finish-food:hover{background:#0b554c}
+.stock-lot-controls .food-actions .finish-food .icon{filter:brightness(0) invert(1);opacity:1}
+.stock-group-actions{justify-content:space-between}
+.stock-shopping-added{font-size:12px;color:var(--muted);font-weight:650}
+@media(max-width:760px){
+  .food-details[open] .food-expanded{padding:12px}
+}

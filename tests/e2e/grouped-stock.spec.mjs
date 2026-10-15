@@ -94,3 +94,37 @@ test('カテゴリ・単位・期限種別が異なる食品を合算せず、�
   await page.getByLabel('保存場所で絞り込み').selectOption('chilled');
   await expect(restored.locator('.quantity')).toHaveText('合計 6本');
 });
+
+for (const width of [320, 390, 1440]) {
+  test('独立カードと展開時の階層・操作の視認性 ' + width + 'px', async ({ page }, info) => {
+    await page.setViewportSize({ width, height: 900 });
+    await setup(page);
+    const rows = page.locator('.food-row');
+    await expect(rows).toHaveCount(3);
+    const firstBox = await rows.first().boundingBox();
+    const nextBox = await rows.nth(1).boundingBox();
+    expect(nextBox.y - (firstBox.y + firstBox.height)).toBeGreaterThanOrEqual(8);
+    const card = rows.filter({ has: page.getByRole('heading', { name: 'みそ', exact: true }) });
+    const closedShadow = await card.evaluate(node => getComputedStyle(node).boxShadow);
+    expect(closedShadow).not.toBe('none');
+    await card.locator('summary').click();
+    await expect(card.locator('.stock-lot')).toHaveCount(1);
+    const openShadow = await card.evaluate(node => getComputedStyle(node).boxShadow);
+    expect(openShadow).not.toBe(closedShadow);
+    const backgrounds = await card.evaluate(node => {
+      const parent = node.querySelector('.food-expanded');
+      const lot = node.querySelector('.stock-lot');
+      return [getComputedStyle(parent).backgroundColor, getComputedStyle(lot).backgroundColor];
+    });
+    expect(backgrounds[0]).not.toBe(backgrounds[1]);
+    await expect(card.locator('.food-meta')).toHaveText('賞味期限');
+    const finish = card.getByRole('button', { name: 'みそを使い切り' });
+    await expect(finish).toBeVisible();
+    const finishBg = await finish.evaluate(node => getComputedStyle(node).backgroundColor);
+    const editBg = await card.getByRole('button', { name: 'みそを編集' }).evaluate(node => getComputedStyle(node).backgroundColor);
+    expect(finishBg).not.toBe(editBg);
+    await expect(card.getByRole('button', { name: '在庫を追加' })).toBeVisible();
+    await page.screenshot({ path: info.outputPath('inventory-cards-' + width + '.png'), fullPage: true });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(1);
+  });
+}
