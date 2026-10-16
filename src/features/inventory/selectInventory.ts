@@ -6,7 +6,6 @@ export type InventoryView = 'active' | 'finished' | 'all';
 export type InventorySort = 'category' | 'deadline' | 'place';
 export type InventoryQuery = {
   view: InventoryView;
-  search: string;
   categoryFilter: 'all' | FoodCategory;
   placeFilter: 'all' | StoragePlace;
   deadlineFilter: DeadlineFilter;
@@ -15,9 +14,8 @@ export type InventoryQuery = {
 
 /** Filter lots before grouping so displayed quantities and deadline counts refer to visible stock. */
 export function selectInventory(items: readonly Food[], today: string, query: InventoryQuery) {
-  const { view, search, categoryFilter, placeFilter, deadlineFilter, sort } = query;
+  const { view, categoryFilter, placeFilter, deadlineFilter, sort } = query;
   const matching = items.filter(item =>
-    item.name.toLocaleLowerCase('ja').includes(search.trim().toLocaleLowerCase('ja')) &&
     (categoryFilter === 'all' || item.category === categoryFilter) &&
     (placeFilter === 'all' || item.place === placeFilter));
   const active = matching.filter(item => item.status === 'active');
