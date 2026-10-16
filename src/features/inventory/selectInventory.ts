@@ -35,5 +35,5 @@ export function selectInventory(items: readonly Food[], today: string, query: In
       : (Object.keys(places) as StoragePlace[]).map(place => ({
         name: places[place], items: foodGroups.filter(group => group.primary.place === place),
       }));
-  return { active, foodGroups, sections };
+  return { active, displayed, foodGroups, sections };
 }
