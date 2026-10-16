@@ -30,7 +30,9 @@ for (const width of [320, 390, 1440]) {
     await expect(page.getByText('test@example.com', { exact: true })).not.toBeVisible();
     expect(page.cloud.writes).toBe(0);
     await trigger.click(); await page.getByRole('menuitem', { name: 'ログアウト', exact: true }).click();
-    await expect(page.getByRole('button', { name: 'Googleでログイン', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /食品一覧/ })).toBeVisible();
+    await trigger.click();
+    await expect(page.getByRole('menuitem', { name: 'Googleでログインしてクラウド保存' })).toBeVisible();
     await expect(page.getByRole('heading', { name: '別画面の牛乳', exact: true })).toHaveCount(0);
   });
 }
@@ -43,5 +45,5 @@ test('初回開始画面でもバックアップUIを表示せず、アカウン
   await expect(page.getByRole('button', { name: /バックアップ|退避/ })).toHaveCount(0);
   await page.getByRole('button', { name: 'アカウント', exact: true }).click();
   await page.getByRole('menuitem', { name: 'ログアウト', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Googleでログイン', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /食品一覧/ })).toBeVisible();
 });

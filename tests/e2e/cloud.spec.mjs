@@ -4,10 +4,16 @@ import { STORAGE_KEY, V3_STORAGE_KEY, V2_STORAGE_KEY, LEGACY_STORAGE_KEY } from 
 import { migrationKey } from '../../src/data/migration.ts';
 const food={id:'local',name:'移行する牛乳',category:'eggs-dairy',kind:'use-by',deadline:'2026-12-31',quantity:2,unit:'bottle',place:'chilled',status:'active',lowStock:true};
 const empty={items:[],templates:[],shopping:[]};
-test('ログイン前に在庫を表示せず、ログアウトで画面の個人データを破棄する',async({page})=>{
- await page.goto('/');await expect(page.getByRole('heading',{name:/食品一覧/})).toBeVisible();
- await page.getByRole('button',{name:'アカウント',exact:true}).click();await page.getByRole('menuitem',{name:'ログアウト',exact:true}).click();await expect(page.getByRole('button',{name:'Googleでログイン'})).toBeVisible();
- await expect(page.getByRole('heading',{name:/食品一覧/})).toHaveCount(0);await page.reload();await expect(page.getByRole('button',{name:'Googleでログイン'})).toBeVisible();
+test('ログアウト後は未ログインの端末保存へ戻り、クラウド在庫を表示しない',async({page})=>{
+ page.cloud.row={user_id:userId,data:{version:4,...empty,items:[food]},revision:1,write_id:'existing',previous:null};
+ await page.goto('/');await expect(page.getByRole('heading',{name:food.name,exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'アカウント',exact:true}).click();await page.getByRole('menuitem',{name:'ログアウト',exact:true}).click();
+ await expect(page.getByRole('heading',{name:/食品一覧/})).toBeVisible();
+ await expect(page.getByRole('heading',{name:food.name,exact:true})).toHaveCount(0);
+ await page.getByRole('button',{name:'アカウント',exact:true}).click();
+ await expect(page.getByRole('menuitem',{name:'Googleでログインしてクラウド保存'})).toBeVisible();
+ await page.reload();await expect(page.getByRole('heading',{name:/食品一覧/})).toBeVisible();
+ await expect(page.getByRole('heading',{name:food.name,exact:true})).toHaveCount(0);
 });
 for(const [key,version] of [[LEGACY_STORAGE_KEY,1],[V2_STORAGE_KEY,2],[V3_STORAGE_KEY,3],[STORAGE_KEY,4]]) {
  test(`v${version}を明示操作で移行・照合し、再読込や二度目で原文とクラウドを保持する`,async({page})=>{

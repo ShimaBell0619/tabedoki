@@ -61,3 +61,6 @@ export class CloudStore {
     } finally { this.busy = false; }
   }
 }
+
+/** A persistence backend for the shared application model. */
+export type DataStore = Pick<CloudStore, 'load' | 'save'>;
