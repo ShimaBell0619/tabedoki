@@ -47,6 +47,17 @@ for (const width of [320, 390, 1440]) {
     await eggs.click();
     const dialog = page.getByRole('dialog', { name: '10/24の在庫' });
     await expect(dialog).toBeVisible();
+    // Native dialog positioning must not fall back to the top-left (Tailwind reset).
+    const bounds = await dialog.boundingBox();
+    expect(bounds).not.toBeNull();
+    if (width <= 760) {
+      expect(Math.abs(bounds.x)).toBeLessThanOrEqual(2);
+      expect(Math.abs(bounds.x + bounds.width - width)).toBeLessThanOrEqual(2);
+      expect(Math.abs(bounds.y + bounds.height - 850)).toBeLessThanOrEqual(2);
+    } else {
+      expect(Math.abs(bounds.x + bounds.width / 2 - width / 2)).toBeLessThanOrEqual(2);
+      expect(Math.abs(bounds.y + bounds.height / 2 - 850 / 2)).toBeLessThanOrEqual(2);
+    }
     await expect(dialog.locator('.timeline-dialog-item')).toHaveCount(2);
     await dialog.getByRole('button', { name: 'たまごを使い切り' }).click();
     await expect(dialog).not.toBeVisible();
