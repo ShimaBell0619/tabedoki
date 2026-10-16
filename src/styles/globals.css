@@ -71,12 +71,14 @@
 
 
 /* Deadline timeline: a fixed 48px per calendar day, with one event per date. */
-.timeline-tools { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin:14px 0 12px; }
+.timeline-tools { position:sticky; top:0; z-index:5; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin:14px 0 12px; padding:6px 0; background:var(--color-background); }
+.timeline-tools-right { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+.timeline-tools-right button { min-height:44px; padding:6px 10px; font-size:12px; }
 .timeline-range { display:flex; gap:3px; padding:3px; background:var(--color-panel); border:1px solid var(--color-border); border-radius:10px; }
 .timeline-range button { min-height:44px; border-radius:7px; padding:7px 13px; color:var(--color-muted); font-size:13px; font-weight:700; }
 .timeline-range button[aria-pressed="true"] { background:white; color:var(--color-primary); box-shadow:0 1px 4px #17372b12; }
 .timeline-scale { color:var(--color-muted); font-size:12px; }
-.timeline-stage { position:relative; min-width:0; overflow:visible; }
+.timeline-stage { position:relative; min-width:0; overflow:visible; scroll-margin-top:75px; }
 .timeline-week { position:absolute; left:87px; right:0; background:#f0f6f180; pointer-events:none; }
 .timeline-week-alt { background:transparent; }
 .timeline-axis { position:absolute; left:85px; width:2px; background:#aecbb8; border-radius:2px; pointer-events:none; }
