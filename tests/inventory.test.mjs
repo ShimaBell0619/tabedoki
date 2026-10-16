@@ -6,12 +6,12 @@ const food = (id, extra = {}) => ({
   id, name: 'しょうゆ', category: 'condiments', kind: 'best-before', unit: 'bottle',
   deadline: '2026-10-31', quantity: 1, place: 'chilled', status: 'active', lowStock: false, ...extra,
 });
-const query = { view: 'active', search: '', categoryFilter: 'all', placeFilter: 'all', deadlineFilter: 'all', sort: 'category' };
+const query = { view: 'active', categoryFilter: 'all', placeFilter: 'all', deadlineFilter: 'all', sort: 'category' };
 
-test('検索・保存場所を在庫単位で適用し、表示中の数量と最短期限だけを集約する', () => {
-  const items = [food('later', { deadline: '2027-03-31', place: 'pantry', quantity: 3 }), food('first', { quantity: 2 }), food('other', { name: 'みそ' })];
+test('保存場所を在庫単位で適用し、表示中の数量と最短期限だけを集約する', () => {
+  const items = [food('later', { deadline: '2027-03-31', place: 'pantry', quantity: 3 }), food('first', { quantity: 2 }), food('other', { name: 'みそ', place: 'pantry' })];
   const before = structuredClone(items);
-  const result = selectInventory(items, '2026-10-15', { ...query, search: ' しょうゆ ', placeFilter: 'chilled' });
+  const result = selectInventory(items, '2026-10-15', { ...query, placeFilter: 'chilled' });
   assert.equal(result.foodGroups.length, 1);
   assert.equal(result.foodGroups[0].quantity, 2);
   assert.equal(result.foodGroups[0].primary.id, 'first');

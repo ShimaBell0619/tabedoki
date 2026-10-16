@@ -72,7 +72,7 @@ test('定番と以前の食品から、今回の期限・新ID・数量1で登�
   await page.screenshot({ path: info.outputPath('registration-390.png') });
 });
 
-test('カテゴリ・場所・検索をANDで絞り込む', async ({ page }) => {
+test('カテゴリ・場所をANDで絞り込む', async ({ page }) => {
   const original = JSON.stringify({ version: 4, shopping: [], templates: defaultTemplates(), items: [
     { ...item, status: 'active' },
     { ...item, id: 'milk', name: '牛乳', category: 'eggs-dairy', place: 'chilled', unit: 'bottle', status: 'active' },
@@ -87,7 +87,6 @@ test('カテゴリ・場所・検索をANDで絞り込む', async ({ page }) => 
   await expect(page.getByRole('heading', { name: item.name })).toHaveCount(0);
   await openFilters(page);
   await page.getByLabel('保存場所で絞り込み').selectOption('frozen');
-  await page.getByRole('searchbox').fill('納豆');
   await expect(page.getByRole('heading', { name: item.name })).toBeVisible();
 
 });

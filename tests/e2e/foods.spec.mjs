@@ -22,7 +22,7 @@ async function register(page, name, date, kind = '賞味期限', place = '冷蔵
 }
 
 for (const width of [320, 390, 1440]) {
-  test(`${width}pxでCRUD、検索、永続化と画面表示`, async ({ page }, info) => {
+  test(`${width}pxでCRUD、絞り込み、永続化と画面表示`, async ({ page }, info) => {
     await page.setViewportSize({ width, height: 900 });
     await page.clock.install({ time: new Date('2026-10-11T12:00:00') });
     await page.goto('/');
@@ -33,10 +33,7 @@ for (const width of [320, 390, 1440]) {
     await expect(page.getByText('あと2日')).toBeVisible();
     await page.reload();
     await expect(page.getByRole('heading', { name: '牛乳' })).toBeVisible();
-    await page.getByRole('searchbox', { name: '食品名で検索' }).fill('食パン');
-    await expect(page.getByRole('heading', { name: '牛乳' })).toHaveCount(0);
-    await expect(page.getByRole('heading', { name: '食パン' })).toBeVisible();
-    await page.getByRole('searchbox', { name: '食品名で検索' }).clear();
+    await expect(page.getByRole('searchbox')).toHaveCount(0);
     await openFilters(page);
     await page.getByLabel('保存場所で絞り込み').selectOption('chilled');
     await expect(page.getByRole('heading', { name: '食パン' })).toHaveCount(0);

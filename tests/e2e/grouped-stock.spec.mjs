@@ -95,7 +95,7 @@ for (const width of [320, 390, 1440]) {
     expect(boxes.secondary.y).toBeGreaterThanOrEqual(boxes.title.y + boxes.title.height);
     expect(boxes.quantity.y).toBeGreaterThanOrEqual(boxes.secondary.y);
     expect(boxes.date.y).toBeGreaterThanOrEqual(boxes.secondary.y);
-    await expect(card.locator('.deadline-chip')).toHaveCSS('color', 'rgb(88, 108, 102)');
+    await expect(card.locator('.deadline-chip')).toHaveCSS('color', 'rgb(115, 127, 143)');
     await expect(card.locator('.deadline-chip')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
     await page.screenshot({ path: info.outputPath('card-summary-' + width + '.png'), fullPage: true });
@@ -165,7 +165,7 @@ for (const width of [320, 390, 1440]) {
     await setup(page);
     const bg = await page.locator('body').evaluate(el => getComputedStyle(el).backgroundColor);
     const rootBg = await page.locator('html').evaluate(el => getComputedStyle(el).backgroundColor);
-    expect([bg,rootBg]).toContain('rgb(247, 247, 242)');
+    expect([bg,rootBg]).toContain('rgb(246, 247, 249)');
     const single = page.locator('.food-row').filter({has:page.getByRole('heading', {name:'みそ', exact:true})});
     await expect(single.locator('.quantity')).toHaveText('1本');
     await expect(single.locator('.deadline-prefix')).toHaveCount(0);
@@ -193,3 +193,20 @@ for (const width of [320, 390, 1440]) {
     await page.screenshot({path:info.outputPath('natural-inventory-'+width+'.png'),fullPage:true});
   });
 }
+
+test('数量の増減と最終1個の使い切りを在庫単位で保存する', async ({ page }) => {
+  await setup(page);
+  const row = page.locator('.food-row').filter({ has: page.getByRole('heading', { name: 'しょうゆ', exact: true }) }).first();
+  await row.locator('summary').click();
+  const lots = row.locator('.stock-lot');
+  const second = lots.filter({ has: page.getByText('2027/03/31', { exact: true }) });
+  await second.getByRole('button', { name: 'しょうゆの数量を1減らす' }).click();
+  expect((await cloudData(page)).items.find(item => item.id === 'new').quantity).toBe(1);
+  await second.getByRole('button', { name: 'しょうゆの数量を1増やす' }).click();
+  expect((await cloudData(page)).items.find(item => item.id === 'new').quantity).toBe(2);
+  const first = lots.filter({ has: page.getByText('2026/10/31', { exact: true }) });
+  await first.getByRole('button', { name: 'しょうゆの数量を1減らす' }).click();
+  expect((await cloudData(page)).items.find(item => item.id === 'old')).toMatchObject({ quantity: 1, status: 'used' });
+  await page.getByRole('button', { name: '完了', exact: true }).click();
+  await expect(page.locator('.stock-lot').first()).toHaveCount(1);
+});

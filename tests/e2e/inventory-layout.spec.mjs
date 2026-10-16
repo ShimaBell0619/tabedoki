@@ -33,7 +33,6 @@ for (const width of [320, 390, 1440]) {
     await page.getByLabel('一覧の表示方法').selectOption('place');
     await expect(page.getByRole('heading', { name: '冷蔵', exact: true })).toBeVisible();
     await expect(page.getByRole('heading', { name: '常温', exact: true })).toBeVisible();
-    await page.getByRole('searchbox').fill('食品');
     await expect(page.getByRole('button', { name: 'すべて 6件', exact: true })).toBeVisible();
     await page.screenshot({ path: info.outputPath(`compact-inventory-${width}.png`), fullPage: true });
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);

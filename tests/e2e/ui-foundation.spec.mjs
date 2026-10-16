@@ -46,7 +46,7 @@ for (const width of [320, 390, 1440]) {
     await expect(dialog.getByLabel('食品名')).toBeFocused();
     await expect(dialog.getByLabel('食品名')).toHaveCSS('outline-width', '3px');
     await dialog.getByLabel('食品カテゴリ').focus();
-    await expect(dialog.getByLabel('食品カテゴリ')).toHaveCSS('outline-color', 'rgb(202, 106, 36)');
+    await expect(dialog.getByLabel('食品カテゴリ')).toHaveCSS('outline-color', 'rgb(183, 117, 59)');
     const name = dialog.getByLabel('食品名');
     await name.focus();
     await page.keyboard.press('Tab');
