@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { deadlineLabel } from '../../domain/deadline.ts';
 import { kinds, normalizedName, places, units, type Food } from '../../domain/food.ts';
-import { FoodActions } from './FoodActions';
 import type { InventoryActions } from './FoodGroupCard';
 import { selectTimeline, type TimelineDay } from './selectTimeline';
 
@@ -132,11 +131,24 @@ export function DeadlineTimeline({ items, today, listed, onShowList, blocked, on
               {listed.has(normalizedName(item.name)) ? <span>買い物に追加済み</span> :
                 <Button type="button" variant="secondary" disabled={blocked} onClick={() => void onAddShopping(item)}>買い物に追加</Button>}
             </div>}
-            <FoodActions item={item} blocked={blocked}
-              onEdit={() => { dismiss(); onEdit(item); }}
-              onFinish={() => { dismiss(); onStatus(item, item.status === 'active' ? 'used' : 'active'); }}
-              onDiscard={() => { dismiss(); onStatus(item, 'discarded'); }}
-              onRemove={() => { dismiss(); onRemove(item); }} />
+            <div className="timeline-dialog-actions">
+              <Button variant="secondary" type="button" disabled={blocked} aria-label={`${item.name}を編集`}
+                onClick={() => { dismiss(); onEdit(item); }}>編集</Button>
+              <Button variant="default" type="button" disabled={blocked}
+                aria-label={item.status === 'active' ? `${item.name}を使い切り` : `${item.name}を管理中に戻す`}
+                onClick={() => { dismiss(); onStatus(item, item.status === 'active' ? 'used' : 'active'); }}>
+                {item.status === 'active' ? '使い切り' : '戻す'}
+              </Button>
+              <details className="timeline-more">
+                <summary>その他の操作</summary>
+                <div className="timeline-more-buttons">
+                  {item.status === 'active' && <Button variant="secondary" type="button" disabled={blocked}
+                    onClick={() => { dismiss(); onStatus(item, 'discarded'); }}>廃棄として記録</Button>}
+                  <Button variant="secondary" type="button" disabled={blocked}
+                    onClick={() => { dismiss(); onRemove(item); }}>削除</Button>
+                </div>
+              </details>
+            </div>
           </li>)}
         </ul>
       </>}
