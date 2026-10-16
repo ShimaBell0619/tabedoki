@@ -21,6 +21,9 @@ export function AccountMenu({ email, busy, refreshDisabled = false, onRefresh, o
       {onRefresh && <DropdownMenuItem disabled={busy || refreshDisabled} onSelect={onRefresh}>再取得</DropdownMenuItem>}
       {onLogin && <DropdownMenuItem disabled={busy} onSelect={onLogin}>Googleでログインしてクラウド保存</DropdownMenuItem>}
       {onLogout && <DropdownMenuItem disabled={busy} onSelect={onLogout}>ログアウト</DropdownMenuItem>}
+      <div role="separator" className="my-1 border-t border-border" />
+      <DropdownMenuItem asChild><a href="/terms.html">利用条件</a></DropdownMenuItem>
+      <DropdownMenuItem asChild><a href="/privacy.html">プライバシーポリシー</a></DropdownMenuItem>
     </DropdownMenuContent>
   </DropdownMenu>;
 }
