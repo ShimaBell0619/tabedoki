@@ -7,6 +7,7 @@ import { deadlineFilters, matchesDeadline, type DeadlineFilter } from '../../dom
 import { groupFoods } from '../../domain/stock';
 import type { ShoppingItem } from '../../domain/shopping';
 import { FoodGroupCard, type InventoryActions } from './FoodGroupCard';
+import { DeadlineTimeline } from './DeadlineTimeline';
 import { selectInventory } from './selectInventory';
 import { Icon } from '../../components/Icon';
 
@@ -19,6 +20,7 @@ type Props = InventoryActions & {
 
 export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatus, onRemove, shopping, onLowStock, onAddShopping, onAddStock }: Props) {
   const [addingKey, setAddingKey] = useState<string | null>(null);
+  const [displayMode, setDisplayMode] = useState<'list' | 'timeline'>('list');
   const [view, setView] = useState<'active' | 'finished' | 'all'>('active');
   const [search, setSearch] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -26,7 +28,7 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
   const [placeFilter, setPlaceFilter] = useState<'all' | StoragePlace>('all');
   const [deadlineFilter, setDeadlineFilter] = useState<DeadlineFilter>('all');
   const [sort, setSort] = useState<'category' | 'deadline' | 'place'>('category');
-  const { active, foodGroups, sections } = selectInventory(items, today, { view, search, categoryFilter, placeFilter, deadlineFilter, sort });
+  const { active, displayed, foodGroups, sections } = selectInventory(items, today, { view, search, categoryFilter, placeFilter, deadlineFilter, sort });
   const filterCount = Number(categoryFilter !== 'all') + Number(placeFilter !== 'all') + Number(deadlineFilter !== 'all');
   const hasFilters = filterCount > 0 || Boolean(search.trim());
   const listed = new Set(shopping.filter(item => !item.bought).map(item => normalizedName(item.name)));
@@ -53,11 +55,21 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
               {{ active: '管理中', finished: '完了', all: 'すべて' }[value]}
             </Button>)}
         </div>
-        <label className="sort-control"><span className="sr-only">一覧の表示方法</span>
-          <NativeSelect className="min-h-11 w-auto rounded-lg border-border p-1.5 text-xs text-muted mobile:p-1.5" value={sort} onChange={event => setSort(event.target.value as typeof sort)}>
-            <option value="category">カテゴリ別</option><option value="deadline">期限順</option><option value="place">保存場所別</option>
-          </NativeSelect>
-        </label>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex rounded-[10px] border border-border bg-panel p-[3px]" role="group" aria-label="食品一覧の表示切替">
+            {(['list', 'timeline'] as const).map(value =>
+              <Button variant="plain" key={value} type="button" aria-pressed={displayMode === value}
+                onClick={() => setDisplayMode(value)}
+                className="min-h-11 rounded-[7px] px-3 text-xs font-bold text-muted aria-pressed:bg-white aria-pressed:text-primary aria-pressed:shadow-sm">
+                {value === 'list' ? '一覧' : 'タイムライン'}
+              </Button>)}
+          </div>
+          {displayMode === 'list' && <label className="sort-control"><span className="sr-only">一覧の表示方法</span>
+            <NativeSelect className="min-h-11 w-auto rounded-lg border-border p-1.5 text-xs text-muted mobile:p-1.5" value={sort} onChange={event => setSort(event.target.value as typeof sort)}>
+              <option value="category">カテゴリ別</option><option value="deadline">期限順</option><option value="place">保存場所別</option>
+            </NativeSelect>
+          </label>}
+        </div>
       </div>
       {view === 'active' && <div className={`deadline-filters mb-3 flex flex-wrap gap-1.5 [&_button]:min-h-11 [&_button]:rounded-lg [&_button]:border
           [&_button]:border-border [&_button]:bg-white [&_button]:px-2.5 [&_button]:py-2 [&_button]:text-xs
@@ -116,7 +128,11 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
         {!hasFilters && view !== 'finished' && <Button variant="secondary" className="secondary" type="button" disabled={blocked} onClick={onCreate}>
           <Icon name="plus" />食品を登録する
         </Button>}
-      </div> : sections.filter(section => section.items.length > 0).map(section => <div key={section.name ?? 'deadline'}>
+      </div> : displayMode === 'timeline' ? <DeadlineTimeline items={displayed} today={today} listed={listed}
+        onShowList={() => { setDisplayMode('list'); setSort('deadline'); }}
+        blocked={blocked} onEdit={onEdit} onStatus={onStatus} onRemove={onRemove}
+        onLowStock={onLowStock} onAddShopping={onAddShopping} onAddStock={onAddStock} /> :
+        sections.filter(section => section.items.length > 0).map(section => <div key={section.name ?? 'deadline'}>
         {section.name && <h2 className="group-heading mt-[18px] mb-2 text-[15px] font-bold" aria-label={section.name}>
           {section.name}<span className="group-count ml-2 text-xs font-medium text-muted" aria-hidden="true">{section.items.length}件</span>
         </h2>}
