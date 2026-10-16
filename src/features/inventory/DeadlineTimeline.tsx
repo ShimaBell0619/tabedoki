@@ -34,6 +34,7 @@ export function DeadlineTimeline({ items, today, listed, onShowList, blocked, on
   const [range, setRange] = useState<Range>(30);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
   const { expired, visible, later } = selectTimeline(items, today, range);
   const selectedDay = [...expired, ...visible].find(day => day.deadline === selectedDate);
   const eventDays = new Set(visible.map(day => day.days));
@@ -72,7 +73,10 @@ export function DeadlineTimeline({ items, today, listed, onShowList, blocked, on
         {([14, 30, 90] as const).map(value => <Button key={value} type="button" variant="plain"
           aria-pressed={range === value} onClick={() => setRange(value)}>{value}日</Button>)}
       </div>
-      <span className="timeline-scale">1日 = 同じ間隔</span>
+      <div className="timeline-tools-right">
+        <span className="timeline-scale">1日 = 同じ間隔</span>
+        <Button variant="secondary" type="button" onClick={() => stageRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>今日へ</Button>
+      </div>
     </div>
     {expired.length > 0 && <section className="timeline-overdue" aria-label="期限切れの食品">
       <h2>期限切れ <span>{expired.reduce((sum, day) => sum + day.items.length, 0)}件</span></h2>
@@ -83,7 +87,7 @@ export function DeadlineTimeline({ items, today, listed, onShowList, blocked, on
         </div>)}
       </div>
     </section>}
-    <div className="timeline-stage" style={{ height: START_Y * 2 + range * DAY_HEIGHT }} aria-label={`今日から${range}日後までの期限タイムライン`}>
+    <div ref={stageRef} className="timeline-stage" style={{ height: START_Y * 2 + range * DAY_HEIGHT }} aria-label={`今日から${range}日後までの期限タイムライン`}>
       {weeks.map((week, index) => <div className={`timeline-week ${index % 2 ? 'timeline-week-alt' : ''}`}
         key={week} style={{ top: START_Y + week * DAY_HEIGHT, height: Math.min(7, range - week) * DAY_HEIGHT }} />)}
       <div className="timeline-axis" style={{ top: START_Y, height: range * DAY_HEIGHT }} />
