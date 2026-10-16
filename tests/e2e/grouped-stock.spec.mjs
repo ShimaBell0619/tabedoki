@@ -73,6 +73,35 @@ for (const width of [320, 390, 1440]) {
   });
 }
 
+for (const width of [320, 390, 1440]) {
+  test('食品名と残り日数を上段、数量と期限日を下段に配置する ' + width + 'px', async ({ page }, info) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.clock.install({ time: new Date('2026-10-15T12:00:00') });
+    await setup(page);
+    const card = page.locator('.food-row').filter({ has: page.getByRole('heading', { name: 'みそ', exact: true }) });
+    await expect(card.locator('.deadline-chip')).toContainText(/^あと\d+日$/);
+    const boxes = await card.locator('summary').evaluate(summary => {
+      const bounds = selector => {
+        const { x, y, width, height } = summary.querySelector(selector).getBoundingClientRect();
+        return { x, y, width, height };
+      };
+      return {
+        title: bounds('.food-primary'), status: bounds('.deadline-chip'),
+        secondary: bounds('.food-secondary'), quantity: bounds('.quantity'), date: bounds('.food-deadline'),
+      };
+    });
+    expect(boxes.status.x).toBeGreaterThanOrEqual(boxes.title.x + boxes.title.width);
+    expect(Math.abs((boxes.status.y + boxes.status.height / 2) - (boxes.title.y + boxes.title.height / 2))).toBeLessThanOrEqual(4);
+    expect(boxes.secondary.y).toBeGreaterThanOrEqual(boxes.title.y + boxes.title.height);
+    expect(boxes.quantity.y).toBeGreaterThanOrEqual(boxes.secondary.y);
+    expect(boxes.date.y).toBeGreaterThanOrEqual(boxes.secondary.y);
+    await expect(card.locator('.deadline-chip')).toHaveCSS('color', 'rgb(88, 108, 102)');
+    await expect(card.locator('.deadline-chip')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+    await page.screenshot({ path: info.outputPath('card-summary-' + width + '.png'), fullPage: true });
+  });
+}
+
 test('カテゴリ・単位・期限種別が異なる食品を合算せず、完了から期限単位で戻す', async ({ page }) => {
   await setup(page);
   await page.getByRole('button', { name: 'すべて', exact: true }).first().click();
