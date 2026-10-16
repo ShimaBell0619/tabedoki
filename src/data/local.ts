@@ -6,7 +6,8 @@ import { STORAGE_KEY, SAVE_ERROR, decodeStored, readData, writeData } from './st
 export class LocalStore implements DataStore {
   private raw: string | null = null;
   private snapshot: Snapshot | null = null;
-  constructor(private readonly storage: Pick<Storage, 'getItem' | 'setItem'>) {}
+  private readonly storage: Pick<Storage, 'getItem' | 'setItem'>;
+  constructor(storage: Pick<Storage, 'getItem' | 'setItem'>) { this.storage = storage; }
 
   async load(): Promise<Snapshot> {
     const result = readData(this.storage);
