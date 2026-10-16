@@ -26,7 +26,7 @@ type Props = {
 export function App({ store, initial, mode = 'cloud', email, onLogout, onLogin, authBusy = false, loginError = '' }: Props) {
   const [screen, setScreen] = useState<'inventory' | 'shopping'>('inventory');
   const today = useToday();
-  const { data, saving, blocked, notice, setNotice, formError, setFormError, editor, setEditor, refresh, openForm, saveTemplates, saveFood, addStock, changeStatus, removeFood, changeLowStock, addToShopping, changeBought, removeShopping } = useAppModel(store, initial, mode);
+  const { data, saving, blocked, notice, setNotice, formError, setFormError, editor, setEditor, refresh, openForm, saveTemplates, saveFood, addStock, changeStatus, changeQuantity, removeFood, changeLowStock, addToShopping, changeBought, removeShopping } = useAppModel(store, initial, mode);
 
   return <div className="page min-h-dvh">
     <header className="topbar h-[68px] border-b border-border bg-white mobile:h-[62px]"><div className="topbar-inner mx-auto flex h-full max-w-[1040px] items-center justify-between gap-4 px-8 mobile:px-[18px]">
@@ -51,7 +51,7 @@ export function App({ store, initial, mode = 'cloud', email, onLogout, onLogin, 
       <div hidden={screen !== 'inventory'}>
         <InventoryPage items={data.items} today={today} blocked={blocked || saving} onCreate={() => openForm()}
           onEdit={openForm} onStatus={changeStatus} onRemove={removeFood} shopping={data.shopping}
-          onLowStock={changeLowStock} onAddShopping={addToShopping} onAddStock={addStock} />
+          onLowStock={changeLowStock} onAddShopping={addToShopping} onAddStock={addStock} onQuantity={changeQuantity} />
       </div>
       <div hidden={screen !== 'shopping'}>
         <ShoppingPage items={data.shopping} foods={data.items} templates={data.templates} blocked={blocked || saving}

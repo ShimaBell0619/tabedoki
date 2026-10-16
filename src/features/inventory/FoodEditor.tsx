@@ -96,6 +96,13 @@ export function FoodEditor({ item, purchase, templatesOnly, items, templates, bl
           <Input ref={nameInput} required maxLength={80} placeholder="例：牛乳" value={form.name}
             onChange={event => { setForm({ ...form, name: event.target.value }); setSelectedCandidate(null); }} />
         </label>
+        {!editingId && templates.length > 0 && <div className="quick-candidates" aria-label="よく使う定番食品">
+          <p className="mb-2 text-xs font-semibold text-muted">よく使う食品</p>
+          <div className="candidate-list flex flex-wrap gap-[7px]">{templates.slice(0, 5).map(candidate =>
+            <Button variant="candidate" key={candidate.id} type="button" className="candidate-button"
+              aria-pressed={selectedCandidate === `template:${candidate.id}`} aria-label={`定番の${candidate.name}`}
+              onClick={() => chooseCandidate(candidate, 'template')}>{candidate.name}</Button>)}</div>
+        </div>}
         <DeadlineInput value={form.deadline} inputRef={deadlineInput} onChange={deadline => setForm({ ...form, deadline })} />
         {!editingId && <div>
           <Button variant="secondary" type="button" className="secondary candidate-toggle text-left whitespace-normal" aria-expanded={candidatesOpen}
@@ -106,7 +113,7 @@ export function FoodEditor({ item, purchase, templatesOnly, items, templates, bl
                 <Button variant="plain" type="button" className="manage-link min-h-11 border-0 bg-transparent px-0 py-2 text-xs text-[#2e644a] underline" onClick={openTemplates}>定番を編集</Button>
               </div>
               {templates.length === 0 && <p className="form-help mt-[-4px] text-xs leading-[1.7] text-muted">よく買う食品を追加できます。</p>}
-              <div className="candidate-list flex flex-wrap gap-[7px]">{templates.map(candidate =>
+              <div className="candidate-list flex flex-wrap gap-[7px]">{templates.slice(5).map(candidate =>
                 <Button variant="candidate" key={candidate.id} type="button" className="candidate-button"
                   aria-pressed={selectedCandidate === `template:${candidate.id}`} aria-label={`定番の${candidate.name}`}
                   onClick={() => chooseCandidate(candidate, 'template')}>{candidate.name}</Button>)}</div>

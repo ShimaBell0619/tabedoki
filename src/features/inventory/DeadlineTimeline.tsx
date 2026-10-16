@@ -45,6 +45,12 @@ export function DeadlineTimeline({ items, today, listed, onShowList, blocked, on
     if (selectedDate && dialogRef.current && !dialogRef.current.open) dialogRef.current.showModal();
   }, [selectedDate]);
 
+  function jumpToNext() {
+    const cards = Array.from(stageRef.current?.querySelectorAll<HTMLButtonElement>('.timeline-hit') ?? []);
+    const next = cards.find(card => card.getBoundingClientRect().top > 140);
+    next?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   function dismiss() {
     dialogRef.current?.close();
     setSelectedDate(null);
@@ -75,6 +81,7 @@ export function DeadlineTimeline({ items, today, listed, onShowList, blocked, on
       </div>
       <div className="timeline-tools-right">
         <span className="timeline-scale">1日 = 同じ間隔</span>
+        <Button variant="secondary" type="button" disabled={visible.length === 0} onClick={jumpToNext}>次の期限へ</Button>
         <Button variant="secondary" type="button" onClick={() => stageRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>今日へ</Button>
       </div>
     </div>

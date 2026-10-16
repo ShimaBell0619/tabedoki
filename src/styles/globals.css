@@ -89,7 +89,7 @@
 .timeline-dot { position:absolute; left:80px; width:12px; height:12px; border-radius:50%; border:3px solid white; background:var(--color-primary); box-shadow:0 0 0 2px var(--color-primary); transform:translateY(-50%); pointer-events:none; }
 .timeline-dot-urgent { background:var(--color-today); box-shadow:0 0 0 2px var(--color-today); }
 .timeline-connector { position:absolute; left:92px; width:15px; border-top:1.5px solid #ACB9C8; pointer-events:none; }
-.timeline-hit { position:absolute; left:107px; right:0; height:48px; min-width:0; border:0; padding:5px 0; background:transparent; color:var(--color-foreground); font:inherit; text-align:left; cursor:pointer; }
+.timeline-hit { scroll-margin-top:115px; position:absolute; left:107px; right:0; height:48px; min-width:0; border:0; padding:5px 0; background:transparent; color:var(--color-foreground); font:inherit; text-align:left; cursor:pointer; }
 .timeline-card { display:flex; align-items:center; justify-content:space-between; gap:7px; min-width:0; width:100%; height:38px; padding:4px 10px; border:1px solid #DDE4ED; border-radius:8px; background:white; box-shadow:0 1px 3px #263C570D; }
 .timeline-hit:hover .timeline-card, .timeline-overdue-button:hover .timeline-card { border-color:#9BACC2; background:#F7F9FC; }
 .timeline-hit:focus-visible { outline:3px solid var(--color-focus); outline-offset:1px; border-radius:8px; }

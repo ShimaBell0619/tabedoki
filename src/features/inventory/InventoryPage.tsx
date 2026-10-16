@@ -17,7 +17,7 @@ type Props = InventoryActions & {
   shopping: ShoppingItem[];
 };
 
-export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatus, onRemove, shopping, onLowStock, onAddShopping, onAddStock }: Props) {
+export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatus, onRemove, shopping, onLowStock, onQuantity, onAddShopping, onAddStock }: Props) {
   const [addingKey, setAddingKey] = useState<string | null>(null);
   const [displayMode, setDisplayMode] = useState<'list' | 'timeline'>('list');
   const [view, setView] = useState<'active' | 'finished' | 'all'>('active');
@@ -121,7 +121,7 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
       </div> : displayMode === 'timeline' ? <DeadlineTimeline items={displayed} today={today} listed={listed}
         onShowList={() => { setDisplayMode('list'); setSort('deadline'); }}
         blocked={blocked} onEdit={onEdit} onStatus={onStatus} onRemove={onRemove}
-        onLowStock={onLowStock} onAddShopping={onAddShopping} onAddStock={onAddStock} /> :
+        onLowStock={onLowStock} onQuantity={onQuantity} onAddShopping={onAddShopping} onAddStock={onAddStock} /> :
         sections.filter(section => section.items.length > 0).map(section => <div key={section.name ?? 'deadline'}>
         {section.name && <h2 className="group-heading mt-[18px] mb-2 text-[15px] font-bold" aria-label={section.name}>
           {section.name}<span className="group-count ml-2 text-xs font-medium text-muted" aria-hidden="true">{section.items.length}件</span>
@@ -131,7 +131,7 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
             listed={listed.has(normalizedName(group.name))} adding={addingKey === group.key}
             onToggleAdd={() => setAddingKey(addingKey === group.key ? null : group.key)} onCloseAdd={() => setAddingKey(null)}
             blocked={blocked} onEdit={onEdit} onStatus={onStatus} onRemove={onRemove} onLowStock={onLowStock}
-            onAddShopping={onAddShopping} onAddStock={onAddStock} />)}</ul>
+            onAddShopping={onAddShopping} onAddStock={onAddStock} onQuantity={onQuantity} />)}</ul>
       </div>)}
     </section>
   </>;

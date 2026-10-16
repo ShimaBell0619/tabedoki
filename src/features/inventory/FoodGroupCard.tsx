@@ -14,6 +14,7 @@ export type InventoryActions = {
   onStatus: (item: Food, status: FoodStatus) => void;
   onRemove: (item: Food) => void;
   onLowStock: (item: Food, lowStock: boolean) => void;
+  onQuantity: (item: Food, delta: -1 | 1) => void;
   onAddShopping: (item: Food) => Promise<boolean>;
   onAddStock: (item: Food, deadline: string, quantity: number, place: StoragePlace) => Promise<boolean>;
 };
@@ -29,7 +30,7 @@ type Props = InventoryActions & {
   onCloseAdd: () => void;
 };
 
-export function FoodGroupCard({ group, today, view, sort, listed, adding, onToggleAdd, onCloseAdd, blocked, onEdit, onStatus, onRemove, onLowStock, onAddShopping, onAddStock }: Props) {
+export function FoodGroupCard({ group, today, view, sort, listed, adding, onToggleAdd, onCloseAdd, blocked, onEdit, onStatus, onRemove, onLowStock, onQuantity, onAddShopping, onAddStock }: Props) {
   const main = group.primary;
   const state = main.status === 'active' ? deadlineState(main.deadline, today) : 'later';
   const date = (main.deadline.slice(0, 4) !== today.slice(0, 4) ? main.deadline.slice(0, 4) + '/' : '') +
@@ -65,30 +66,36 @@ export function FoodGroupCard({ group, today, view, sort, listed, adding, onTogg
       <div className="food-expanded flex flex-col gap-3 border-t border-border bg-panel p-4 mobile:p-3">
         <div className="food-meta flex flex-wrap items-center gap-x-2.5 gap-y-[7px] text-xs text-muted mobile:gap-x-2 mobile:gap-y-1.5"><span>{kinds[group.kind]}</span>{sort !== 'category' && <span>{categories[group.category]}</span>}</div>
         {group.items.length > 1 && <h4 className="stock-heading m-0 text-[13px] font-bold text-[#36584c]">期限別の在庫</h4>}
-        <ul className="stock-lot-list m-0 flex list-none flex-col gap-2 p-0">{group.items.map(item => <li className="stock-lot grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 rounded-[10px] border border-border bg-white p-3 shadow-[0_1px_3px_rgb(24_49_40/4%)] compact:grid-cols-1" key={item.id}>
+        <ul className="stock-lot-list m-0 flex list-none flex-col gap-2 p-0">{group.items.map(item => <li className="stock-lot flex min-w-0 flex-col gap-2 rounded-[10px] border border-border bg-white p-3 shadow-[0_1px_3px_rgb(36_50_70/3%)]" key={item.id}>
           <div className={`stock-lot-info flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1.5 text-[13px] [&_time]:font-bold
           [&_time]:whitespace-nowrap [&_time]:tabular-nums [&>span:not(.stock-finished)]:text-muted mobile:mb-1.5`}>
             <time dateTime={item.deadline} aria-label={kinds[item.kind] + ' ' + item.deadline}>
               {item.deadline.replaceAll('-', '/')}
             </time>
-            <span>{item.quantity}{units[item.unit]}</span>
+            {item.status !== 'active' && <span>{item.quantity}{units[item.unit]}</span>}
             <span>{places[item.place]}</span>
             {item.status !== 'active' && <span className="stock-finished text-[#8d5143]">
               {item.status === 'used' ? '使い切り済み' : '廃棄済み'}
             </span>}
           </div>
-          <div className={`stock-lot-controls m-0 flex min-w-0 items-center gap-x-2.5 gap-y-1 [&_.food-actions]:m-0
-          [&_.food-actions]:flex-nowrap [&_.food-actions]:gap-1 compact:w-full compact:flex-wrap compact:justify-between
-          narrow:flex-col narrow:items-stretch narrow:gap-1 narrow:[&_.food-actions]:justify-end
-          narrow:[&_.food-actions_button]:flex-[0_0_auto]`}>
-            {item.status === 'active' && <label className="stock-lot-low inline-flex min-h-11 cursor-pointer items-center gap-[5px] text-xs whitespace-nowrap text-muted [&_input]:size-5 [&_input]:accent-primary narrow:self-start">
-              <input type="checkbox" checked={item.lowStock} disabled={blocked}
-                onChange={event => onLowStock(item, event.target.checked)}
-                aria-label={item.name + 'の残りわずか'} />残りわずか
-            </label>}
-            <FoodActions item={item} blocked={blocked} onEdit={() => onEdit(item)}
-              onFinish={() => onStatus(item, item.status === 'active' ? 'used' : 'active')}
-              onDiscard={() => onStatus(item, 'discarded')} onRemove={() => onRemove(item)} />
+          <div className="stock-lot-controls flex flex-wrap items-center justify-between gap-2">
+            {item.status === 'active' && <div className="stock-quantity inline-flex min-h-11 items-center gap-2 rounded-lg border border-border bg-panel px-1">
+              <Button variant="plain" type="button" className="flex size-11 items-center justify-center rounded-md text-primary hover:bg-white"
+                disabled={blocked} onClick={() => onQuantity(item, -1)} aria-label={item.name + 'の数量を1減らす'}>−</Button>
+              <span className="min-w-10 text-center text-[13px] font-bold tabular-nums whitespace-nowrap" aria-live="polite">{item.quantity}{units[item.unit]}</span>
+              <Button variant="plain" type="button" className="flex size-11 items-center justify-center rounded-md text-primary hover:bg-white"
+                disabled={blocked || item.quantity >= 999} onClick={() => onQuantity(item, 1)} aria-label={item.name + 'の数量を1増やす'}>＋</Button>
+            </div>}
+            <div className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-2">
+              {item.status === 'active' && <label className="stock-lot-low inline-flex min-h-11 cursor-pointer items-center gap-[5px] text-xs whitespace-nowrap text-muted [&_input]:size-5 [&_input]:accent-primary">
+                <input type="checkbox" checked={item.lowStock} disabled={blocked}
+                  onChange={event => onLowStock(item, event.target.checked)}
+                  aria-label={item.name + 'の残りわずか'} />残りわずか
+              </label>}
+              <FoodActions item={item} blocked={blocked} onEdit={() => onEdit(item)}
+                onFinish={() => onStatus(item, item.status === 'active' ? 'used' : 'active')}
+                onDiscard={() => onStatus(item, 'discarded')} onRemove={() => onRemove(item)} />
+            </div>
           </div>
         </li>)}</ul>
         {view !== 'finished' && <div className={`stock-group-actions flex flex-wrap items-center justify-between gap-2 [&_.secondary]:min-h-11
