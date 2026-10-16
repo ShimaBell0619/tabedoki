@@ -40,22 +40,26 @@ export function FoodGroupCard({ group, today, view, sort, listed, adding, onTogg
     : group.quantity + units[group.unit];
   return <li className={cn('food-row min-w-0 rounded-[13px] border border-border bg-white shadow-[0_2px_8px_rgb(24_49_40/6%)] has-[.food-details[open]]:border-[#a8c7ba] has-[.food-details[open]]:shadow-[0_4px_16px_rgb(24_49_40/10%)]', group.activeQuantity === 0 && 'completed')} key={group.key}>
     <details className="food-details overflow-hidden rounded-xl open:[&>summary]:bg-white">
-      <summary className="grid min-h-[72px] cursor-pointer list-none grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 px-4 py-3 focus-visible:outline-offset-[-3px] mobile:px-3 mobile:py-2.5" aria-label={group.name + 'の詳細、' + amount + '、' + kinds[group.kind] + ' ' + main.deadline + '、' +
+      <summary className="grid min-h-[68px] cursor-pointer list-none grid-cols-[minmax(0,1fr)_auto_auto] grid-rows-[auto_auto] items-center gap-x-2 gap-y-1 px-4 py-2.5 focus-visible:outline-offset-[-3px] mobile:px-3 mobile:py-2.5" aria-label={group.name + 'の詳細、' + amount + '、' + kinds[group.kind] + ' ' + main.deadline + '、' +
         (main.status === 'active' ? deadlineLabel(main.deadline, today) : main.status === 'used' ? '使い切り済み' : '廃棄済み')}>
-        <div className={`food-primary col-start-1 flex flex-wrap items-baseline gap-2.5 [&_h3]:m-0 [&_h3]:text-[17px]
-          [&_h3]:leading-[1.4] [&_h3]:font-[750] [&_h3]:wrap-anywhere mobile:gap-[7px] mobile:[&_h3]:text-base
-          mobile:[&_h3]:leading-[1.4]`}>
+        <div className="food-primary col-start-1 row-start-1 min-w-0 [&_h3]:m-0 [&_h3]:text-[17px] [&_h3]:leading-[1.4] [&_h3]:font-[750] [&_h3]:wrap-anywhere mobile:[&_h3]:text-base">
           <h3>{group.name}</h3>
-          <span className="quantity text-[13px] whitespace-nowrap text-muted mobile:text-xs">{amount}</span>
-          {group.lowStock && <span className="low-stock text-[11px] font-[650] text-primary">残りわずか</span>}
         </div>
-        <div className="food-deadline col-start-1 flex flex-wrap items-center gap-3 text-[13px] [&_time]:tabular-nums">
-          {group.items.length > 1 && <span className="deadline-prefix text-xs text-muted">{main.status === 'active' ? '最短期限' : '期限'}</span>}
-          <time dateTime={main.deadline} aria-label={kinds[group.kind] + ' ' + main.deadline}>{date}</time>
-          <span className={cn('deadline-chip inline-flex items-center rounded-[5px] bg-[#edf4ef] px-[7px] py-[3px] text-xs font-bold whitespace-nowrap text-[#365f4b] mobile:text-[11px]', 'state-' + state, { 'bg-expired-surface text-expired': state === 'expired', 'bg-today-surface text-today': state === 'today', 'bg-[#eef6ed] text-[#386742]': state === 'soon' })}>
-            {main.status === 'active' ? deadlineLabel(main.deadline, today) :
-              main.status === 'used' ? '使い切り済み' : '廃棄済み'}
-          </span>
+        <span className={cn('deadline-chip col-start-2 row-start-1 inline-flex items-center rounded-[5px] text-[13px] font-semibold whitespace-nowrap', 'state-' + state, {
+          'bg-expired-surface px-[7px] py-[3px] font-bold text-expired': state === 'expired',
+          'bg-today-surface px-[7px] py-[3px] font-bold text-today': state === 'today' || state === 'soon',
+          'text-muted': state === 'later',
+        })}>
+          {main.status === 'active' ? deadlineLabel(main.deadline, today) :
+            main.status === 'used' ? '使い切り済み' : '廃棄済み'}
+        </span>
+        <div className="food-secondary col-span-3 row-start-2 flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1 text-[13px] text-muted mobile:text-xs">
+          <span className="quantity whitespace-nowrap">{amount}</span>
+          <div className="food-deadline flex flex-wrap items-center gap-x-2 [&_time]:tabular-nums">
+            {group.items.length > 1 && <span className="deadline-prefix text-xs">{main.status === 'active' ? '最短期限' : '期限'}</span>}
+            <time dateTime={main.deadline} aria-label={kinds[group.kind] + ' ' + main.deadline}>{date}</time>
+          </div>
+          {group.lowStock && <span className="low-stock text-[11px] font-[650] text-primary">残りわずか</span>}
         </div>
       </summary>
       <div className="food-expanded flex flex-col gap-3 border-t border-border bg-panel p-4 mobile:p-3">

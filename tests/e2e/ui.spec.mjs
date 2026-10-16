@@ -30,6 +30,8 @@ for (const width of [320, 390, 1440]) {
     await expect(page.locator('.state-expired')).toHaveCSS('background-color', 'rgb(252, 240, 237)');
     await expect(page.locator('.state-today')).toHaveCSS('color', 'rgb(150, 90, 18)');
     await expect(page.locator('.state-today')).toHaveCSS('background-color', 'rgb(255, 244, 228)');
+    await expect(page.locator('.state-soon')).toHaveCSS('color', 'rgb(150, 90, 18)');
+    await expect(page.locator('.state-soon')).toHaveCSS('background-color', 'rgb(255, 244, 228)');
     await expect(page.getByRole('link', { name: 'たべどき ホーム' }).locator('img')).toHaveAttribute('src', '/icons/cooking-pot.svg');
     await expect(page.getByText(/MY KITCHEN|YOUR PANTRY|あと少し|見逃さない/)).toHaveCount(0);
     await expect(page.getByLabel('保存場所で絞り込み')).not.toBeVisible();
