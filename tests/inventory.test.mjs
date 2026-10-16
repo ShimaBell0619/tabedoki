@@ -33,3 +33,16 @@ test('管理中・完了・全件の切替と期限条件で、元の在庫IDと
   assert.equal(active.foodGroups.length, 0);
   assert.equal(active.active.length, 1);
 });
+
+test('絞り込み中でも残りわずかは同名の全在庫で判定する', () => {
+  const items = [
+    food('low', { lowStock: true, place: 'chilled' }),
+    food('spare', { lowStock: false, place: 'pantry' }),
+  ];
+  const visible = selectInventory(items, '2026-10-15', { ...query, placeFilter: 'chilled' });
+  assert.equal(visible.foodGroups.length, 1);
+  assert.equal(visible.foodGroups[0].lowStock, false);
+  const allLow = selectInventory(items.map(item => ({ ...item, lowStock: true })),
+    '2026-10-15', { ...query, placeFilter: 'chilled' });
+  assert.equal(allLow.foodGroups[0].lowStock, true);
+});

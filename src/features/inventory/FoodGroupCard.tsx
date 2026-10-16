@@ -81,10 +81,10 @@ export function FoodGroupCard({ group, today, view, sort, listed, adding, onTogg
           <div className="stock-lot-controls flex flex-wrap items-center justify-between gap-2">
             {item.status === 'active' && <div className="stock-quantity inline-flex min-h-11 items-center gap-2 rounded-lg border border-border bg-panel px-1">
               <Button variant="plain" type="button" className="flex size-11 items-center justify-center rounded-md text-primary hover:bg-white"
-                disabled={blocked} onClick={() => onQuantity(item, -1)} aria-label={item.name + 'の数量を1減らす'}>−</Button>
+                disabled={blocked} onClick={() => onQuantity(item, -1)} aria-label={item.name.trim() + 'の数量を1減らす'}>−</Button>
               <span className="min-w-10 text-center text-[13px] font-bold tabular-nums whitespace-nowrap" aria-live="polite">{item.quantity}{units[item.unit]}</span>
               <Button variant="plain" type="button" className="flex size-11 items-center justify-center rounded-md text-primary hover:bg-white"
-                disabled={blocked || item.quantity >= 999} onClick={() => onQuantity(item, 1)} aria-label={item.name + 'の数量を1増やす'}>＋</Button>
+                disabled={blocked || item.quantity >= 999} onClick={() => onQuantity(item, 1)} aria-label={item.name.trim() + 'の数量を1増やす'}>＋</Button>
             </div>}
             <div className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-2">
               {item.status === 'active' && <label className="stock-lot-low inline-flex min-h-11 cursor-pointer items-center gap-[5px] text-xs whitespace-nowrap text-muted [&_input]:size-5 [&_input]:accent-primary">

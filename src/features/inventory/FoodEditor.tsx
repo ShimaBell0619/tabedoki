@@ -92,17 +92,17 @@ export function FoodEditor({ item, purchase, templatesOnly, items, templates, bl
           <h2 id="dialog-heading">{editingId ? '食品を編集' : '食品を登録'}</h2>
           <Button variant="ghost" size="icon" className="close icon-button size-11 shrink-0 rounded-lg hover:bg-[#EEF1F6]" type="button" onClick={() => dialog.current?.close()} aria-label="閉じる"><Icon name="x" /></Button>
         </div>
-        <label>食品名 <span className="required ml-1 text-[11px] font-medium text-expired">必須</span>
-          <Input ref={nameInput} required maxLength={80} placeholder="例：牛乳" value={form.name}
-            onChange={event => { setForm({ ...form, name: event.target.value }); setSelectedCandidate(null); }} />
-        </label>
-        {!editingId && templates.length > 0 && <div className="quick-candidates" aria-label="よく使う定番食品">
-          <p className="mb-2 text-xs font-semibold text-muted">よく使う食品</p>
+        {!editingId && templates.length > 0 && <div className="quick-candidates" aria-label="定番食品のクイック選択">
+          <p className="mb-2 text-xs font-semibold text-muted">定番から選ぶ</p>
           <div className="candidate-list flex flex-wrap gap-[7px]">{templates.slice(0, 5).map(candidate =>
             <Button variant="candidate" key={candidate.id} type="button" className="candidate-button"
               aria-pressed={selectedCandidate === `template:${candidate.id}`} aria-label={`定番の${candidate.name}`}
               onClick={() => chooseCandidate(candidate, 'template')}>{candidate.name}</Button>)}</div>
         </div>}
+        <label>食品名 <span className="required ml-1 text-[11px] font-medium text-expired">必須</span>
+          <Input ref={nameInput} required maxLength={80} placeholder="例：牛乳" value={form.name}
+            onChange={event => { setForm({ ...form, name: event.target.value }); setSelectedCandidate(null); }} />
+        </label>
         <DeadlineInput value={form.deadline} inputRef={deadlineInput} onChange={deadline => setForm({ ...form, deadline })} />
         {!editingId && <div>
           <Button variant="secondary" type="button" className="secondary candidate-toggle text-left whitespace-normal" aria-expanded={candidatesOpen}
