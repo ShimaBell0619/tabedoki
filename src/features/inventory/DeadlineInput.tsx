@@ -13,7 +13,7 @@ export function DeadlineInput({ value, onChange, inputRef }: Props) {
       <Input id={id} ref={inputRef} type="text" inputMode="numeric" required maxLength={10}
         className="min-w-0 flex-1" placeholder="YYYYMMDD" autoComplete="off" value={value}
         aria-describedby={`${id}-help`} onChange={event => onChange(event.target.value)} />
-      <div className="relative flex size-[46px] shrink-0 items-center justify-center rounded-[9px] border border-input bg-white text-[#28574b]
+      <div className="relative flex size-[46px] shrink-0 items-center justify-center rounded-[9px] border border-input bg-white text-[#354F70]
         focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-focus">
         <svg className="pointer-events-none size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
           strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

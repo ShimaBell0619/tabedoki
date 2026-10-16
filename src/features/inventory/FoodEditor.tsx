@@ -80,8 +80,8 @@ export function FoodEditor({ item, purchase, templatesOnly, items, templates, bl
   }
 
   return <dialog ref={dialog} className={`food-dialog m-auto max-h-[min(92dvh,820px)] w-[min(94vw,540px)] overflow-auto rounded-[18px] border
-          border-border bg-white p-0 text-foreground shadow-[0_24px_90px_#122c3840] [scroll-padding-block:24px_104px]
-          backdrop:bg-[#19312db3] mobile:max-h-[94dvh] mobile:w-[calc(100vw-24px)] mobile:rounded-2xl`} aria-labelledby="dialog-heading" onClose={onClose}
+          border-border bg-white p-0 text-foreground shadow-[0_24px_90px_#212B3840] [scroll-padding-block:24px_104px]
+          backdrop:bg-[#1F2937B3] mobile:max-h-[94dvh] mobile:w-[calc(100vw-24px)] mobile:rounded-2xl`} aria-labelledby="dialog-heading" onClose={onClose}
     onCancel={event => { if (managingTemplates && returnToFood.current) { event.preventDefault(); closeTemplates(); } }}>
     {managingTemplates ? <TemplateManager templates={templates} blocked={blocked} error={formError}
       onError={setFormError} onSave={saveTemplates} onDone={closeTemplates} returning={returnToFood.current} /> :
@@ -90,7 +90,7 @@ export function FoodEditor({ item, purchase, templatesOnly, items, templates, bl
           mobile:py-5`}>
         <div className="dialog-head flex items-center justify-between gap-3 [&_h2]:m-0 [&_h2]:text-[23px] [&_h2]:font-[750] [&_h2]:tracking-[-.03em] mobile:[&_h2]:text-[21px]">
           <h2 id="dialog-heading">{editingId ? '食品を編集' : '食品を登録'}</h2>
-          <Button variant="ghost" size="icon" className="close icon-button size-11 shrink-0 rounded-lg hover:bg-[#edf3ef]" type="button" onClick={() => dialog.current?.close()} aria-label="閉じる"><Icon name="x" /></Button>
+          <Button variant="ghost" size="icon" className="close icon-button size-11 shrink-0 rounded-lg hover:bg-[#EEF1F6]" type="button" onClick={() => dialog.current?.close()} aria-label="閉じる"><Icon name="x" /></Button>
         </div>
         <label>食品名 <span className="required ml-1 text-[11px] font-medium text-expired">必須</span>
           <Input ref={nameInput} required maxLength={80} placeholder="例：牛乳" value={form.name}
@@ -107,10 +107,10 @@ export function FoodEditor({ item, purchase, templatesOnly, items, templates, bl
         {!editingId && <div>
           <Button variant="secondary" type="button" className="secondary candidate-toggle text-left whitespace-normal" aria-expanded={candidatesOpen}
             aria-controls="food-candidates" onClick={() => setCandidatesOpen(!candidatesOpen)}>定番・以前の登録から入力</Button>
-          <div id="food-candidates" className="candidates mt-3 flex flex-col gap-4 border-b border-[#e6ece8] pb-[18px] [&_h3]:mt-0 [&_h3]:mb-[9px] [&_h3]:text-[13px] [&_h3]:font-[650] [&_h3]:text-[#50685a]" hidden={!candidatesOpen}>
+          <div id="food-candidates" className="candidates mt-3 flex flex-col gap-4 border-b border-[#E2E7ED] pb-[18px] [&_h3]:mt-0 [&_h3]:mb-[9px] [&_h3]:text-[13px] [&_h3]:font-[650] [&_h3]:text-[#68798F]" hidden={!candidatesOpen}>
             <section aria-label="定番食品">
               <div className="candidate-heading mb-2 flex items-center justify-between gap-2.5 [&_h3]:m-0"><h3>定番食品</h3>
-                <Button variant="plain" type="button" className="manage-link min-h-11 border-0 bg-transparent px-0 py-2 text-xs text-[#2e644a] underline" onClick={openTemplates}>定番を編集</Button>
+                <Button variant="plain" type="button" className="manage-link min-h-11 border-0 bg-transparent px-0 py-2 text-xs text-[#354F70] underline" onClick={openTemplates}>定番を編集</Button>
               </div>
               {templates.length === 0 && <p className="form-help mt-[-4px] text-xs leading-[1.7] text-muted">よく買う食品を追加できます。</p>}
               <div className="candidate-list flex flex-wrap gap-[7px]">{templates.slice(5).map(candidate =>
@@ -147,7 +147,7 @@ export function FoodEditor({ item, purchase, templatesOnly, items, templates, bl
           </NativeSelect></label>
         </div>
         {formError && <p className="form-error m-0 rounded-lg bg-[#fff0ec] p-3 text-[13px] text-[#8e372b] wrap-anywhere" role="alert">{formError}</p>}
-        <div className="dialog-actions mt-2 flex justify-end gap-2 sticky bottom-[-24px] z-2 mb-[-24px] border-t border-[#e6ece8] bg-white pt-3.5 pb-6 mobile:bottom-[-20px] mobile:mb-[-20px] mobile:pb-5">
+        <div className="dialog-actions mt-2 flex justify-end gap-2 sticky bottom-[-24px] z-2 mb-[-24px] border-t border-[#E2E7ED] bg-white pt-3.5 pb-6 mobile:bottom-[-20px] mobile:mb-[-20px] mobile:pb-5">
           <Button variant="secondary" type="button" className="secondary text-muted" onClick={() => dialog.current?.close()}>キャンセル</Button>
           <Button variant="default" type="submit" className="primary" disabled={blocked}>{editingId ? '変更を保存' : '登録する'}</Button>
         </div>
