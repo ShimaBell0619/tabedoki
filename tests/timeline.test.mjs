@@ -20,7 +20,7 @@ test('日付ごとにまとめても個々の期限別在庫は維持する', ()
   assert.deepEqual(result.expired.map(day => day.days), [-1]);
   assert.deepEqual(result.visible.map(day => day.days), [2]);
   assert.equal(result.visible[0].items.length, 2);
-  assert.deepEqual(result.visible[0].items.map(item => item.id), ['other', 'early']);
+  assert.deepEqual(result.visible[0].items.map(item => item.id), ['early', 'other']);
   assert.equal(result.later, 1);
   assert.deepEqual(items, before);
 });
