@@ -46,7 +46,7 @@ for (const width of [320, 390, 1440]) {
     await expect(dialog.getByLabel('食品名')).toBeFocused();
     await expect(dialog.getByLabel('食品名')).toHaveCSS('outline-width', '3px');
     await dialog.getByLabel('食品カテゴリ').focus();
-    await expect(dialog.getByLabel('食品カテゴリ')).toHaveCSS('outline-color', 'rgb(202, 106, 36)');
+    await expect(dialog.getByLabel('食品カテゴリ')).toHaveCSS('outline-color', 'rgb(183, 117, 59)');
     const name = dialog.getByLabel('食品名');
     await name.focus();
     await page.keyboard.press('Tab');
@@ -54,9 +54,10 @@ for (const width of [320, 390, 1440]) {
     await page.keyboard.press('Shift+Tab');
     await expect(name).toBeFocused();
     await page.keyboard.press('Shift+Tab');
-    await expect(dialog.getByRole('button', { name: '閉じる', exact: true })).toBeFocused();
+    await expect(dialog.getByRole('button', { name: '定番のチーズ', exact: true })).toBeFocused();
+    await dialog.getByRole('button', { name: '閉じる', exact: true }).focus();
     await page.keyboard.press('Tab');
-    await expect(name).toBeFocused();
+    await expect(dialog.getByRole('button', { name: '定番のたまご', exact: true })).toBeFocused();
     await page.keyboard.press('Escape');
     await expect(dialog).toHaveCount(0);
     await expect(create).toBeFocused();

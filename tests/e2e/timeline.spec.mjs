@@ -31,6 +31,7 @@ for (const width of [320, 390, 1440]) {
     await setup(page);
     await expect(page.locator('.food-row')).toHaveCount(6);
     await page.getByRole('button', { name: 'タイムライン', exact: true }).click();
+    await expect(page.getByRole('button', { name: '次の期限へ' })).toBeEnabled();
     await expect(page.locator('.timeline-hit')).toHaveCount(3);
     await expect(page.locator('.timeline-overdue-row')).toHaveCount(1);
     await expect(page.locator('.timeline-later')).toContainText('30日より先の在庫が2件');

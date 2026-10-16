@@ -42,8 +42,8 @@ test('カテゴリ別を初期表示し、期限順・場所別への切替と�
   await expect(page.locator('.food-row')).toHaveCount(2);
   await expect(retort).toBeVisible();
   await expect(page.getByRole('heading', { name: '調味料', exact: true })).toHaveCount(0);
-  await page.getByRole('searchbox').fill('カレー');
-  await expect(retort.locator('.group-count')).toHaveText('1件');
+  await expect(page.getByRole('searchbox')).toHaveCount(0);
+  await expect(retort.locator('.group-count')).toHaveText('2件');
   await page.getByRole('button', { name: '条件をクリア' }).click();
   await expect(retort.locator('.group-count')).toHaveText('2件');
 

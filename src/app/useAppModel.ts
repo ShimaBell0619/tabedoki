@@ -69,6 +69,21 @@ export function useAppModel(store: DataStore, initial: Snapshot, mode: 'local' |
     const label = status === 'used' ? '使い切り' : status === 'discarded' ? '廃棄' : '管理中に戻す';
     setNotice(`「${item.name}」を${label}にしました。`);
   }
+  async function changeQuantity(item: Food, delta: -1 | 1) {
+    const current = committed.current;
+    const original = current.items.find(value => value.id === item.id);
+    if (!original || original.status !== 'active') {
+      showError('変更する在庫が見つかりません。再取得してください。'); return;
+    }
+    const quantity = original.quantity + delta;
+    if (quantity < 0 || quantity > 999) return;
+    const items = current.items.map(value => value.id === item.id
+      ? quantity === 0 ? { ...value, status: 'used' as const } : { ...value, quantity }
+      : value);
+    if (!await commitData({ ...current, items })) return;
+    setNotice(quantity === 0 ? `「${item.name}」を使い切りにしました。` :
+      `「${item.name}」の数量を${quantity}に変更しました。`);
+  }
   async function removeFood(item: Food) {
     if (!window.confirm(`「${item.name}」を完全に削除しますか？\nこの操作は取り消せません。`)) return;
     const current = committed.current;
@@ -107,5 +122,5 @@ export function useAppModel(store: DataStore, initial: Snapshot, mode: 'local' |
     if (await commitData({ ...current, shopping: current.shopping.filter(value => value.id !== item.id) })) setNotice('買い物項目を削除しました。');
   }
 
-  return { data, saving, blocked, notice, setNotice, formError, setFormError, editor, setEditor, refresh, openForm, saveTemplates, saveFood, addStock, changeStatus, removeFood, changeLowStock, addToShopping, changeBought, removeShopping };
+  return { data, saving, blocked, notice, setNotice, formError, setFormError, editor, setEditor, refresh, openForm, saveTemplates, saveFood, addStock, changeStatus, changeQuantity, removeFood, changeLowStock, addToShopping, changeBought, removeShopping };
 }

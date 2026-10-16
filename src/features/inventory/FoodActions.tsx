@@ -14,8 +14,8 @@ type Props = {
 
 export function FoodActions({ item, blocked, onEdit, onFinish, onDiscard, onRemove }: Props) {
   return <div className="food-actions flex items-center justify-end gap-1">
-    <Button variant="action" type="button" className="edit-food border-[#d9e4dc] text-muted" disabled={blocked} onClick={onEdit} aria-label={`${item.name}を編集`}>編集</Button>
-    <Button variant="action" type="button" className="finish-food flex items-center gap-[5px] border-primary bg-primary text-white hover:bg-[#0b554c] [&_.icon]:size-4 [&_.icon]:brightness-0 [&_.icon]:invert"
+    <Button variant="action" type="button" className="edit-food border-[#D9E1EB] text-muted" disabled={blocked} onClick={onEdit} aria-label={`${item.name}を編集`}>編集</Button>
+    <Button variant="action" type="button" className="finish-food flex items-center gap-[5px] border-primary bg-primary text-white hover:bg-[#293F5C] [&_.icon]:size-4 [&_.icon]:brightness-0 [&_.icon]:invert"
       disabled={blocked} onClick={onFinish} aria-label={item.status === 'active' ? `${item.name}を使い切り` : undefined}>
       <Icon name="check" />{item.status === 'active' ? '使い切り' : '戻す'}
     </Button>

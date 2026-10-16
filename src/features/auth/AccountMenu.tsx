@@ -13,7 +13,7 @@ type Props = {
 export function AccountMenu({ email, busy, refreshDisabled = false, onRefresh, onLogout, onLogin }: Props) {
   return <DropdownMenu modal={false}>
     <DropdownMenuTrigger asChild>
-      <Button variant="ghost" size="icon" className="header-action rounded-lg text-muted hover:bg-[#edf3f1] [&_.icon]:size-[18px] [&_.icon]:opacity-70"
+      <Button variant="ghost" size="icon" className="header-action rounded-lg text-muted hover:bg-[#EEF1F6] [&_.icon]:size-[18px] [&_.icon]:opacity-70"
         type="button" aria-label="アカウント" title={email ? 'クラウドに保存中' : 'この端末に保存中'} disabled={busy}><Icon name="ellipsis" /></Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end" className="account-menu w-[min(280px,calc(100vw-32px))] p-2" aria-label="アカウント操作">

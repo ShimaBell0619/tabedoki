@@ -30,7 +30,7 @@ for (const width of [320, 390, 1440]) {
   test(`${width}pxで在庫→買い物→購入→今回の期限で登録を一度だけ保存する`, async ({ page }, info) => {
     await page.setViewportSize({ width, height: 900 });
     await seed(page, initial()); await page.goto('/');
-    await page.getByRole('searchbox').fill('牛乳');
+    await expect(page.getByRole('searchbox')).toHaveCount(0);
     const summary = page.getByLabel('牛乳の詳細');
     await summary.focus(); await page.keyboard.press('Enter');
     await page.getByLabel('牛乳の残りわずか').click();
@@ -68,7 +68,7 @@ for (const width of [320, 390, 1440]) {
     expect(after.items).toHaveLength(2); expect(after.shopping).toEqual([]);
     expect(after.items[1]).toMatchObject({ name: '牛乳', quantity: 3, unit: 'bottle', category: 'eggs-dairy', place: 'chilled', kind: 'use-by', deadline: '2027-12-31', lowStock: false, status: 'active' });
     expect(after.items[1].id).not.toBe(food.id);
-    await inventory(page); await expect(page.getByRole('searchbox')).toHaveValue('牛乳');
+    await inventory(page); await expect(page.getByRole('searchbox')).toHaveCount(0);
     await page.getByLabel('牛乳の詳細').click();
     await expect(page.locator('.stock-lot').getByLabel('消費期限 2027-12-31', { exact: true })).toHaveText('2027/12/31');
     await page.screenshot({ path: info.outputPath(`purchase-inventory-${width}.png`), fullPage: true });
@@ -114,7 +114,7 @@ test('NFKC重複・購入済みへの再追加・解除競合・定番からの�
   expect((await saved(page)).shopping.find(item => item.name === '牛乳')).toMatchObject({ category: 'eggs-dairy', unit: 'bottle', place: 'chilled' });
 });
 
-test('最大データを読み込み300件在庫の検索・追加・最後の行を確認する', async ({ page }, info) => {
+test('最大データを読み込み300件在庫の追加・最後の行を確認する', async ({ page }, info) => {
   test.setTimeout(60000);
   const items = Array.from({ length: 3000 }, (_, i) => ({ ...food, id: String(i), name: 'あ'.repeat(80), status: 'used' }));
   const shoppingItems = Array.from({ length: 300 }, (_, i) => shoppingFrom('買い物' + i, String(i)));
@@ -122,12 +122,10 @@ test('最大データを読み込み300件在庫の検索・追加・最後の�
   await seed(page, value); await page.goto('/'); expect(await saved(page)).toEqual(value);
   const representative = initial(Array.from({ length: 300 }, (_, i) => ({ ...food, id: String(i), name: '代表食品' + i })));
   await setCloudData(page, representative);
-  await page.getByRole('searchbox').fill('代表食品299');
-  await expect(page.locator('.food-row')).toHaveCount(1);
+  await expect(page.locator('.food-row')).toHaveCount(300);
   await page.getByLabel('代表食品299の詳細').click();
   await page.getByRole('button', { name: '代表食品299を買い物に追加', exact: true }).click();
   expect((await saved(page)).shopping).toHaveLength(1);
-  await page.getByRole('searchbox').clear();
   await page.locator('.food-row').last().scrollIntoViewIfNeeded();
   await page.screenshot({ path: info.outputPath('representative-300-last-row.png') });
 });

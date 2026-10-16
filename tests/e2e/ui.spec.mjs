@@ -24,8 +24,8 @@ for (const width of [320, 390, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     await seed(page);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('食品一覧 4件');
-    await expect(page.locator('html')).toHaveCSS('background-color', 'rgb(247, 247, 242)');
-    await expect(page.getByRole('button', { name: '食品を登録', exact: true }).last()).toHaveCSS('background-color', 'rgb(23, 106, 92)');
+    await expect(page.locator('html')).toHaveCSS('background-color', 'rgb(246, 247, 249)');
+    await expect(page.getByRole('button', { name: '食品を登録', exact: true }).last()).toHaveCSS('background-color', 'rgb(53, 79, 112)');
     await expect(page.locator('.state-expired')).toHaveCSS('color', 'rgb(161, 62, 54)');
     await expect(page.locator('.state-expired')).toHaveCSS('background-color', 'rgb(252, 240, 237)');
     await expect(page.locator('.state-today')).toHaveCSS('color', 'rgb(150, 90, 18)');
@@ -35,6 +35,7 @@ for (const width of [320, 390, 1440]) {
     await expect(page.getByRole('link', { name: 'たべどき ホーム' }).locator('img')).toHaveAttribute('src', '/icons/cooking-pot.svg');
     await expect(page.getByText(/MY KITCHEN|YOUR PANTRY|あと少し|見逃さない/)).toHaveCount(0);
     await expect(page.getByLabel('保存場所で絞り込み')).not.toBeVisible();
+    await expect(page.getByRole('searchbox')).toHaveCount(0);
     await page.screenshot({ path: info.outputPath(`ui-inventory-${width}.png`), fullPage: true });
     const filter = page.getByRole('button', { name: /^絞り込み/ });
     await filter.focus(); await page.keyboard.press('Enter');

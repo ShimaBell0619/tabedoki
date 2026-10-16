@@ -1,4 +1,4 @@
-import { categories, places, type Food, type FoodCategory, type StoragePlace } from '../../domain/food.ts';
+import { categories, places, normalizedName, type Food, type FoodCategory, type StoragePlace } from '../../domain/food.ts';
 import { matchesDeadline, type DeadlineFilter } from '../../domain/deadline.ts';
 import { groupFoods, type FoodGroup } from '../../domain/stock.ts';
 
@@ -6,7 +6,6 @@ export type InventoryView = 'active' | 'finished' | 'all';
 export type InventorySort = 'category' | 'deadline' | 'place';
 export type InventoryQuery = {
   view: InventoryView;
-  search: string;
   categoryFilter: 'all' | FoodCategory;
   placeFilter: 'all' | StoragePlace;
   deadlineFilter: DeadlineFilter;
@@ -15,9 +14,8 @@ export type InventoryQuery = {
 
 /** Filter lots before grouping so displayed quantities and deadline counts refer to visible stock. */
 export function selectInventory(items: readonly Food[], today: string, query: InventoryQuery) {
-  const { view, search, categoryFilter, placeFilter, deadlineFilter, sort } = query;
+  const { view, categoryFilter, placeFilter, deadlineFilter, sort } = query;
   const matching = items.filter(item =>
-    item.name.toLocaleLowerCase('ja').includes(search.trim().toLocaleLowerCase('ja')) &&
     (categoryFilter === 'all' || item.category === categoryFilter) &&
     (placeFilter === 'all' || item.place === placeFilter));
   const active = matching.filter(item => item.status === 'active');
@@ -25,7 +23,17 @@ export function selectInventory(items: readonly Food[], today: string, query: In
     (view === 'all' || (view === 'active' ? item.status === 'active' : item.status !== 'active')) &&
     matchesDeadline(item.deadline, today, deadlineFilter)
   ).sort((a, b) => a.deadline.localeCompare(b.deadline) || a.name.localeCompare(b.name, 'ja'));
-  const foodGroups = groupFoods(displayed);
+  // Match the shopping replenishment rule against all active lots with the same name,
+  // regardless of which locations or deadlines are currently filtered on screen.
+  const lowStockByName = new Map<string, boolean>();
+  for (const item of items) {
+    if (item.status !== 'active') continue;
+    const name = normalizedName(item.name);
+    lowStockByName.set(name, (lowStockByName.get(name) ?? true) && item.lowStock);
+  }
+  const foodGroups = groupFoods(displayed).map(group => ({
+    ...group, lowStock: lowStockByName.get(normalizedName(group.name)) ?? false,
+  }));
   const sections: { name: string | null; items: FoodGroup[] }[] = sort === 'deadline'
     ? [{ name: null, items: foodGroups }]
     : sort === 'category'

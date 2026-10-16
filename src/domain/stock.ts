@@ -36,7 +36,7 @@ export function groupFoods(items: readonly Food[]): FoodGroup[] {
       quantity: ordered.reduce((sum, item) => sum + item.quantity, 0),
       activeQuantity: ordered.filter(item => item.status === 'active').reduce((sum, item) => sum + item.quantity, 0),
       finishedQuantity: ordered.filter(item => item.status !== 'active').reduce((sum, item) => sum + item.quantity, 0),
-      lowStock: ordered.some(item => item.status === 'active' && item.lowStock),
+      lowStock: ordered.some(item => item.status === 'active') && ordered.filter(item => item.status === 'active').every(item => item.lowStock),
     };
   }).sort((a, b) => a.primary.deadline.localeCompare(b.primary.deadline) || a.name.localeCompare(b.name, 'ja'));
 }
