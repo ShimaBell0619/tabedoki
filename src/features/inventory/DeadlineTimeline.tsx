@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { daysLeft, deadlineLabel } from '../../domain/deadline.ts';
+import { deadlineLabel } from '../../domain/deadline.ts';
 import { kinds, normalizedName, places, units, type Food } from '../../domain/food.ts';
 import { FoodActions } from './FoodActions';
 import type { InventoryActions } from './FoodGroupCard';
