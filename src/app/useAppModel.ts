@@ -2,11 +2,11 @@ import { useRef, useState } from 'react';
 import { MAX_ITEMS, isFood, normalizedName, type Food, type FoodForm, type FoodStatus, type FoodTemplate, type StoragePlace } from '../domain/food';
 import { addStockToFoods } from '../domain/stock';
 import type { AppData } from '../domain/app-data.ts';
-import type { CloudStore, Snapshot } from '../data/cloud';
+import type { DataStore, Snapshot } from '../data/cloud';
 import { addShopping, registerPurchase, setBought, shoppingFrom, type ShoppingItem } from '../domain/shopping';
 import { useCloudData } from './useCloudData';
 
-export function useAppModel(store: CloudStore, initial: Snapshot) {
+export function useAppModel(store: DataStore, initial: Snapshot, mode: 'local' | 'cloud') {
   const [editor, setEditor] = useState<{ item?: Food; purchase?: ShoppingItem; templatesOnly: boolean } | null>(null);
   const foodSaved = useRef(false);
   const [notice, setNotice] = useState('');
@@ -17,7 +17,7 @@ export function useAppModel(store: CloudStore, initial: Snapshot) {
   }
   const { data, committed, saving, blocked, commitData, refresh } = useCloudData(store, initial, showError, () => {
     setFormError('');
-    setNotice('クラウドを再取得しました。入力中の内容は残っています。');
+    setNotice(mode === 'local' ? '端末のデータを再取得しました。' : 'クラウドを再取得しました。入力中の内容は残っています。');
   });
   function openForm(item?: Food, purchase?: ShoppingItem) {
     foodSaved.current = false;
@@ -54,7 +54,7 @@ export function useAppModel(store: CloudStore, initial: Snapshot) {
   async function addStock(base: Food, deadline: string, quantity: number, place: StoragePlace): Promise<boolean> {
     const current = committed.current;
     const source = current.items.find(item => item.id === base.id);
-    if (!source) { showError('元の食品が見つかりません。クラウドを再取得してください。'); return false; }
+    if (!source) { showError('元の食品が見つかりません。保存データを再取得してください。'); return false; }
     let items: Food[];
     try {
       items = addStockToFoods(current.items, source, { deadline, quantity, place }, crypto.randomUUID());

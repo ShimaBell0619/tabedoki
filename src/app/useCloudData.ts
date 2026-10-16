@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import type { AppData } from '../domain/app-data';
-import type { CloudStore, Snapshot } from '../data/cloud';
+import type { DataStore, Snapshot } from '../data/cloud';
 
 /** Keep a single committed snapshot; failed or ambiguous writes block all edits until reload. */
-export function useCloudData(store: CloudStore, initial: Snapshot, showError: (message: string) => void, onRefreshed: () => void) {
+export function useCloudData(store: DataStore, initial: Snapshot, showError: (message: string) => void, onRefreshed: () => void) {
   const [data, setData] = useState<AppData>(initial.data);
   const committed = useRef(data);
   const pending = useRef(false);
