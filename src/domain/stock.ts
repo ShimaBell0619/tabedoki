@@ -1,4 +1,4 @@
-import { MAX_ITEMS, isFood, normalizedName, type Food, type FoodCategory, type DeadlineKind, type QuantityUnit } from './food.ts';
+import { MAX_ITEMS, isFood, normalizedName, tracksVolume, type Food, type FoodCategory, type DeadlineKind, type QuantityUnit } from './food.ts';
 
 export type FoodGroup = {
   key: string;
@@ -47,7 +47,10 @@ export function addStockToFoods(
 ): Food[] {
   const candidate: Food = {
     id, name: base.name.trim(), category: base.category, kind: base.kind, unit: base.unit,
-    ...lot, initialQuantity: lot.quantity, consumption: base.consumption, status: 'active', lowStock: false,
+    ...lot, initialQuantity: lot.quantity, consumption: base.consumption,
+    ...(base.trackingMode ? { trackingMode: base.trackingMode } : {}),
+    ...(tracksVolume(base) ? { volumePercent: 100 as const } : {}),
+    status: 'active', lowStock: false,
   };
   if (!isFood(candidate)) throw new Error('期限・数量・保存場所を確認してください。');
   const existing = items.find(item =>
