@@ -28,6 +28,7 @@ for (const width of [320, 390, 1440]) {
     await expect(cards.first().locator('details')).not.toHaveAttribute('open');
     const dialog = page.getByRole('dialog', { name: 'しょうゆのアイコン' });
     await expect(dialog).toBeVisible();
+    await page.screenshot({ path: info.outputPath('food-icon-picker-' + width + '.png') });
     await expect(dialog.getByRole('button', { name: '自動' })).toHaveAttribute('aria-pressed', 'true');
     await dialog.getByRole('button', { name: 'ピザ' }).click();
     await expect(dialog).not.toBeVisible();
