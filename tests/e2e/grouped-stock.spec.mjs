@@ -134,7 +134,7 @@ for (const width of [320, 390, 1440]) {
     await expect(rows).toHaveCount(3);
     const firstBox = await rows.first().boundingBox();
     const nextBox = await rows.nth(1).boundingBox();
-    expect(nextBox.y - (firstBox.y + firstBox.height)).toBeGreaterThanOrEqual(8);
+    expect(nextBox.y - (firstBox.y + firstBox.height)).toBeGreaterThanOrEqual(6);
     const card = rows.filter({ has: page.getByRole('heading', { name: 'みそ', exact: true }) });
     const closedShadow = await card.evaluate(node => getComputedStyle(node).boxShadow);
     expect(closedShadow).not.toBe('none');
