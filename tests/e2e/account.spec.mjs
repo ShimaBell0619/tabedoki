@@ -23,7 +23,7 @@ for (const width of [320, 390, 1440]) {
     await expect(trigger).toBeFocused();
     await trigger.click(); await page.locator('main').click({ position: { x: 1, y: 1 } });
     await expect(page.getByRole('menu').getByText('test@example.com', { exact: true })).not.toBeVisible();
-    page.cloud.row.data = { ...before, items: [{ id: 'remote', name: '別画面の牛乳', category: 'eggs-dairy', kind: 'use-by', deadline: '2026-12-31', quantity: 1, unit: 'bottle', place: 'chilled', status: 'active', lowStock: false }] };
+    page.cloud.row.data = { ...before, items: [{ id: 'remote', name: '別画面の牛乳', category: 'eggs-dairy', kind: 'use-by', deadline: '2026-12-31', quantity: 1, initialQuantity: 1, consumption: 'drink', unit: 'bottle', place: 'chilled', status: 'active', lowStock: false }] };
     page.cloud.row.revision++;
     await trigger.click(); await page.getByRole('menuitem', { name: '再取得', exact: true }).click();
     await expect(page.getByRole('heading', { name: '別画面の牛乳', exact: true })).toBeVisible();

@@ -69,7 +69,7 @@ test('パスタ・レトルトカレーを初期定番から登録し、新カ�
     await expect(dialog).not.toBeVisible();
   }
   const stored = await cloudData(page);
-  expect(stored.version).toBe(4);
+  expect(stored.version).toBe(5);
   expect(stored.items.map(({ name, category }) => ({ name, category }))).toEqual([
     { name: 'パスタ', category: 'staples' },
     { name: 'レトルトカレー', category: 'retort-canned' },
