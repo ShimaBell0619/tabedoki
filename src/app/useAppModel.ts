@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { MAX_ITEMS, isFood, normalizedName, tracksVolume, defaultVolumeTracking, adjustVolume, units, type Food, type FoodForm, type FoodStatus, type FoodTemplate, type StoragePlace } from '../domain/food';
+import { MAX_ITEMS, isFood, normalizedName, tracksVolume, defaultVolumeTracking, adjustVolume, type Food, type FoodForm, type FoodStatus, type FoodTemplate, type StoragePlace } from '../domain/food';
 import { addStockToFoods } from '../domain/stock';
 import { selectedFoodIcon, type FoodIconName } from '../domain/food-icons';
 import type { AppData } from '../domain/app-data.ts';
@@ -98,9 +98,7 @@ export function useAppModel(store: DataStore, initial: Snapshot, mode: 'local' |
         { ...value, quantity, initialQuantity: Math.max(value.initialQuantity, quantity),
           ...(delta === -1 && tracksVolume(value) ? { volumePercent: 100 as const } : {}) }
       : value);
-    if (!await commitData({ ...current, items })) return;
-    setNotice(quantity === 0 ? `「${item.name}」の在庫がなくなりました。` :
-      `「${item.name}」の数量を${quantity}に変更しました。`);
+    await commitData({ ...current, items });
   }
   async function changeVolume(item: Food, delta: -10 | 10) {
     const current = committed.current;
@@ -112,12 +110,7 @@ export function useAppModel(store: DataStore, initial: Snapshot, mode: 'local' |
     try { replacement = adjustVolume(original, delta); }
     catch (error) { showError(error instanceof Error ? error.message : '残量を変更できません。'); return; }
     if (!isFood(replacement)) { showError('残量が正しくありません。'); return; }
-    if (!await commitData({ ...current, items: current.items.map(value => value.id === original.id ? replacement : value) })) return;
-    setNotice(replacement.status === 'used'
-      ? `「${item.name}」の在庫がなくなりました。`
-      : replacement.quantity < original.quantity
-        ? `「${item.name}」を1${units[item.unit]}使い切りました。`
-        : `「${item.name}」の残量を${replacement.volumePercent}%に変更しました。`);
+    await commitData({ ...current, items: current.items.map(value => value.id === original.id ? replacement : value) });
   }
 
   async function removeFood(item: Food) {
