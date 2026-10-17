@@ -53,30 +53,15 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
             </Button>)}
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <label className="sort-control"><span className="sr-only">一覧の表示方法</span>
-            <NativeSelect className="min-h-11 w-auto rounded-lg border-border p-1.5 text-xs text-muted mobile:p-1.5" value={sort} onChange={event => setSort(event.target.value as typeof sort)}>
-              <option value="category">カテゴリ別</option><option value="deadline">期限順</option><option value="place">保存場所別</option>
-            </NativeSelect>
-          </label>
           <Button variant="secondary" type="button" className="filter-toggle secondary shrink-0 px-3.5 aria-expanded:border-[#A0B1C6] aria-expanded:bg-[#EAF0F6] mobile:p-2.5 mobile:text-xs mobile:[&_.icon]:size-[17px] tiny:gap-[5px]" aria-expanded={filtersOpen}
             aria-controls="filter-panel" onClick={() => setFiltersOpen(!filtersOpen)}>
             <Icon name="sliders-horizontal" />絞り込み{filterCount > 0 && <span className="filter-count min-w-5 rounded-full bg-primary text-center text-[11px] leading-5 text-white">{filterCount}</span>}
           </Button>
         </div>
       </div>
-      {view === 'active' && <div className={`deadline-filters mb-3 flex flex-wrap gap-1.5 [&_button]:min-h-11 [&_button]:rounded-lg [&_button]:border
-          [&_button]:border-border [&_button]:bg-white [&_button]:px-2.5 [&_button]:py-2 [&_button]:text-xs
-          [&_button]:text-muted [&_button[aria-pressed=true]]:border-primary [&_button[aria-pressed=true]]:text-primary
-          [&_button[aria-pressed=true]]:shadow-[inset_0_0_0_1px_var(--color-primary)]`} role="group" aria-label="期限の状況">
-        {(['all', 'expired', 'fortnight', 'month'] as const).map(filter =>
-          <Button variant="plain" key={filter} type="button" aria-pressed={deadlineFilter === filter}
-            onClick={() => setDeadlineFilter(deadlineFilter === filter && filter !== 'all' ? 'all' : filter)}>
-            {deadlineFilters[filter]} <span>{groupFoods(active.filter(item => matchesDeadline(item.deadline, today, filter))).length}件</span>
-          </Button>)}
-      </div>}
-      <div className={`filters mb-3 grid grid-cols-3 gap-3 rounded-[10px] border border-border bg-panel p-4 [&_label]:flex
+      <div className={`filters mb-3 grid grid-cols-2 gap-3 rounded-[10px] border border-border bg-panel p-4 [&_label]:flex
           [&_label]:min-w-0 [&_label]:flex-col [&_label]:gap-1.5 [&_label]:text-xs [&_label]:font-[650]
-          [&_label]:text-muted mobile:grid-cols-2 mobile:p-3 mobile:[&>label:last-child]:col-span-full`} id="filter-panel" hidden={!filtersOpen}>
+          [&_label]:text-muted mobile:p-3`} id="filter-panel" hidden={!filtersOpen}>
         <label>カテゴリ<NativeSelect className="min-h-11 rounded-lg border-[#CAD3DF] px-2.5 py-2 text-sm text-[#334b40] mobile:px-2.5" aria-label="カテゴリで絞り込み" value={categoryFilter}
           onChange={event => setCategoryFilter(event.target.value as typeof categoryFilter)}>
           <option value="all">すべて</option>
@@ -91,6 +76,21 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
           onChange={event => setDeadlineFilter(event.target.value as DeadlineFilter)}>
           {Object.entries(deadlineFilters).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
         </NativeSelect></label>
+        <label className="sort-control"><span className="sr-only">一覧の表示方法</span>
+            <NativeSelect className="min-h-11 w-auto rounded-lg border-border p-1.5 text-xs text-muted mobile:p-1.5" value={sort} onChange={event => setSort(event.target.value as typeof sort)}>
+              <option value="category">カテゴリ別</option><option value="deadline">期限順</option><option value="place">保存場所別</option>
+            </NativeSelect>
+          </label>
+        {view === 'active' && <div className={`deadline-filters col-span-full flex flex-wrap gap-1.5 [&_button]:min-h-11 [&_button]:rounded-lg [&_button]:border
+                  [&_button]:border-border [&_button]:bg-white [&_button]:px-2.5 [&_button]:py-2 [&_button]:text-xs
+                  [&_button]:text-muted [&_button[aria-pressed=true]]:border-primary [&_button[aria-pressed=true]]:text-primary
+                  [&_button[aria-pressed=true]]:shadow-[inset_0_0_0_1px_var(--color-primary)]`} role="group" aria-label="期限の状況">
+                {(['all', 'expired', 'fortnight', 'month'] as const).map(filter =>
+                  <Button variant="plain" key={filter} type="button" aria-pressed={deadlineFilter === filter}
+                    onClick={() => setDeadlineFilter(deadlineFilter === filter && filter !== 'all' ? 'all' : filter)}>
+                    {deadlineFilters[filter]} <span>{groupFoods(active.filter(item => matchesDeadline(item.deadline, today, filter))).length}件</span>
+                  </Button>)}
+              </div>}
       </div>
       {hasFilters && <div className={`active-filters mt-1 mb-3.5 flex flex-wrap items-center gap-[7px] text-xs wrap-anywhere [&>span]:max-w-full
           [&>span]:rounded-md [&>span]:bg-[#E9EEF5] [&>span]:px-[9px] [&>span]:py-1 [&>span]:text-[#354F70]
