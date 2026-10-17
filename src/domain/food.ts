@@ -43,7 +43,7 @@ export type Food = {
   kind: DeadlineKind;
   deadline: string;
   quantity: number;
-  /** Maximum stock level observed for the segmented bar. */
+  /** User-editable full-scale quantity for the segmented stock bar (>= remaining quantity). */
   initialQuantity: number;
   consumption: Consumption;
   /** Optional v5 fields: omitted on older items. Volume is one partially used container;
@@ -57,7 +57,7 @@ export type Food = {
 };
 
 export type LegacyFood = Omit<Food, 'category' | 'unit' | 'lowStock' | 'initialQuantity' | 'consumption'>;
-export type FoodForm = Pick<Food, 'name' | 'category' | 'kind' | 'deadline' | 'quantity' | 'unit' | 'place' | 'consumption'> & { trackingMode?: TrackingMode };
+export type FoodForm = Pick<Food, 'name' | 'category' | 'kind' | 'deadline' | 'quantity' | 'unit' | 'place' | 'consumption'> & { trackingMode?: TrackingMode; initialQuantity?: number };
 export type FoodTemplate = Pick<Food, 'id' | 'name' | 'category' | 'kind' | 'quantity' | 'place' | 'unit' | 'consumption'>;
 export function normalizedName(name: string): string { return name.trim().normalize('NFKC').toLocaleLowerCase('ja'); }
 

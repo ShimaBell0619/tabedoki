@@ -41,9 +41,14 @@ export function useAppModel(store: DataStore, initial: Snapshot, mode: 'local' |
       ...form, name: form.name.trim(), id: original?.id ?? crypto.randomUUID(), trackingMode,
       ...(trackingMode === 'volume' ? { volumePercent: original && tracksVolume(original) ? original.volumePercent ?? 100 : 100 as const } : {}),
       status: original?.status ?? 'active', lowStock: original?.lowStock ?? false,
-      initialQuantity: original ? Math.max(original.initialQuantity, form.quantity) : form.quantity,
+      initialQuantity: form.initialQuantity ?? (original ? Math.max(original.initialQuantity, form.quantity) : form.quantity),
     };
-    if (!isFood(food)) { showError('食品名、期限の日付、数量と選択項目を確認してください。'); return false; }
+    if (!isFood(food)) {
+      showError(food.initialQuantity < food.quantity || !Number.isInteger(food.initialQuantity) || food.initialQuantity > 999
+        ? 'バーの満量は現在の数量以上、999以下の整数で指定してください。'
+        : '食品名、期限の日付、数量と選択項目を確認してください。');
+      return false;
+    }
     let next: AppData;
     try {
       next = editor?.purchase ? registerPurchase(current, editor.purchase.id, food) : {

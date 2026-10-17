@@ -30,7 +30,7 @@ export function FoodEditor({ item, purchase, templatesOnly, items, templates, bl
   const editingId = item?.id;
   const [form, setForm] = useState<FoodForm>(() => item ? {
     name: item.name, category: item.category, kind: item.kind, deadline: item.deadline,
-    quantity: item.quantity, unit: item.unit, place: item.place, consumption: item.consumption, trackingMode: item.trackingMode,
+    quantity: item.quantity, initialQuantity: item.initialQuantity, unit: item.unit, place: item.place, consumption: item.consumption, trackingMode: item.trackingMode,
   } : purchase ? foodFormFromShopping(purchase) : initialFoodForm());
   const [managingTemplates, setManagingTemplates] = useState(templatesOnly);
   const [candidatesOpen, setCandidatesOpen] = useState(false);
@@ -56,6 +56,11 @@ export function FoodEditor({ item, purchase, templatesOnly, items, templates, bl
       deadlineInput.current?.focus();
       return;
     }
+    const full = form.initialQuantity ?? form.quantity;
+    if (!Number.isInteger(full) || full < form.quantity || full > 999) {
+      setFormError('バーの満量は、現在の数量以上の整数（最大999）で指定してください。');
+      return;
+    }
     if (await onSave({ ...form, deadline })) dialog.current?.close();
   }
   function openTemplates() {
@@ -74,7 +79,7 @@ export function FoodEditor({ item, purchase, templatesOnly, items, templates, bl
   }
   function chooseCandidate(candidate: FoodTemplate | Food, source: 'template' | 'food') {
     setSelectedCandidate(`${source}:${candidate.id}`);
-    setForm(current => applyFoodCandidate(current, candidate));
+    setForm(current => { const next = applyFoodCandidate(current, candidate); return { ...next, initialQuantity: next.quantity }; });
     setFormError(''); setCandidatesOpen(false);
     deadlineInput.current?.focus();
   }
@@ -131,12 +136,22 @@ export function FoodEditor({ item, purchase, templatesOnly, items, templates, bl
         </NativeSelect></label>
         <p className="form-help mt-[-4px] text-xs leading-[1.7] text-muted">期限は未開封・指定の保存方法が前提です。商品の表示を確認してください。</p>
         <div className="form-group grid grid-cols-2 gap-3 mobile:gap-2.5">
-          <label>数量<Input type="number" required min="1" max="999" step="1" value={form.quantity || ''}
-            onChange={event => setForm({ ...form, quantity: Number(event.target.value) })} /></label>
+          <label>現在の数量<Input type="number" required min="1" max="999" step="1" value={form.quantity || ''}
+            onChange={event => {
+              const quantity = Number(event.target.value);
+              setForm({ ...form, quantity,
+                ...(form.initialQuantity === undefined ? {} : { initialQuantity: Math.max(form.initialQuantity, quantity) }) });
+            }} /></label>
           <label>数量の単位<NativeSelect value={form.unit} onChange={event => setForm({ ...form, unit: event.target.value as QuantityUnit })}>
             {Object.entries(units).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </NativeSelect></label>
         </div>
+        <label>バーの満量<Input type="number" required min={Math.max(1,form.quantity)} max="999" step="1"
+          value={form.initialQuantity ?? form.quantity || ''}
+          onChange={event => setForm({ ...form, initialQuantity: Number(event.target.value) })} /></label>
+        <p className="form-help mt-[-4px] text-xs leading-[1.7] text-muted">
+          分割バーの100%に相当する数量です。現在の数量は変わりません。
+        </p>
         {form.unit === 'pack' && <p className="form-help mt-[-4px] text-xs leading-[1.7] text-muted">納豆3個組は、個別に減らす場合「3パック」として登録します。</p>}
         <label>数量の管理方法<NativeSelect value={form.trackingMode ?? (defaultVolumeTracking(form.name, form.unit) ? 'volume' : 'count')}
           onChange={event => setForm({ ...form, trackingMode: event.target.value as 'count' | 'volume' })}>
