@@ -2,9 +2,9 @@ import { cloudData } from './helpers/cloud.mjs';
 import { openCandidates, openFoodActions } from './helpers/inventory.mjs';
 import { test, expect } from './helpers/cloud.mjs';
 import { defaultTemplates } from '../../src/domain/templates.ts';
-import { STORAGE_KEY, V3_STORAGE_KEY } from '../../src/data/storage.ts';
+import { V4_STORAGE_KEY, V3_STORAGE_KEY } from '../../src/data/storage.ts';
 
-const key = STORAGE_KEY;
+const key = V4_STORAGE_KEY;
 const v3Key = V3_STORAGE_KEY;
 const item = { id: 'old-id', name: '以前の納豆', kind: 'use-by', deadline: '2020-01-01', quantity: 7, place: 'frozen', status: 'used', category: 'soy', unit: 'piece', lowStock: false };
 let errors;
@@ -51,7 +51,7 @@ test('定番と以前の食品から、今回の期限・新ID・数量1で登�
   await expect(dialog.getByLabel('数量の単位')).toHaveValue('pack');
   await dialog.getByRole('button', { name: '登録する', exact: true }).click();
   const saved = JSON.parse(await readSaved(page)).items;
-  expect(saved[1]).toMatchObject({ name: '納豆', category: 'soy', quantity: 1, unit: 'pack', status: 'active', deadline: '2026-12-01' });
+  expect(saved[1]).toMatchObject({ name: '納豆', category: 'soy', quantity: 3, unit: 'pack', status: 'active', deadline: '2026-12-01' });
   expect(saved[1].id).not.toBe(item.id);
   dialog = await openNew(page);
     await openCandidates(dialog);
@@ -61,7 +61,7 @@ test('定番と以前の食品から、今回の期限・新ID・数量1で登�
   expect(JSON.parse(await readSaved(page)).items.map(x => x.deadline)).toEqual(['2020-01-01', '2026-12-01', '2026-12-02']);
   await openFilters(page);
   await page.getByLabel('カテゴリで絞り込み').selectOption('soy');
-  await expect(page.getByText('1パック', { exact: true })).toHaveCount(2);
+  await expect(page.getByText('3パック', { exact: true })).toHaveCount(2);
     await openFoodActions(page);
   await page.getByRole('button', { name: '納豆を編集', exact: true }).last().click();
   await expect(page.getByRole('dialog').getByLabel(/期限の日付/)).toHaveValue('2026-12-02');

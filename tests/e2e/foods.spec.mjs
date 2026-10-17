@@ -45,7 +45,7 @@ for (const width of [320, 390, 1440]) {
     await page.getByRole('button', { name: '変更を保存' }).click();
     await expect(page.getByRole('heading', { name: '低脂肪牛乳' })).toBeVisible();
     await openFoodActions(page);
-    await page.getByRole('button', { name: '低脂肪牛乳を使い切り' }).click();
+    await page.getByRole('button', { name: '低脂肪牛乳を飲み終わった' }).click();
     await expect(page.getByRole('heading', { name: '低脂肪牛乳' })).toHaveCount(0);
     await page.getByRole('button', { name: '完了' }).click();
     await expect(page.getByRole('heading', { name: '低脂肪牛乳' })).toBeVisible();

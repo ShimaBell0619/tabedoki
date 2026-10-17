@@ -1,6 +1,6 @@
 import { test, expect, userId } from './helpers/cloud.mjs';
 import { defaultTemplates } from '../../src/domain/templates.ts';
-import { STORAGE_KEY, V3_STORAGE_KEY, V2_STORAGE_KEY, LEGACY_STORAGE_KEY } from '../../src/data/storage.ts';
+import { STORAGE_KEY, V4_STORAGE_KEY, V3_STORAGE_KEY, V2_STORAGE_KEY, LEGACY_STORAGE_KEY } from '../../src/data/storage.ts';
 import { migrationKey } from '../../src/data/migration.ts';
 const food={id:'local',name:'移行する牛乳',category:'eggs-dairy',kind:'use-by',deadline:'2026-12-31',quantity:2,unit:'bottle',place:'chilled',status:'active',lowStock:true};
 const empty={items:[],templates:[],shopping:[]};
@@ -15,7 +15,7 @@ test('ログアウト後は未ログインの端末保存へ戻り、クラウ�
  await page.reload();await expect(page.getByRole('heading',{name:/食品一覧/})).toBeVisible();
  await expect(page.getByRole('heading',{name:food.name,exact:true})).toHaveCount(0);
 });
-for(const [key,version] of [[LEGACY_STORAGE_KEY,1],[V2_STORAGE_KEY,2],[V3_STORAGE_KEY,3],[STORAGE_KEY,4]]) {
+for(const [key,version] of [[LEGACY_STORAGE_KEY,1],[V2_STORAGE_KEY,2],[V3_STORAGE_KEY,3],[V4_STORAGE_KEY,4]]) {
  test(`v${version}を明示操作で移行・照合し、再読込や二度目で原文とクラウドを保持する`,async({page})=>{
   page.cloud.row=null;let item={...food};if(version<4)delete item.lowStock;if(version===1){delete item.category;delete item.unit;}
   const raw=JSON.stringify({version,items:[item],...(version>=3?{templates:[]}:{}),...(version===4?{shopping:[]}:{} )});
@@ -33,7 +33,7 @@ test('移行退避失敗と別アカウントへの再移行を拒否し、ク�
   localStorage.setItem(key,JSON.stringify({version:4,items:[food],templates:[],shopping:[]}));
   const original=Storage.prototype.setItem;
   Storage.prototype.setItem=function(key,value){if(key===claim)throw new DOMException('quota');return original.call(this,key,value);};
- },{key:STORAGE_KEY,claim:migrationKey('https://cloud.tabedoki.test'),food});
+ },{key:V4_STORAGE_KEY,claim:migrationKey('https://cloud.tabedoki.test'),food});
  await page.goto('/');await page.getByRole('button',{name:'test@example.com に移行'}).click();await expect(page.getByRole('alert')).toBeVisible();expect(page.cloud.writes).toBe(0);
 });
 test('別アカウントに紐付いた旧データと既存クラウドは自動で混合しない',async({page})=>{
@@ -41,7 +41,7 @@ test('別アカウントに紐付いた旧データと既存クラウドは自�
  await page.addInitScript(({key,claim,food})=>{
   localStorage.setItem(key,JSON.stringify({version:4,items:[food],templates:[],shopping:[]}));
   localStorage.setItem(claim,JSON.stringify({userId:'another-user',raw:'old'}));
- },{key:STORAGE_KEY,claim:migrationKey('https://cloud.tabedoki.test'),food});
+ },{key:V4_STORAGE_KEY,claim:migrationKey('https://cloud.tabedoki.test'),food});
  await page.goto('/');await expect(page.getByText(/別のアカウント|紐付け済み/)).toBeVisible();await expect(page.getByRole('button',{name:'test@example.com に移行'})).toHaveCount(0);expect(page.cloud.writes).toBe(0);
  await page.getByRole('button',{name:'旧データを使わず開始'}).click();await expect(page.getByRole('heading',{name:/食品一覧/})).toBeVisible();expect(page.cloud.row.data.items).toEqual([]);
  await page.reload();await expect(page.getByRole('heading',{name:/食品一覧/})).toBeVisible();await expect(page.getByRole('heading',{name:food.name})).toHaveCount(0);expect(page.cloud.writes).toBe(1);
