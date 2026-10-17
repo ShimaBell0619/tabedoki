@@ -28,7 +28,7 @@ function client(initial=row()) {
 }
 test('CAS rejects stale update and initial insert without overwriting the other device',async()=>{
   const c=client(), a=new CloudStore(c,'A'),b=new CloudStore(c,'A');await a.load();await b.load();
-  await a.save(data,true); assert.equal(c.row.revision,2);assert.deepEqual(c.row.previous,{version:4,...data});
+  await a.save(data,true); assert.equal(c.row.revision,2);assert.deepEqual(c.row.previous,{version:5,...data});
   await assert.rejects(b.save(data),e=>e.kind==='conflict');assert.equal(c.row.revision,2);
   const fresh=new CloudStore(c,'A'); await assert.rejects(fresh.save(data),e=>e.kind==='conflict');
 });

@@ -37,7 +37,7 @@ export function validateTemplates(value: unknown): FoodTemplate[] {
 export function applyFoodCandidate(form: FoodForm, candidate: FoodTemplate | Food): FoodForm {
   return {
     name: candidate.name, category: candidate.category, place: candidate.place, unit: candidate.unit,
-    kind: candidate.kind, quantity: 'deadline' in candidate ? candidate.initialQuantity : candidate.quantity, consumption: candidate.consumption, deadline: form.deadline,
+    kind: candidate.kind, quantity: 'deadline' in candidate ? 1 : candidate.quantity, consumption: candidate.consumption, deadline: form.deadline,
   };
 }
 

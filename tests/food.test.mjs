@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { daysLeft, deadlineState, validDate, localDate } from '../src/domain/deadline.ts';
-import { categories, MAX_ITEMS, initialFoodForm, isFood } from '../src/domain/food.ts';
+import { categories, MAX_ITEMS, initialFoodForm, isFood, consumptionAction } from '../src/domain/food.ts';
 import { MAX_TEMPLATES, validateTemplates, defaultTemplates, applyFoodCandidate, previousFoods } from '../src/domain/templates.ts';
 import { groupFoods, foodGroupKey, addStockToFoods } from '../src/domain/stock.ts';
 import { validateBackup, makeBackup, readData, writeData, STORAGE_KEY, V3_STORAGE_KEY, V2_STORAGE_KEY, LEGACY_STORAGE_KEY, BACKUP_MAX_BYTES } from '../src/data/storage.ts';
 const foodTemplates = defaultTemplates();
-const item = { id: '1', name: '牛乳', category: 'eggs-dairy', kind: 'use-by', deadline: '2026-10-12', quantity: 1, unit: 'bottle', place: 'chilled', status: 'active', lowStock: false };
-const { category, unit, lowStock, ...legacyItem } = item;
+const item = { id: '1', name: '牛乳', category: 'eggs-dairy', kind: 'use-by', deadline: '2026-10-12', quantity: 1, unit: 'bottle', place: 'chilled', status: 'active', lowStock: false, initialQuantity: 1, consumption: 'drink' };
+const { category, unit, lowStock, initialQuantity, consumption, ...legacyItem } = item;
 function storage(seed = {}, failWrite = false) {
   const map = new Map(Object.entries(seed));
   let writes = 0;
@@ -49,13 +49,13 @@ test('v4バックアップ往復と不正データの拒否', () => {
 test('v1復元は旧項目を保持し新項目だけ既定値にする', () => {
   const legacy = { ...legacyItem, id: 'legacy-id', name: '  納豆  ', quantity: 9, status: 'used', extra: 'ignore', category: 'soy', unit: 'pack' };
   const result = validateBackup({ version: 1, items: [legacy] });
-  assert.deepEqual(result.items, [{ ...legacyItem, id: 'legacy-id', name: '  納豆  ', quantity: 9, status: 'used', category: 'other', unit: 'item', lowStock: false }]);
+  assert.deepEqual(result.items, [{ ...legacyItem, id: 'legacy-id', name: '  納豆  ', quantity: 9, status: 'used', category: 'other', unit: 'item', lowStock: false, initialQuantity: 9, consumption: 'eat' }]);
   assert.equal(Object.hasOwn(result.items[0], 'extra'), false);
 });
 test('新規は期限空欄・数量1、候補は旧期限や数量をコピーしない', () => {
   const blank = initialFoodForm();
   assert.equal(blank.deadline, '');
-  const previous = { ...item, quantity: 999, status: 'discarded', deadline: '2020-01-01' };
+  const previous = { ...item, quantity: 999, initialQuantity: 999, status: 'discarded', deadline: '2020-01-01' };
   const copied = applyFoodCandidate(blank, previous);
   assert.equal(copied.deadline, '');
   assert.equal(copied.quantity, 1);
@@ -63,7 +63,7 @@ test('新規は期限空欄・数量1、候補は旧期限や数量をコピー�
   assert.equal(Object.hasOwn(copied, 'id'), false);
   assert.equal(Object.hasOwn(copied, 'status'), false);
   const selected = applyFoodCandidate({ ...blank, deadline: '2026-11-01', kind: 'use-by' }, foodTemplates[1]);
-  assert.deepEqual(selected, { name: '納豆', category: 'soy', place: 'chilled', unit: 'pack', kind: 'best-before', quantity: 1, deadline: '2026-11-01' });
+  assert.deepEqual(selected, { name: '納豆', category: 'soy', place: 'chilled', unit: 'pack', kind: 'best-before', quantity: 3, consumption: 'eat', deadline: '2026-11-01' });
 });
 test('以前の候補は登録順・最大3件・正規化した名前で重複を除く', () => {
   const items = [
@@ -84,10 +84,10 @@ test('v1からv4への自動移行は原文と全旧項目・順序を保持す�
   const result = readData(store);
   assert.equal(result.error, '');
   assert.equal(store.map.get(LEGACY_STORAGE_KEY), raw);
-  assert.deepEqual(result.items, [{ ...legacyItem, id: 'last', status: 'used', category: 'other', unit: 'item', lowStock: false }, { ...legacyItem, category: 'other', unit: 'item', lowStock: false }]);
+  assert.deepEqual(result.items, [{ ...legacyItem, id: 'last', status: 'used', category: 'other', unit: 'item', lowStock: false, initialQuantity: 1, consumption: 'eat' }, { ...legacyItem, category: 'other', unit: 'item', lowStock: false, initialQuantity: 1, consumption: 'eat' }]);
   assert.deepEqual(result.templates, foodTemplates);
   assert.equal(store.writes, 2);
-  assert.equal(JSON.parse(store.map.get(STORAGE_KEY)).version, 4);
+  assert.equal(JSON.parse(store.map.get(STORAGE_KEY)).version, 5);
   assert.deepEqual(readData(store), result);
   assert.equal(store.writes, 2);
 });
@@ -236,7 +236,7 @@ test('同名食品は期限別在庫を1グループに集め、期限順・合�
 
 test('在庫追加は同一期限・場所の管理中レコードのみを加算し、完了レコードを保持する', () => {
   const used = { ...item, id: 'old', status: 'used' };
-  const existing = { ...item, id: 'active', quantity: 4, lowStock: true };
+  const existing = { ...item, id: 'active', quantity: 4, initialQuantity: 4, lowStock: true };
   const base = [used, existing];
   const merged = addStockToFoods(base, existing, { deadline: existing.deadline, quantity: 2, place: 'chilled' }, 'new');
   assert.equal(merged.length, 2);
@@ -246,9 +246,20 @@ test('在庫追加は同一期限・場所の管理中レコードのみを加�
   assert.equal(base[1].quantity, 4);
   const separate = addStockToFoods(merged, existing, { deadline: '2027-01-01', quantity: 3, place: 'pantry' }, 'new');
   assert.equal(separate.length, 3);
-  assert.deepEqual(separate[2], { ...item, id: 'new', quantity: 3, deadline: '2027-01-01', place: 'pantry', status: 'active', lowStock: false });
+  assert.deepEqual(separate[2], { ...item, id: 'new', quantity: 3, initialQuantity: 3, deadline: '2027-01-01', place: 'pantry', status: 'active', lowStock: false });
   assert.throws(() => addStockToFoods(base, existing, { deadline: existing.deadline, quantity: 996, place: 'chilled' }, 'new'), /999/);
   assert.throws(() => addStockToFoods(base, existing, { deadline: '2026-02-30', quantity: 1, place: 'pantry' }, 'new'), /期限/);
   assert.throws(() => addStockToFoods(base, existing, { deadline: '2026-11-01', quantity: 0, place: 'pantry' }, 'new'), /数量/);
   assert.throws(() => addStockToFoods(Array(MAX_ITEMS).fill(existing), existing, { deadline: '2027-01-01', quantity: 1, place: 'pantry' }, 'new'), /3,000/);
+});
+
+
+test('消費動詞と分割バー基準数量のバリデーション', () => {
+  assert.equal(consumptionAction('eat', '個', false), '1個食べた');
+  assert.equal(consumptionAction('eat', '個', true), '食べ終わった');
+  assert.equal(consumptionAction('use', '本', false), '1本使い終わった');
+  assert.equal(consumptionAction('drink', '本', true), '飲み終わった');
+  assert.equal(isFood({ ...item, quantity: 3, initialQuantity: 10 }), true);
+  assert.equal(isFood({ ...item, quantity: 3, initialQuantity: 2 }), false);
+  assert.equal(isFood({ ...item, consumption: 'unknown' }), false);
 });
