@@ -47,6 +47,7 @@ for (const width of [320, 390, 1440]) {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('食品一覧 1件');
     await page.getByRole('button', { name: '条件をクリア' }).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('食品一覧 4件');
+    await page.getByRole('button', { name: /^絞り込み/ }).click();
     const summary = page.getByRole('button', { name: '期限切れ 1件', exact: true });
     await summary.click();
     await expect(summary).toHaveAttribute('aria-pressed', 'true');
