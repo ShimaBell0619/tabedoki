@@ -11,6 +11,7 @@ import { FoodEditor } from '../features/inventory/FoodEditor';
 import { ShoppingPage } from '../features/shopping/ShoppingPage';
 import { AccountMenu } from '../features/auth/AccountMenu';
 import { Icon } from '../components/Icon';
+import { normalizedName } from '../domain/food';
 
 import { useAppModel } from './useAppModel';
 import { useToday } from './useToday';
@@ -57,7 +58,7 @@ export function App({ store, initial, mode = 'cloud', email, onLogout, onLogin, 
       </div>
       <div hidden={screen !== 'calendar'}>
         <DeadlineCalendar items={data.items.filter(item => item.status === 'active')} today={today}
-          listed={new Set(data.shopping.filter(item => !item.bought).map(item => item.name.trim().toLocaleLowerCase('ja')))}
+          listed={new Set(data.shopping.filter(item => !item.bought).map(item => normalizedName(item.name)))}
           blocked={blocked || saving} onEdit={openForm} onStatus={changeStatus} onRemove={removeFood}
           onLowStock={changeLowStock} onQuantity={changeQuantity} onAddShopping={addToShopping} onAddStock={addStock}
           onShowList={() => setScreen('inventory')} />
