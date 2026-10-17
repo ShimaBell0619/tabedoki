@@ -25,7 +25,14 @@ for (const width of [320, 390, 1440]) {
     await seed(page);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('食品一覧 4件');
     await expect(page.locator('html')).toHaveCSS('background-color', 'rgb(255, 255, 255)');
-    await expect(page.getByRole('button', { name: '食品を登録', exact: true }).last()).toHaveCSS('background-color', 'rgb(37, 59, 84)');
+    const createButton = page.getByRole('button', { name: '食品を登録', exact: true }).last();
+    if (width <= 760) {
+      await expect(createButton).toHaveCSS('background-image', /linear-gradient/);
+      await expect(createButton).toHaveCSS('backdrop-filter', /blur/);
+      await expect(createButton).toHaveCSS('color', 'rgb(255, 255, 255)');
+    } else {
+      await expect(createButton).toHaveCSS('background-color', 'rgb(37, 59, 84)');
+    }
     await expect(page.locator('.state-expired')).toHaveCSS('color', 'rgb(161, 62, 54)');
     await expect(page.locator('.state-expired')).toHaveCSS('background-color', 'rgb(252, 240, 237)');
     await expect(page.locator('.state-today')).toHaveCSS('color', 'rgb(150, 90, 18)');
