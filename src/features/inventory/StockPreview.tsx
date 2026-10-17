@@ -14,9 +14,9 @@ export function StockPreview({ group }: { group: FoodGroup }) {
     ? '開封中 ' + volumeLabel(partial[0].volumePercent ?? 100)
     : partial.length > 1 ? '開封中 ' + partial.length + '件' : active.some(tracksVolume) ? '満量' : group.activeQuantity + '/' + baseline + units[group.unit];
 
-  return <div className="stock-preview pointer-events-none absolute inset-x-0 bottom-0 h-[3px] overflow-hidden bg-[#E3E9F0]" role="img"
+  return <div className="stock-preview pointer-events-none absolute inset-x-0 bottom-0 h-[3px] mobile:h-[2px] overflow-hidden bg-[#E3E9F0] mobile:bg-[#EDF1F5]" role="img"
     aria-label={`在庫の目安 ${description}、管理中${group.activeQuantity}${units[group.unit]}`}>
-    <span className={group.lowStock ? 'block h-full bg-[#B9874F]' : 'block h-full bg-[#344B68]'}
+    <span className={group.lowStock ? 'block h-full bg-[#B9874F] mobile:bg-[#AD865B]' : 'block h-full bg-[#344B68] mobile:bg-[#607691]'}
       style={{ width: ratio * 100 + '%' }} />
   </div>;
 }
