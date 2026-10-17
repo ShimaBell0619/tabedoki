@@ -38,6 +38,7 @@ for (const width of [320, 390, 1440]) {
     await expect(page.locator('.calendar-footer')).toContainText('30日より先の在庫が2件');
     await expect(page.getByRole('button', { name: '10月17日（土）、1件、今日' })).toHaveAttribute('aria-pressed', 'true');
     await expect(page.locator('.calendar-food')).toHaveCount(1);
+    await expect(page.locator('.calendar-food-label')).toHaveCSS('color', 'rgb(150, 90, 18)');
 
     await page.getByRole('button', { name: '10月24日（土）、2件' }).click();
     await expect(page.locator('.calendar-food')).toHaveCount(2);
