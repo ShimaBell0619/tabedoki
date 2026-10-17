@@ -110,11 +110,11 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
           <Icon name="plus" />食品を登録する
         </Button>}
       </div> :
-        sections.filter(section => section.items.length > 0).map(section => <div key={section.name ?? 'deadline'}>
-        {section.name && <h2 className="group-heading mt-3.5 mb-1.5 text-[15px] font-bold" aria-label={section.name}>
-          {section.name}<span className="group-count ml-2 text-xs font-medium text-muted" aria-hidden="true">{section.items.length}件</span>
+        sections.filter(section => section.items.length > 0).map(section => <div className="inventory-section" key={section.name ?? 'deadline'}>
+        {section.name && <h2 className="group-heading mt-3.5 mb-1.5 text-[15px] font-bold mobile:mb-[9px] mobile:text-[14px] mobile:font-semibold mobile:text-[#40536A]" aria-label={section.name}>
+          {section.name}<span className="group-count ml-2 text-xs font-medium text-muted mobile:text-[#68778A]" aria-hidden="true">{section.items.length}件</span>
         </h2>}
-        <ul className="food-list m-0 flex list-none flex-col gap-1.5 p-0">{section.items.map(group =>
+        <ul className="food-list m-0 flex list-none flex-col gap-1.5 p-0 mobile:gap-3">{section.items.map(group =>
           <FoodGroupCard key={group.key} group={group} totalActiveQuantity={totalByKey.get(group.key) ?? 0} today={today} view={view} sort={sort}
             listed={listed.has(normalizedName(group.name))} adding={addingKey === group.key}
             onToggleAdd={() => setAddingKey(addingKey === group.key ? null : group.key)} onCloseAdd={() => setAddingKey(null)}
