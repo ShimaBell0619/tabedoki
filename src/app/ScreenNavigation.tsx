@@ -1,17 +1,17 @@
-import { Button } from '@/components/ui/button';
+import { Icon, type IconName } from '../components/Icon';
 import { cn } from '@/components/ui/utils';
-
-type Screen = 'inventory' | 'shopping';
+export type Screen = 'inventory' | 'calendar' | 'shopping' | 'settings';
 type Props = { screen: Screen; onChange: (screen: Screen) => void; className?: string };
-
+const screens: { value: Screen; label: string; icon: IconName }[] = [
+  { value: 'inventory', label: '一覧', icon: 'layout-list' },
+  { value: 'calendar', label: 'カレンダー', icon: 'calendar-days' },
+  { value: 'shopping', label: '買い物', icon: 'shopping-basket' },
+  { value: 'settings', label: '設定', icon: 'settings' },
+];
 export function ScreenNavigation({ screen, onChange, className }: Props) {
-  return <nav className={cn('screen-navigation flex gap-1', className)} aria-label="画面選択">
-    {(['inventory', 'shopping'] as const).map(value =>
-      <Button key={value} variant="plain" type="button" aria-pressed={screen === value} onClick={() => onChange(value)}
-        className={`min-h-11 min-w-[54px] rounded-lg border border-transparent bg-transparent px-3 py-2 text-[13px] font-bold
-          text-muted aria-pressed:border-primary aria-pressed:bg-panel aria-pressed:text-primary mobile:px-2
-          mobile:text-xs`}>
-        {value === 'inventory' ? '在庫' : '買い物'}
-      </Button>)}
+  return <nav className={cn('screen-navigation', className)} aria-label="画面選択">
+    {screens.map(({ value, label, icon }) => <button key={value} type="button"
+      className="screen-navigation-item" aria-current={screen === value ? 'page' : undefined}
+      onClick={() => onChange(value)}><Icon name={icon} /><span>{label}</span></button>)}
   </nav>;
 }
