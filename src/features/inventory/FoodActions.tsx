@@ -1,23 +1,26 @@
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import type { Food } from '../../domain/food';
+import { consumptionAction, units, type Food } from '../../domain/food';
 import { Icon } from '../../components/Icon';
 
 type Props = {
   item: Food;
   blocked: boolean;
   onEdit: () => void;
-  onFinish: () => void;
+  onConsume: () => void;
+  onRestore: () => void;
+  lastInGroup: boolean;
   onDiscard: () => void;
   onRemove: () => void;
 };
 
-export function FoodActions({ item, blocked, onEdit, onFinish, onDiscard, onRemove }: Props) {
+export function FoodActions({ item, blocked, onEdit, onConsume, onRestore, lastInGroup, onDiscard, onRemove }: Props) {
   return <div className="food-actions flex items-center justify-end gap-1">
     <Button variant="action" type="button" className="edit-food border-[#D9E1EB] text-muted" disabled={blocked} onClick={onEdit} aria-label={`${item.name}を編集`}>編集</Button>
     <Button variant="action" type="button" className="finish-food flex items-center gap-[5px] border-primary bg-primary text-white hover:bg-[#293F5C] [&_.icon]:size-4 [&_.icon]:brightness-0 [&_.icon]:invert"
-      disabled={blocked} onClick={onFinish} aria-label={item.status === 'active' ? `${item.name}を使い切り` : undefined}>
-      <Icon name="check" />{item.status === 'active' ? '使い切り' : '戻す'}
+      disabled={blocked} onClick={item.status === 'active' ? onConsume : onRestore}
+      aria-label={`${item.name}を${item.status === 'active' ? consumptionAction(item.consumption, units[item.unit], lastInGroup) : '管理中に戻す'}`}>
+      <Icon name={item.status === 'active' ? 'minus' : 'undo-2'} />{item.status === 'active' ? consumptionAction(item.consumption, units[item.unit], lastInGroup) : '戻す'}
     </Button>
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>

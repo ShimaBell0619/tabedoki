@@ -27,6 +27,7 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
   const { active, foodGroups, sections } = selectInventory(items, today, { view, categoryFilter, placeFilter, deadlineFilter, sort });
   const filterCount = Number(categoryFilter !== 'all') + Number(placeFilter !== 'all') + Number(deadlineFilter !== 'all');
   const hasFilters = filterCount > 0;
+  const totalByKey = new Map(groupFoods(items.filter(item => item.status === 'active')).map(group => [group.key, group.activeQuantity]));
   const listed = new Set(shopping.filter(item => !item.bought).map(item => normalizedName(item.name)));
   function resetFilters() {
     setCategoryFilter('all'); setPlaceFilter('all'); setDeadlineFilter('all');
@@ -114,7 +115,7 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
           {section.name}<span className="group-count ml-2 text-xs font-medium text-muted" aria-hidden="true">{section.items.length}件</span>
         </h2>}
         <ul className="food-list m-0 flex list-none flex-col gap-2.5 p-0">{section.items.map(group =>
-          <FoodGroupCard key={group.key} group={group} today={today} view={view} sort={sort}
+          <FoodGroupCard key={group.key} group={group} totalActiveQuantity={totalByKey.get(group.key) ?? 0} today={today} view={view} sort={sort}
             listed={listed.has(normalizedName(group.name))} adding={addingKey === group.key}
             onToggleAdd={() => setAddingKey(addingKey === group.key ? null : group.key)} onCloseAdd={() => setAddingKey(null)}
             blocked={blocked} onEdit={onEdit} onStatus={onStatus} onRemove={onRemove} onLowStock={onLowStock}
