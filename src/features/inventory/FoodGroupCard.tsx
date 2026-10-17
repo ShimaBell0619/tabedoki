@@ -7,7 +7,7 @@ import type { InventoryView, InventorySort } from './selectInventory';
 import { FoodActions } from './FoodActions';
 import { StockAdder } from './StockAdder';
 import { Icon } from '../../components/Icon';
-import { FoodIcon } from '../../components/FoodIcon';
+import { FoodIcon } from './FoodIcon';
 
 export type InventoryActions = {
   blocked: boolean;
