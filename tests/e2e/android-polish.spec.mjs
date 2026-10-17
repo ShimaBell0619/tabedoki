@@ -76,7 +76,7 @@ for (const width of [320, 390, 430]) {
     }
     await multi.locator('.stock-lot').first().getByRole('button', { name: `${name}を1パック使い終わった` }).click();
     expect((await cloudData(page)).items.find(item => item.id === 'first').quantity).toBe(2);
-    await page.getByRole('button', { name: '通知を閉じる' }).click();
+    await expect(page.locator('.notice-toast')).toHaveCount(0);
     await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
     const actions = await multi.locator('.stock-group-actions').boundingBox();
     const add = await page.locator('.mobile-add-button').boundingBox();
@@ -118,7 +118,7 @@ for (const width of [320, 390, 430]) {
   });
 }
 
-test('保存中・成功通知で画面が動かず、フォーカス中は保持し、非ブロックのエラーも消さない', async ({ page }, info) => {
+test('数量変更でちらつきと不要な通知がなく、その他の通知とエラーは維持する', async ({ page }, info) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.clock.install({ time: new Date('2026-10-17T12:00:00') });
   await setup(page);
@@ -127,7 +127,13 @@ test('保存中・成功通知で画面が動かず、フォーカス中は保�
   const before = await page.getByRole('heading', { level: 1 }).boundingBox();
   let finishSave;
   page.cloud.wait = new Promise(resolve => { finishSave = resolve; });
-  await single.getByRole('button', { name: 'たまごの数量を1増やす' }).click();
+  const increase = single.getByRole('button', { name: 'たまごの数量を1増やす' });
+  const opacity = await increase.evaluate(button => getComputedStyle(button).opacity);
+  await increase.click();
+  await expect(increase).toBeDisabled();
+  expect(await increase.evaluate(button => getComputedStyle(button).opacity)).toBe(opacity);
+  await expect(page.getByLabel('保存状態')).toHaveCount(0);
+  await page.clock.runFor(450);
   await expect(page.getByLabel('保存状態')).toBeVisible();
   const pending = await page.getByRole('heading', { level: 1 }).boundingBox();
   expect(pending.y).toBe(before.y);
@@ -135,9 +141,13 @@ test('保存中・成功通知で画面が動かず、フォーカス中は保�
   page.cloud.wait = null;
   await cloudData(page);
   const toast = page.locator('.notice-toast');
-  await expect(toast).toContainText('数量を7に変更しました');
+  await expect(toast).toHaveCount(0);
+  await expect(single.locator('.quantity')).toHaveText('7個');
   const after = await page.getByRole('heading', { level: 1 }).boundingBox();
   expect(after.y).toBe(before.y);
+  await single.getByRole('checkbox', { name: 'たまごの残りわずか' }).check();
+  await cloudData(page);
+  await expect(toast).toContainText('残りわずかを設定しました');
   const toastBox = await toast.boundingBox();
   const addBox = await page.locator('.mobile-add-button').boundingBox();
   const navBox = await page.locator('.mobile-navigation').boundingBox();
