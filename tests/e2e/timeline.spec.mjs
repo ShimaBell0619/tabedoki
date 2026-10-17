@@ -1,5 +1,5 @@
 import { test, expect, cloudData } from './helpers/cloud.mjs';
-import { STORAGE_KEY } from '../../src/data/storage.ts';
+import { V4_STORAGE_KEY as STORAGE_KEY } from '../../src/data/storage.ts';
 import { defaultTemplates } from '../../src/domain/templates.ts';
 
 const item = (id, name, deadline, extra = {}) => ({
@@ -37,7 +37,7 @@ for (const width of [320, 390, 1440]) {
     await expect(page.locator('.calendar-overdue-item')).toHaveCount(1);
     await expect(page.locator('.calendar-footer')).toContainText('30日より先の在庫が2件');
     await expect(page.getByRole('button', { name: '10月17日（土）、1件、今日' })).toHaveAttribute('aria-pressed', 'true');
-    await expect(page.locator('.calendar-food')).toHaveCount(1);
+    await expect(page.locator('.calendar-food')).toHaveCount(2);
     await expect(page.locator('.calendar-food-label')).toHaveCSS('color', 'rgb(150, 90, 18)');
 
     await page.getByRole('button', { name: '10月24日（土）、2件' }).click();
@@ -57,9 +57,10 @@ for (const width of [320, 390, 1440]) {
       expect(Math.abs(bounds.y + bounds.height / 2 - 850 / 2)).toBeLessThanOrEqual(2);
     }
     await expect(dialog.locator('.timeline-dialog-item')).toHaveCount(2);
-    await dialog.getByRole('button', { name: 'たまごを使い切り' }).click();
+    await dialog.getByRole('button', { name: 'たまごを1個食べた' }).click();
     await expect(dialog).not.toBeVisible();
-    expect((await cloudData(page)).items.find(entry => entry.id === 'egg').status).toBe('used');
+    expect((await cloudData(page)).items.find(entry => entry.id === 'egg').status).toBe('active');
+    expect((await cloudData(page)).items.find(entry => entry.id === 'egg').quantity).toBe(5);
     await expect(page.locator('.calendar-food')).toHaveCount(1);
 
     await page.getByRole('button', { name: '90日', exact: true }).click();

@@ -1,5 +1,5 @@
 import { test, expect, cloudData } from './helpers/cloud.mjs';
-import { STORAGE_KEY } from '../../src/data/storage.ts';
+import { V4_STORAGE_KEY as STORAGE_KEY } from '../../src/data/storage.ts';
 import { defaultTemplates } from '../../src/domain/templates.ts';
 
 function food(id, name, deadline, extra = {}) {

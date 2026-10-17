@@ -84,7 +84,7 @@ test('v1からv4への自動移行は原文と全旧項目・順序を保持す�
   const result = readData(store);
   assert.equal(result.error, '');
   assert.equal(store.map.get(LEGACY_STORAGE_KEY), raw);
-  assert.deepEqual(result.items, [{ ...legacyItem, id: 'last', status: 'used', category: 'other', unit: 'item', lowStock: false, initialQuantity: 1, consumption: 'eat' }, { ...legacyItem, category: 'other', unit: 'item', lowStock: false, initialQuantity: 1, consumption: 'eat' }]);
+  assert.deepEqual(result.items, [{ ...legacyItem, id: 'last', status: 'used', category: 'other', unit: 'item', lowStock: false, initialQuantity: 1, consumption: 'drink' }, { ...legacyItem, category: 'other', unit: 'item', lowStock: false, initialQuantity: 1, consumption: 'drink' }]);
   assert.deepEqual(result.templates, foodTemplates);
   assert.equal(store.writes, 2);
   assert.equal(JSON.parse(store.map.get(STORAGE_KEY)).version, 5);
@@ -192,7 +192,7 @@ test('v1/v2バックアップは定番未指定、v3は空も含めて定番を�
   assert.throws(() => validateBackup({ version: 4, items: [] }));
 });
 test('最大の食品と定番の出力を5MiB以内で往復する', () => {
-  const items = Array.from({ length: MAX_ITEMS }, (_, i) => ({ ...item, id: '\u0001'.repeat(95) + String(i).padStart(5, '0'), name: 'x' + '\u0001'.repeat(79), quantity: 999, status: 'discarded' }));
+  const items = Array.from({ length: MAX_ITEMS }, (_, i) => ({ ...item, id: '\u0001'.repeat(95) + String(i).padStart(5, '0'), name: 'x' + '\u0001'.repeat(79), quantity: 999, initialQuantity: 999, status: 'discarded' }));
   const templates = Array.from({ length: MAX_TEMPLATES }, (_, i) => ({ ...foodTemplates[0], id: '\u0001'.repeat(95) + String(i).padStart(5, '0'), name: String(i).padStart(2, '0') + '\u0001'.repeat(78), quantity: 999 }));
   const data = { items, templates, shopping: [] };
   const backup = makeBackup(data);

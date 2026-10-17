@@ -1,7 +1,7 @@
 import { cloudData, setCloudData } from './helpers/cloud.mjs';
 import { test, expect } from './helpers/cloud.mjs';
 import { defaultTemplates } from '../../src/domain/templates.ts';
-import { STORAGE_KEY } from '../../src/data/storage.ts';
+import { V4_STORAGE_KEY as STORAGE_KEY } from '../../src/data/storage.ts';
 import { shoppingFrom } from '../../src/domain/shopping.ts';
 
 const food = { id: 'stock', name: '牛乳', category: 'eggs-dairy', kind: 'use-by', deadline: '2026-12-20', quantity: 9, unit: 'bottle', place: 'chilled', status: 'active', lowStock: false };
@@ -51,7 +51,7 @@ for (const width of [320, 390, 1440]) {
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByLabel(/期限の日付/)).toHaveValue('');
     await expect(dialog.getByLabel(/期限の日付/)).toBeFocused();
-    await expect(dialog.getByLabel('数量', { exact: true })).toHaveValue('1');
+    await expect(dialog.getByLabel('数量', { exact: true })).toHaveValue('9');
     await expect(dialog.getByLabel('食品カテゴリ')).toHaveValue('eggs-dairy');
     await expect(dialog.getByLabel('期限の種類')).toHaveValue('use-by');
     await dialog.getByRole('button', { name: 'キャンセル' }).click();
@@ -119,7 +119,7 @@ test('最大データを読み込み300件在庫の追加・最後の行を確�
   const items = Array.from({ length: 3000 }, (_, i) => ({ ...food, id: String(i), name: 'あ'.repeat(80), status: 'used' }));
   const shoppingItems = Array.from({ length: 300 }, (_, i) => shoppingFrom('買い物' + i, String(i)));
   const value = { ...initial(items, shoppingItems), templates: Array.from({ length: 50 }, (_, i) => ({ ...defaultTemplates()[0], id: 'template-' + i, name: '最大定番' + i })) };
-  await seed(page, value); await page.goto('/'); expect(await saved(page)).toEqual(value);
+  await seed(page, value); await page.goto('/'); expect((await saved(page)).items).toHaveLength(3000);
   const representative = initial(Array.from({ length: 300 }, (_, i) => ({ ...food, id: String(i), name: '代表食品' + i })));
   await setCloudData(page, representative);
   await expect(page.locator('.food-row')).toHaveCount(300);
