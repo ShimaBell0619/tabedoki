@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { MAX_ITEMS, isFood, normalizedName, tracksVolume, defaultVolumeTracking, type VolumePercent, type Food, type FoodForm, type FoodStatus, type FoodTemplate, type StoragePlace } from '../domain/food';
 import { addStockToFoods } from '../domain/stock';
 import { selectedFoodIcon, type FoodIconName } from '../domain/food-icons';
@@ -10,10 +10,17 @@ import { useCloudData } from './useCloudData';
 export function useAppModel(store: DataStore, initial: Snapshot, mode: 'local' | 'cloud') {
   const [editor, setEditor] = useState<{ item?: Food; purchase?: ShoppingItem; templatesOnly: boolean } | null>(null);
   const foodSaved = useRef(false);
-  const [notice, setNotice] = useState('');
+  const noticeSequence = useRef(0);
+  const [notice, updateNotice] = useState<{ id: number; message: string; error: boolean } | null>(null);
   const [formError, setFormError] = useState('');
+  function setNotice(message: string, error = false) {
+    updateNotice({ id: ++noticeSequence.current, message, error });
+  }
+  const dismissNotice = useCallback((id: number) => {
+    updateNotice(current => current?.id === id ? null : current);
+  }, []);
   function showError(message: string) {
-    setNotice(message);
+    setNotice(message, true);
     if (editor) setFormError(message);
   }
   const { data, committed, saving, blocked, commitData, refresh } = useCloudData(store, initial, showError, () => {
@@ -159,5 +166,5 @@ export function useAppModel(store: DataStore, initial: Snapshot, mode: 'local' |
     if (await commitData({ ...current, shopping: current.shopping.filter(value => value.id !== item.id) })) setNotice('買い物項目を削除しました。');
   }
 
-  return { data, saving, blocked, notice, setNotice, formError, setFormError, editor, setEditor, refresh, openForm, saveTemplates, saveFood, addStock, changeStatus, changeQuantity, changeVolume, removeFood, changeLowStock, addToShopping, changeBought, removeShopping, changeFoodIcon };
+  return { data, saving, blocked, notice, dismissNotice, formError, setFormError, editor, setEditor, refresh, openForm, saveTemplates, saveFood, addStock, changeStatus, changeQuantity, changeVolume, removeFood, changeLowStock, addToShopping, changeBought, removeShopping, changeFoodIcon };
 }

@@ -68,6 +68,7 @@
   justify-self: center;
 }
 .food-details[open] > summary::after { transform: rotate(225deg); margin: 5px 7px 0; }
+.stock-lot-primary-controls { display:contents; }
 
 
 /* Four persistent mobile tabs, monochrome SVG masks and neutral food icon blocks. */
@@ -126,9 +127,43 @@ button.settings-row:hover, a.settings-row:hover { background:#F7F9FB; }
 .calendar-overdue-item { display:flex; align-items:center; gap:10px; width:100%; min-height:44px; border:0; border-top:1px solid #EED8D5; background:transparent; text-align:left; font-size:13px; color:var(--color-foreground); }
 .calendar-overdue-item time { color:var(--color-expired); font-size:12px; white-space:nowrap; }
 .calendar-overdue-item span:nth-child(2) { flex:1; min-width:0; overflow-wrap:anywhere; }
-/* Android Chrome: use a lightweight, layered glass dock rather than a shader.
+/* Android Chrome: stable inventory controls and feedback.
    Keep the food content opaque; glass belongs to navigation controls only. */
 @media (max-width:760px) {
+  :root { --color-muted:#5B6C7F; }
+  .page:has(> .mobile-add-button) .main { padding-bottom:calc(164px + env(safe-area-inset-bottom)); }
+  .inventory { margin-bottom:0; }
+  .food-primary { gap:8px; }
+  .food-secondary { column-gap:6px; font-size:13px; }
+  .stock-preview > span, .stock-progress > span { font-size:12px; color:var(--color-muted); }
+  .filters select { color:var(--color-foreground); }
+  .single-stock .food-details[open] > summary { grid-template-rows:auto; row-gap:0; }
+  .single-stock .food-details[open] > summary .stock-preview { display:none; }
+  .single-stock .stock-lot { padding:0; border:0; background:transparent; box-shadow:none; }
+  .stock-lot-controls { flex-direction:column; align-items:stretch; }
+  .stock-lot-primary-controls { display:flex; align-items:center; justify-content:space-between; gap:8px; min-width:0; }
+  .stock-lot-controls > .food-actions { display:grid; grid-template-columns:auto minmax(0,1fr) 44px; gap:8px; }
+  .stock-lot-controls .finish-food { min-width:0; white-space:normal; overflow-wrap:anywhere; }
+  .stock-lot-controls .finish-food .icon { flex-shrink:0; }
+  .food-expanded .volume-controls button { min-height:44px; }
+  .food-expanded .volume-controls-count { padding:0; background:transparent; }
+  .food-form .field-label { display:inline-flex; align-items:baseline; }
+  .notice-toast, .cloud-pending {
+    position:fixed;
+    z-index:40;
+    bottom:calc(96px + env(safe-area-inset-bottom));
+    left:16px;
+    right:16px;
+    max-width:440px;
+    margin:0 auto;
+    border:1px solid var(--color-border);
+    box-shadow:0 4px 16px #253b541f;
+    pointer-events:none;
+  }
+  .page:has(> .mobile-add-button) :is(.notice-toast, .cloud-pending) { right:88px; }
+  .cloud-pending { min-height:44px; padding:12px 16px; border-radius:10px; background:var(--color-panel); }
+  .main:has(> .cloud-pending) > .notice-toast { visibility:hidden; }
+  .notice-toast button { pointer-events:auto; }
   .desktop-navigation { display:none; }
   .mobile-navigation {
     position:fixed;
@@ -177,7 +212,7 @@ button.settings-row:hover, a.settings-row:hover { background:#F7F9FB; }
     padding:6px 2px;
     border-radius:18px;
     background:transparent;
-    font-size:11px;
+    font-size:12px;
     white-space:nowrap;
     -webkit-tap-highlight-color:transparent;
     touch-action:manipulation;
@@ -208,14 +243,14 @@ button.settings-row:hover, a.settings-row:hover { background:#F7F9FB; }
     color:#fff;
     -webkit-backdrop-filter:blur(14px);
     backdrop-filter:blur(14px);
-    box-shadow:inset 0 1px 1px #eff6ff80,0 7px 19px #263e5a52;
+    box-shadow:inset 0 1px 1px #eff6ff80,0 4px 12px #263e5a30;
     -webkit-tap-highlight-color:transparent;
     touch-action:manipulation;
     transition:transform 160ms ease-out,box-shadow 160ms ease-out;
   }
   .mobile-add-button:active {
     transform:scale(.94);
-    box-shadow:inset 0 1px 1px #eff6ff80,0 3px 10px #263e5a38;
+    box-shadow:inset 0 1px 1px #eff6ff80,0 2px 7px #263e5a24;
   }
   .calendar-day { flex-basis:47px; }
 }
