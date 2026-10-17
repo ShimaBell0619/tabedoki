@@ -65,6 +65,7 @@ for (const width of [320, 390, 1440]) {
     await page.getByRole('button', { name: '90日', exact: true }).click();
     await page.getByRole('button', { name: '1月15日（金）、1件' }).click();
     await expect(page.locator('.calendar-food')).toContainText('パスタ');
+    await expect(page.locator('.calendar-food-label')).toHaveCSS('color', 'rgb(115, 127, 143)');
 
     await page.getByRole('button', { name: '設定', exact: true }).click();
     await expect(page.getByRole('heading', { name: '設定' })).toBeVisible();
