@@ -136,7 +136,7 @@ export function FoodEditor({ item, purchase, templatesOnly, items, templates, bl
         </NativeSelect></label>
         <p className="form-help mt-[-4px] text-xs leading-[1.7] text-muted">期限は未開封・指定の保存方法が前提です。商品の表示を確認してください。</p>
         <div className="form-group grid grid-cols-2 gap-3 mobile:gap-2.5">
-          <label>現在の数量<Input type="number" required min="1" max="999" step="1" value={form.quantity || ''}
+          <label>数量<Input type="number" required min="1" max="999" step="1" value={form.quantity || ''}
             onChange={event => {
               const quantity = Number(event.target.value);
               setForm({ ...form, quantity,
@@ -147,7 +147,7 @@ export function FoodEditor({ item, purchase, templatesOnly, items, templates, bl
           </NativeSelect></label>
         </div>
         <label>バーの満量<Input type="number" required min={Math.max(1,form.quantity)} max="999" step="1"
-          value={form.initialQuantity ?? form.quantity || ''}
+          value={(form.initialQuantity ?? form.quantity) || ''}
           onChange={event => setForm({ ...form, initialQuantity: Number(event.target.value) })} /></label>
         <p className="form-help mt-[-4px] text-xs leading-[1.7] text-muted">
           分割バーの100%に相当する数量です。現在の数量は変わりません。
