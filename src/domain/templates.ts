@@ -1,7 +1,7 @@
-import { isFood, normalizedName, type Food, type FoodForm, type FoodTemplate } from './food.ts';
+import { inferConsumption, isFood, normalizedName, type Food, type FoodForm, type FoodTemplate } from './food.ts';
 
 const starterTemplates: readonly Pick<FoodTemplate, 'name' | 'category' | 'place' | 'unit'>[] = [
-  { name: 'たまご', category: 'eggs-dairy', place: 'chilled', unit: 'pack' },
+  { name: 'たまご', category: 'eggs-dairy', place: 'chilled', unit: 'piece' },
   { name: '納豆', category: 'soy', place: 'chilled', unit: 'pack' },
   { name: '牛乳', category: 'eggs-dairy', place: 'chilled', unit: 'bottle' },
   { name: 'ヨーグルト', category: 'eggs-dairy', place: 'chilled', unit: 'piece' },
@@ -14,7 +14,7 @@ const starterTemplates: readonly Pick<FoodTemplate, 'name' | 'category' | 'place
 ];
 
 export function defaultTemplates(): FoodTemplate[] {
-  return starterTemplates.map((template, i) => ({ id: `default-${i}`, name: template.name, category: template.category, kind: 'best-before', quantity: 1, unit: template.unit, place: template.place }));
+  return starterTemplates.map((template, i) => ({ id: `default-${i}`, name: template.name, category: template.category, kind: 'best-before', quantity: i === 0 ? 10 : i === 1 ? 3 : 1, unit: template.unit, place: template.place, consumption: inferConsumption(template.name, template.category) }));
 }
 export const MAX_TEMPLATES = 50;
 
@@ -23,13 +23,13 @@ export function validateTemplates(value: unknown): FoodTemplate[] {
   const ids = new Set<string>();
   const names = new Set<string>();
   return value.map(item => {
-    if (!isFood({ ...item, deadline: '2000-01-01', status: 'active', lowStock: false })) throw new Error('定番食品の入力項目を確認してください。');
+    if (!isFood({ ...item, initialQuantity: item.quantity, deadline: '2000-01-01', status: 'active', lowStock: false })) throw new Error('定番食品の入力項目を確認してください。');
     if (ids.has(item.id)) throw new Error('重複する定番食品IDがあります。');
     const name = item.name.trim();
     const key = normalizedName(name);
     if (names.has(key)) throw new Error('同じ名前の定番食品が既にあります。');
     ids.add(item.id); names.add(key);
-    return { id: item.id, name, category: item.category, kind: item.kind, quantity: item.quantity, unit: item.unit, place: item.place };
+    return { id: item.id, name, category: item.category, kind: item.kind, quantity: item.quantity, unit: item.unit, place: item.place, consumption: item.consumption };
   });
 }
 
@@ -37,7 +37,7 @@ export function validateTemplates(value: unknown): FoodTemplate[] {
 export function applyFoodCandidate(form: FoodForm, candidate: FoodTemplate | Food): FoodForm {
   return {
     name: candidate.name, category: candidate.category, place: candidate.place, unit: candidate.unit,
-    kind: candidate.kind, quantity: 'deadline' in candidate ? 1 : candidate.quantity, deadline: form.deadline,
+    kind: candidate.kind, quantity: 'deadline' in candidate ? candidate.initialQuantity : candidate.quantity, consumption: candidate.consumption, deadline: form.deadline,
   };
 }
 

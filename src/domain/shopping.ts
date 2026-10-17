@@ -9,7 +9,7 @@ export function validateShopping(value: unknown): ShoppingItem[] {
   const ids = new Set<string>();
   const pendingNames = new Set<string>();
   return value.map(item => {
-    if (!isFood({ ...item, deadline: '2000-01-01', status: 'active', lowStock: false }) || typeof item.bought !== 'boolean') {
+    if (!isFood({ ...item, initialQuantity: item.quantity, deadline: '2000-01-01', status: 'active', lowStock: false }) || typeof item.bought !== 'boolean') {
       throw new Error('買い物データに不正な項目があります。');
     }
     if (ids.has(item.id)) throw new Error('重複する買い物IDがあります。');
@@ -18,7 +18,7 @@ export function validateShopping(value: unknown): ShoppingItem[] {
     if (!item.bought && pendingNames.has(key)) throw new Error('同名の未購入項目があります。');
     ids.add(item.id);
     if (!item.bought) pendingNames.add(key);
-    return { id: item.id, name, category: item.category, kind: item.kind, quantity: item.quantity, unit: item.unit, place: item.place, bought: item.bought };
+    return { id: item.id, name, category: item.category, kind: item.kind, quantity: item.quantity, unit: item.unit, place: item.place, consumption: item.consumption, bought: item.bought };
   });
 }
 
@@ -27,7 +27,7 @@ export function shoppingFrom(source: string | Food | FoodTemplate, id: string): 
   const candidate = typeof source === 'string' ? { ...initialFoodForm(), name: source } : source;
   return validateShopping([{
     id, name: candidate.name, category: candidate.category, kind: candidate.kind,
-    quantity: 'deadline' in candidate ? 1 : candidate.quantity, unit: candidate.unit, place: candidate.place, bought: false,
+    quantity: 'deadline' in candidate ? candidate.initialQuantity : candidate.quantity, unit: candidate.unit, place: candidate.place, consumption: candidate.consumption, bought: false,
   }])[0];
 }
 
@@ -55,7 +55,7 @@ export function replenishmentCandidates(foods: readonly Food[], shopping: readon
 }
 
 export function foodFormFromShopping(item: ShoppingItem): FoodForm {
-  return { name: item.name, category: item.category, kind: item.kind, quantity: item.quantity, unit: item.unit, place: item.place, deadline: '' };
+  return { name: item.name, category: item.category, kind: item.kind, quantity: item.quantity, unit: item.unit, place: item.place, consumption: item.consumption, deadline: '' };
 }
 
 /** The caller validates and persists this complete replacement in a single write. */

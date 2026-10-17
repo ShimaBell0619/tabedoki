@@ -3,6 +3,16 @@ import { validDate } from './deadline.ts';
 export type DeadlineKind = 'best-before' | 'use-by';
 export type StoragePlace = 'chilled' | 'frozen' | 'pantry';
 export type FoodStatus = 'active' | 'used' | 'discarded';
+export type Consumption = 'eat' | 'use' | 'drink';
+export const consumptionLabels: Record<Consumption, string> = { eat: '食べる', use: '使う', drink: '飲む' };
+export function inferConsumption(name: string, category: FoodCategory): Consumption {
+  if (category === 'condiments') return 'use';
+  return /牛乳|ミルク|ジュース|飲料|ドリンク|お茶/.test(name) ? 'drink' : 'eat';
+}
+export function consumptionAction(consumption: Consumption, unit: string, last: boolean): string {
+  if (last) return { eat: '食べ終わった', use: '使い終わった', drink: '飲み終わった' }[consumption];
+  return `1${unit}${{ eat: '食べた', use: '使い終わった', drink: '飲み終わった' }[consumption]}`;
+}
 
 export const categories = {
   'eggs-dairy': '卵・乳製品', produce: '野菜・果物', 'meat-fish': '肉・魚',
@@ -22,19 +32,22 @@ export type Food = {
   kind: DeadlineKind;
   deadline: string;
   quantity: number;
+  /** Maximum stock level observed for the segmented bar. */
+  initialQuantity: number;
+  consumption: Consumption;
   unit: QuantityUnit;
   place: StoragePlace;
   status: FoodStatus;
   lowStock: boolean;
 };
 
-export type LegacyFood = Omit<Food, 'category' | 'unit' | 'lowStock'>;
-export type FoodForm = Pick<Food, 'name' | 'category' | 'kind' | 'deadline' | 'quantity' | 'unit' | 'place'>;
-export type FoodTemplate = Pick<Food, 'id' | 'name' | 'category' | 'kind' | 'quantity' | 'place' | 'unit'>;
+export type LegacyFood = Omit<Food, 'category' | 'unit' | 'lowStock' | 'initialQuantity' | 'consumption'>;
+export type FoodForm = Pick<Food, 'name' | 'category' | 'kind' | 'deadline' | 'quantity' | 'unit' | 'place' | 'consumption'>;
+export type FoodTemplate = Pick<Food, 'id' | 'name' | 'category' | 'kind' | 'quantity' | 'place' | 'unit' | 'consumption'>;
 export function normalizedName(name: string): string { return name.trim().normalize('NFKC').toLocaleLowerCase('ja'); }
 
 export function initialFoodForm(): FoodForm {
-  return { name: '', category: 'other', kind: 'best-before', deadline: '', quantity: 1, unit: 'item', place: 'chilled' };
+  return { name: '', category: 'other', kind: 'best-before', deadline: '', quantity: 1, unit: 'item', place: 'chilled', consumption: 'eat' };
 }
 
 export const MAX_ITEMS = 3000;
@@ -50,13 +63,20 @@ export function isLegacyFood(value: unknown): value is LegacyFood {
     (v.status === 'active' || v.status === 'used' || v.status === 'discarded');
 }
 
-export function isV3Food(value: unknown): value is Omit<Food, 'lowStock'> {
+export function isV3Food(value: unknown): value is Omit<Food, 'lowStock' | 'initialQuantity' | 'consumption'> {
   if (!isLegacyFood(value)) return false;
   const v = value as unknown as Record<string, unknown>;
   return typeof v.category === 'string' && Object.hasOwn(categories, v.category) &&
     typeof v.unit === 'string' && Object.hasOwn(units, v.unit);
 }
 
-export function isFood(value: unknown): value is Food {
+export function isV4Food(value: unknown): value is Omit<Food, 'initialQuantity' | 'consumption'> {
   return isV3Food(value) && typeof (value as Record<string, unknown>).lowStock === 'boolean';
+}
+export function isFood(value: unknown): value is Food {
+  if (!isV4Food(value)) return false;
+  const v = value as unknown as Record<string, unknown>;
+  return typeof v.initialQuantity === 'number' && Number.isInteger(v.initialQuantity) &&
+    v.initialQuantity >= (v.quantity as number) && v.initialQuantity <= 999 &&
+    (v.consumption === 'eat' || v.consumption === 'use' || v.consumption === 'drink');
 }
