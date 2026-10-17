@@ -6,7 +6,6 @@ import { deadlineFilters, matchesDeadline, type DeadlineFilter } from '../../dom
 import { groupFoods } from '../../domain/stock';
 import type { ShoppingItem } from '../../domain/shopping';
 import { FoodGroupCard, type InventoryActions } from './FoodGroupCard';
-import { DeadlineTimeline } from './DeadlineTimeline';
 import { selectInventory } from './selectInventory';
 import { Icon } from '../../components/Icon';
 
@@ -19,7 +18,6 @@ type Props = InventoryActions & {
 
 export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatus, onRemove, shopping, onLowStock, onQuantity, onAddShopping, onAddStock }: Props) {
   const [addingKey, setAddingKey] = useState<string | null>(null);
-  const [displayMode, setDisplayMode] = useState<'list' | 'timeline'>('list');
   const [view, setView] = useState<'active' | 'finished' | 'all'>('active');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<'all' | FoodCategory>('all');
@@ -54,15 +52,7 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
             </Button>)}
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex rounded-[10px] border border-border bg-panel p-[3px]" role="group" aria-label="食品一覧の表示切替">
-            {(['list', 'timeline'] as const).map(value =>
-              <Button variant="plain" key={value} type="button" aria-pressed={displayMode === value}
-                onClick={() => setDisplayMode(value)}
-                className="min-h-11 rounded-[7px] px-3 text-xs font-bold text-muted aria-pressed:bg-white aria-pressed:text-primary aria-pressed:shadow-sm">
-                {value === 'list' ? '一覧' : 'タイムライン'}
-              </Button>)}
-          </div>
-          {displayMode === 'list' && <label className="sort-control"><span className="sr-only">一覧の表示方法</span>
+          {<label className="sort-control"><span className="sr-only">一覧の表示方法</span>
             <NativeSelect className="min-h-11 w-auto rounded-lg border-border p-1.5 text-xs text-muted mobile:p-1.5" value={sort} onChange={event => setSort(event.target.value as typeof sort)}>
               <option value="category">カテゴリ別</option><option value="deadline">期限順</option><option value="place">保存場所別</option>
             </NativeSelect>
@@ -118,10 +108,7 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
         {!hasFilters && view !== 'finished' && <Button variant="secondary" className="secondary" type="button" disabled={blocked} onClick={onCreate}>
           <Icon name="plus" />食品を登録する
         </Button>}
-      </div> : displayMode === 'timeline' ? <DeadlineTimeline items={displayed} today={today} listed={listed}
-        onShowList={() => { setDisplayMode('list'); setSort('deadline'); }}
-        blocked={blocked} onEdit={onEdit} onStatus={onStatus} onRemove={onRemove}
-        onLowStock={onLowStock} onQuantity={onQuantity} onAddShopping={onAddShopping} onAddStock={onAddStock} /> :
+      </div> :
         sections.filter(section => section.items.length > 0).map(section => <div key={section.name ?? 'deadline'}>
         {section.name && <h2 className="group-heading mt-[18px] mb-2 text-[15px] font-bold" aria-label={section.name}>
           {section.name}<span className="group-count ml-2 text-xs font-medium text-muted" aria-hidden="true">{section.items.length}件</span>
