@@ -29,6 +29,7 @@ test('カテゴリ別を初期表示し、期限順・場所別への切替と�
   await expect(page.getByRole('heading', { name: '主食・麺・パン', exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: '調味料', exact: true })).toBeVisible();
 
+  await page.getByRole('button', { name: /^絞り込み/ }).click();
   await mode.selectOption('deadline');
   await expect(retort).toHaveCount(0);
   await expect(page.locator('.food-primary h3')).toHaveText(['牛乳', 'レトルトカレー', 'パスタ', 'パスタソース', 'しょうゆ']);
@@ -37,7 +38,6 @@ test('カテゴリ別を初期表示し、期限順・場所別への切替と�
   await expect(page.getByRole('heading', { name: '常温', exact: true })).toBeVisible();
   await mode.selectOption('category');
 
-  await page.getByRole('button', { name: /^絞り込み/ }).click();
   await page.getByLabel('カテゴリで絞り込み').selectOption('retort-canned');
   await expect(page.locator('.food-row')).toHaveCount(2);
   await expect(retort).toBeVisible();

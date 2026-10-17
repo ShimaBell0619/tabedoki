@@ -14,7 +14,7 @@ export function StockPreview({ group }: { group: FoodGroup }) {
   const description = partial.length === 1
     ? '開封中 ' + volumeLabel(partial[0].volumePercent ?? 100)
     : partial.length > 1 ? '開封中 ' + partial.length + '件' : active.some(tracksVolume) ? '満量' : group.activeQuantity + '/' + baseline + units[group.unit];
-  return <div className="stock-preview col-span-3 row-start-3 flex min-w-0 items-center gap-2" role="img"
+  return <div className="stock-preview col-span-3 row-start-2 flex min-w-0 items-center gap-2" role="img"
     aria-label={`在庫の目安 ${description}、管理中${group.activeQuantity}${units[group.unit]}`}>
     <div className="flex h-2 min-w-0 flex-1 gap-[3px]" aria-hidden="true">
       {Array.from({ length: count }, (_, index) => {

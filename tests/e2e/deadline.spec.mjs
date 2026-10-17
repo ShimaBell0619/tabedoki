@@ -57,5 +57,6 @@ test('開いたまま午前0時を跨ぐと期限表示が更新される', asyn
   await expect(page.locator('.deadline-chip').getByText('今日まで', { exact: true })).toBeVisible();
   await page.clock.runFor(1001);
   await expect(page.getByText('1日超過', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: /^絞り込み/ }).click();
   await expect(page.getByRole('button', { name: '期限切れ 1件', exact: true })).toBeVisible();
 });

@@ -15,6 +15,9 @@ for (const width of [320, 390, 1440]) {
     await page.addInitScript(({ key, templates, items }) => localStorage.setItem(key, JSON.stringify({ version: 3, templates, items })), { key: V3_STORAGE_KEY, templates: defaultTemplates(), items });
     await page.goto('/');
     await expect(page.getByRole('heading', { name: longName, exact: true })).toBeVisible();
+    await expect(page.locator('.food-details[open]')).toHaveCount(0);
+    await expect(page.locator('.deadline-filters')).toBeHidden();
+    await expect(page.getByLabel('一覧の表示方法')).toBeHidden();
     await expect(page.locator('.food-details > summary').getByLabel('賞味期限 2027-01-20', { exact: true })).toContainText('2027/1/20');
     expect((await page.locator('.food-details > summary').first().boundingBox()).height).toBeLessThanOrEqual(112);
     await expect(page.locator('.food-details > summary .stock-preview').first()).toBeVisible();
@@ -24,6 +27,7 @@ for (const width of [320, 390, 1440]) {
     await page.keyboard.press('Enter');
     await expect(page.getByRole('button', { name: longName + 'を編集', exact: true })).toBeVisible();
     await page.keyboard.press('Shift+Tab'); await page.keyboard.press('Tab');
+    await page.getByRole('button', { name: /^絞り込み/ }).click();
     await page.getByRole('button', { name: '0〜14日 2件', exact: true }).click();
     await expect(page.locator('.food-row')).toHaveCount(2);
     await page.getByRole('button', { name: '15〜30日 2件', exact: true }).click();
