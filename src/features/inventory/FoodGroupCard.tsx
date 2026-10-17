@@ -50,7 +50,7 @@ export function FoodGroupCard({ group, totalActiveQuantity, today, view, sort, l
     : group.activeQuantity + units[group.unit];
   return <li className={cn('food-row min-w-0 rounded-[13px] border border-border bg-white shadow-[0_2px_8px_rgb(33_43_56/4%)] has-[.food-details[open]]:border-[#A7B9CF] has-[.food-details[open]]:shadow-[0_4px_16px_rgb(33_43_56/7%)]', group.activeQuantity === 0 && 'completed', group.lowStock && 'border-[#DEB181] bg-[#FFFCF7]')} key={group.key}>
     <details className="food-details overflow-hidden rounded-xl open:[&>summary]:bg-white">
-      <summary className="grid min-h-[68px] cursor-pointer list-none grid-cols-[minmax(0,1fr)_auto_auto] grid-rows-[auto_auto_auto] items-center gap-x-2 gap-y-1 px-4 py-2.5 focus-visible:outline-offset-[-3px] mobile:px-3 mobile:py-2.5" aria-label={group.name + 'の詳細、' + amount + '、' + kinds[group.kind] + ' ' + main.deadline + '、' +
+      <summary className="grid min-h-[68px] cursor-pointer list-none grid-cols-[minmax(0,1fr)_auto_auto] grid-rows-[auto_auto_auto] items-center gap-x-2 gap-y-1 px-4 py-2.5 focus-visible:outline-offset-[-3px] mobile:px-3 mobile:py-2" aria-label={group.name + 'の詳細、' + amount + '、' + kinds[group.kind] + ' ' + main.deadline + '、' +
         (main.status === 'active' ? deadlineLabel(main.deadline, today) : main.status === 'used' ? '使用完了' : '廃棄済み')}>
         <div className="food-primary col-start-1 row-start-1 flex min-w-0 items-center gap-3 [&_h3]:m-0 [&_h3]:text-[17px] [&_h3]:leading-[1.4] [&_h3]:font-[750] [&_h3]:wrap-anywhere mobile:[&_h3]:text-base">
           <button type="button" className="food-icon food-icon-button" aria-label={group.name + 'のアイコンを変更'}

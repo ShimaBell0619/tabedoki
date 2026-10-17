@@ -30,7 +30,7 @@ test('閉じたカードの残数バーと手動フラグは残量変更後も�
   });
   await milk.getByRole('button',{name:'牛乳の残量を少しにする'}).click();
   await expect(milk.locator('.low-stock')).toHaveCount(0);
-  await milk.getByRole('checkbox',{name:'牛乳の残りわずか'}).check();
+  await milk.getByRole('checkbox',{name:'牛乳の残りわずか'}).click();
   await expect(milk.locator('summary .low-stock')).toHaveText('残りわずか');
   await page.reload();
   await expect(milk.locator('summary .stock-preview')).toHaveAttribute('aria-label',/開封中 少し/);
