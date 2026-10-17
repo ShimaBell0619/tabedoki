@@ -52,22 +52,20 @@
   @media (max-width: 760px) { h1 { font-size: 25px; } }
 }
 
-/* Native details retain their browser interaction and the existing arrow. */
+/* Native details keep the disclosure interaction; the arrow aligns with the compact flex row. */
 .food-details > summary::-webkit-details-marker { display: none; }
 .food-details > summary::after {
   box-sizing: content-box;
   content: "";
+  flex: 0 0 9px;
   width: 9px;
   height: 9px;
   border-right: 2px solid var(--color-muted);
   border-bottom: 2px solid var(--color-muted);
   transform: rotate(45deg);
-  margin: 0 7px 5px;
-  grid-column: 3;
-  grid-row: 1;
-  justify-self: center;
+  margin: 0 3px 5px 1px;
 }
-.food-details[open] > summary::after { transform: rotate(225deg); margin: 5px 7px 0; }
+.food-details[open] > summary::after { transform: rotate(225deg); margin: 5px 3px 0 1px; }
 .stock-lot-primary-controls { display:contents; }
 
 
@@ -137,8 +135,6 @@ button.settings-row:hover, a.settings-row:hover { background:#F7F9FB; }
   .food-secondary { column-gap:6px; font-size:13px; }
   .stock-preview > span, .stock-progress > span { font-size:12px; color:var(--color-muted); }
   .filters select { color:var(--color-foreground); }
-  .single-stock .food-details[open] > summary { grid-template-rows:auto; row-gap:0; }
-  .single-stock .food-details[open] > summary .stock-preview { display:none; }
   .single-stock .stock-lot { padding:0; border:0; background:transparent; box-shadow:none; }
   .stock-lot-controls { flex-direction:column; align-items:stretch; }
   .stock-lot-primary-controls { display:flex; align-items:center; justify-content:space-between; gap:8px; min-width:0; }
