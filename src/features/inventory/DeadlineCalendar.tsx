@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { deadlineLabel, daysLeft } from '../../domain/deadline.ts';
 import { kinds, normalizedName, places, units, type Food } from '../../domain/food.ts';
-import { FoodIcon } from '../../components/FoodIcon';
+import { FoodIcon } from './FoodIcon';
 import type { InventoryActions } from './FoodGroupCard';
 import { selectTimeline } from './selectTimeline';
 
