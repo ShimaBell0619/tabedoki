@@ -51,7 +51,7 @@ for (const width of [320, 390, 1440]) {
     await expect(page.getByRole('heading', { name: '低脂肪牛乳' })).toBeVisible();
     await openFoodActions(page);
     await page.getByRole('button', { name: '戻す' }).click();
-    await page.getByRole('button', { name: '管理中' }).click();
+    await page.getByRole('button', { name: '管理中', exact: true }).click();
     page.once('dialog', dialog => dialog.accept());
     await openFoodActions(page);
     await page.getByRole('button', { name: '低脂肪牛乳のその他の操作' }).click();
