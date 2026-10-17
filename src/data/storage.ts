@@ -6,7 +6,7 @@ import { validateShopping, type ShoppingItem } from '../domain/shopping.ts';
 
 export const LEGACY_STORAGE_KEY = 'tabedoki:foods:v1';
 export const V2_STORAGE_KEY = 'tabedoki:foods:v2';
-// A separate key prevents stale v3 tabs from overwriting v4 data.
+// Separate generation keys prevent stale older tabs from overwriting v5 data.
 export const V3_STORAGE_KEY = 'tabedoki:data:v3';
 export const V4_STORAGE_KEY = 'tabedoki:data:v4';
 export const STORAGE_KEY = 'tabedoki:data:v5';

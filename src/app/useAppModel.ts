@@ -68,7 +68,7 @@ export function useAppModel(store: DataStore, initial: Snapshot, mode: 'local' |
   async function changeStatus(item: Food, status: FoodStatus) {
     const current = committed.current;
     if (!await commitData({ ...current, items: current.items.map(value => value.id === item.id ? { ...value, status } : value) })) return;
-    const label = status === 'used' ? '使い切り' : status === 'discarded' ? '廃棄' : '管理中に戻す';
+    const label = status === 'used' ? '完了' : status === 'discarded' ? '廃棄' : '管理中に戻す';
     setNotice(`「${item.name}」を${label}にしました。`);
   }
   async function changeQuantity(item: Food, delta: -1 | 1) {
