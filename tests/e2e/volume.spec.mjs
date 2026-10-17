@@ -33,7 +33,8 @@ test('牛乳は10%ずつ直接減らせ、バー・残りわずか・保存値�
   expect((await cloudData(page)).items.find(x=>x.id==='milk')).toMatchObject({
     quantity:2,trackingMode:'volume',volumePercent:90,lowStock:false,
   });
-  await milk.getByRole('checkbox',{name:'牛乳の残りわずか'}).check();
+  await milk.getByRole('checkbox',{name:'牛乳の残りわずか'}).click();
+  await expect(milk.getByRole('checkbox',{name:'牛乳の残りわずか'})).toBeChecked();
   await expect(milk.locator('summary .quantity')).toHaveText('残りわずか');
   await page.reload();
   await expect(milk.locator('summary .stock-preview')).toHaveAttribute('aria-label',/開封中 90%/);

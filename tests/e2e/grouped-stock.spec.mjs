@@ -207,8 +207,10 @@ test('数量の増減と最終1個の使い切りを在庫単位で保存する'
   await second.getByRole('button', { name: 'しょうゆのその他の操作' }).click();
   await page.getByRole('menuitem', { name: 'しょうゆを1本使い切る' }).click();
   expect((await cloudData(page)).items.find(item => item.id === 'new').quantity).toBe(1);
-  await second.getByRole('button', { name: 'しょうゆの数量を1増やす' }).click();
-  expect((await cloudData(page)).items.find(item => item.id === 'new').quantity).toBe(2);
+  await second.getByRole('button', { name: 'しょうゆを10%使った' }).click();
+  expect((await cloudData(page)).items.find(item => item.id === 'new')).toMatchObject({ quantity: 1, volumePercent: 90 });
+  await second.getByRole('button', { name: 'しょうゆの残量を10%増やす' }).click();
+  expect((await cloudData(page)).items.find(item => item.id === 'new')).toMatchObject({ quantity: 1, volumePercent: 100 });
   const first = lots.filter({ has: page.getByText('2026/10/31', { exact: true }) });
   await first.getByRole('button', { name: 'しょうゆのその他の操作' }).click();
   await page.getByRole('menuitem', { name: 'しょうゆを1本使い切る' }).click();

@@ -61,8 +61,10 @@ test('定番と以前の食品から、今回の期限・新ID・数量1で登�
   expect(JSON.parse(await readSaved(page)).items.map(x => x.deadline)).toEqual(['2020-01-01', '2026-12-01', '2026-12-02']);
   await openFilters(page);
   await page.getByLabel('カテゴリで絞り込み').selectOption('soy');
-  await expect(page.getByText('3パック', { exact: true })).toHaveCount(2);
+  const natto = page.locator('.food-row').filter({ has: page.getByRole('heading', { name: '納豆', exact: true }) });
+  await expect(natto.locator('summary .quantity')).toHaveText('6パック');
     await openFoodActions(page);
+  await expect(natto.locator('.stock-progress')).toHaveCount(2);
   await page.getByRole('button', { name: '納豆を編集', exact: true }).last().click();
   await expect(page.getByRole('dialog').getByLabel(/期限の日付/)).toHaveValue('2026-12-02');
     await openCandidates(dialog);
