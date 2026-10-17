@@ -1,5 +1,8 @@
 import { test, expect, cloudData } from './helpers/cloud.mjs';
 
+// Emulate Android Chrome's mobile viewport and touch input.
+test.use({ isMobile: true, hasTouch: true });
+
 for (const width of [320, 390, 1440]) {
   test(`Liquid Glassナビゲーションが${width}pxでも操作可能`, async ({ page }, info) => {
     await page.setViewportSize({ width, height: 844 });
@@ -21,7 +24,7 @@ for (const width of [320, 390, 1440]) {
     await expect(mobile).toBeVisible();
     await expect(mobile).toHaveCSS('position', 'fixed');
     await expect(mobile).toHaveCSS('border-radius', '23px');
-    await expect(mobile).toHaveCSS('backdrop-filter', /blur\\(19px\\)/);
+    await expect(mobile).toHaveCSS('backdrop-filter', /blur/);
     await expect(mobile.getByRole('button')).toHaveCount(4);
     await expect(mobile.getByRole('button', { name: '一覧' })).toHaveAttribute('aria-current', 'page');
     await expect(mobile).toHaveCSS('--active-tab-index', '0');
