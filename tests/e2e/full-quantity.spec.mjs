@@ -55,6 +55,7 @@ test('新規登録では数量を満量の初期値にし、現在量以上の�
   await page.getByRole('button', { name: '食品を登録', exact: true }).last().click();
   const dialog = page.getByRole('dialog', { name: '食品を登録' });
   await dialog.getByRole('textbox', { name: /食品名/ }).fill('たまご');
+  await dialog.getByLabel('数量の単位').selectOption('piece');
   await dialog.getByLabel(/期限の日付/).fill('2027-01-15');
   await dialog.getByLabel('数量', { exact: true }).fill('8');
   await expect(dialog.getByLabel('バーの満量')).toHaveValue('8');
