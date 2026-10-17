@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { deadlineLabel, daysLeft } from '../../domain/deadline.ts';
 import { kinds, normalizedName, places, units, type Food } from '../../domain/food.ts';
 import { FoodIcon } from './FoodIcon';
+import { selectedFoodIcon } from '../../domain/food-icons';
 import type { InventoryActions } from './FoodGroupCard';
 import { selectTimeline } from './selectTimeline';
 
@@ -26,7 +27,7 @@ function fullDate(date: string) {
   return `${value.getUTCMonth() + 1}月${value.getUTCDate()}日（${weekday[value.getUTCDay()]}）`;
 }
 /** Select the expiration date first; the existing per-lot detail actions remain available. */
-export function DeadlineCalendar({ items, today, listed, onShowList, blocked, onEdit, onStatus, onRemove, onLowStock, onAddShopping }: Props) {
+export function DeadlineCalendar({ items, today, listed, onShowList, blocked, onEdit, onStatus, onRemove, onLowStock, onAddShopping, iconSelections, onPickIcon }: Props) {
   const [range, setRange] = useState<Range>(30);
   const [selectedOffset, setSelectedOffset] = useState(0);
   const calendarDate = dateAfter(today, selectedOffset);
@@ -84,12 +85,17 @@ export function DeadlineCalendar({ items, today, listed, onShowList, blocked, on
       <span className="calendar-count">{current?.items.length ?? 0}件</span>
     </div>
     {current ? <ul className="calendar-food-list">{current.items.map(item => <li key={item.id}>
-      <button type="button" className="calendar-food" onClick={() => setSelectedDate(item.deadline)}
-        aria-label={`${item.name}、${item.quantity}${units[item.unit]}、${places[item.place]}、詳細を開く`}>
-        <span className="food-icon"><FoodIcon name={item.name} category={item.category} /></span>
-        <span className="calendar-food-name"><strong>{item.name}</strong><small>{places[item.place]} · {item.quantity}{units[item.unit]}</small></span>
-        <span className={`calendar-food-label ${daysLeft(item.deadline, today) <= 3 ? 'calendar-food-label-urgent' : ''}`}>{deadlineLabel(item.deadline, today)}</span>
-      </button>
+      <div className="calendar-food-row">
+        <button className="food-icon food-icon-button" type="button" disabled={blocked}
+          aria-label={item.name + 'のアイコンを変更'} onClick={() => onPickIcon(item.name, item.category)}>
+          <FoodIcon name={item.name} category={item.category} selected={selectedFoodIcon(iconSelections, item.name)} />
+        </button>
+        <button type="button" className="calendar-food" onClick={() => setSelectedDate(item.deadline)}
+          aria-label={`${item.name}、${item.quantity}${units[item.unit]}、${places[item.place]}、詳細を開く`}>
+          <span className="calendar-food-name"><strong>{item.name}</strong><small>{places[item.place]} · {item.quantity}{units[item.unit]}</small></span>
+          <span className={`calendar-food-label ${daysLeft(item.deadline, today) <= 3 ? 'calendar-food-label-urgent' : ''}`}>{deadlineLabel(item.deadline, today)}</span>
+        </button>
+      </div>
     </li>)}</ul> : <div className="calendar-empty">この日に期限を迎える食品はありません</div>}
     <div className="calendar-footer">
       <Button variant="secondary" type="button" disabled={!visible.length} onClick={nextDate}>次の期限へ</Button>

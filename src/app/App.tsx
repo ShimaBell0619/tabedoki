@@ -2,6 +2,9 @@ import { Brand } from '../components/Brand';
 import { ScreenNavigation, type Screen } from './ScreenNavigation';
 import { SettingsPage } from './SettingsPage';
 import { DeadlineCalendar } from '../features/inventory/DeadlineCalendar';
+import { FoodIconPicker } from '../features/inventory/FoodIconPicker';
+import { selectedFoodIcon } from '../domain/food-icons';
+import type { FoodCategory } from '../domain/food';
 import { cn } from '@/components/ui/utils';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
@@ -28,8 +31,9 @@ type Props = {
 };
 export function App({ store, initial, mode = 'cloud', email, onLogout, onLogin, authBusy = false, loginError = '' }: Props) {
   const [screen, setScreen] = useState<Screen>('inventory');
+  const [iconTarget, setIconTarget] = useState<{ name: string; category: FoodCategory } | null>(null);
   const today = useToday();
-  const { data, saving, blocked, notice, setNotice, formError, setFormError, editor, setEditor, refresh, openForm, saveTemplates, saveFood, addStock, changeStatus, changeQuantity, removeFood, changeLowStock, addToShopping, changeBought, removeShopping } = useAppModel(store, initial, mode);
+  const { data, saving, blocked, notice, setNotice, formError, setFormError, editor, setEditor, refresh, openForm, saveTemplates, saveFood, addStock, changeStatus, changeQuantity, removeFood, changeLowStock, addToShopping, changeBought, removeShopping, changeFoodIcon } = useAppModel(store, initial, mode);
 
   return <div className="page min-h-dvh">
     <header className="topbar h-[68px] border-b border-border bg-white mobile:h-[62px]"><div className="topbar-inner mx-auto flex h-full max-w-[1040px] items-center justify-between gap-4 px-8 mobile:px-[18px]">
@@ -54,14 +58,16 @@ export function App({ store, initial, mode = 'cloud', email, onLogout, onLogin, 
       <div hidden={screen !== 'inventory'}>
         <InventoryPage items={data.items} today={today} blocked={blocked || saving} onCreate={() => openForm()}
           onEdit={openForm} onStatus={changeStatus} onRemove={removeFood} shopping={data.shopping}
-          onLowStock={changeLowStock} onAddShopping={addToShopping} onAddStock={addStock} onQuantity={changeQuantity} />
+          onLowStock={changeLowStock} onAddShopping={addToShopping} onAddStock={addStock} onQuantity={changeQuantity}
+          iconSelections={data.icons} onPickIcon={(name, category) => setIconTarget({ name, category })} />
       </div>
       <div hidden={screen !== 'calendar'}>
         <DeadlineCalendar items={data.items.filter(item => item.status === 'active')} today={today}
           listed={new Set(data.shopping.filter(item => !item.bought).map(item => normalizedName(item.name)))}
           blocked={blocked || saving} onEdit={openForm} onStatus={changeStatus} onRemove={removeFood}
           onLowStock={changeLowStock} onQuantity={changeQuantity} onAddShopping={addToShopping} onAddStock={addStock}
-          onShowList={() => setScreen('inventory')} />
+          onShowList={() => setScreen('inventory')}
+          iconSelections={data.icons} onPickIcon={(name, category) => setIconTarget({ name, category })} />
       </div>
       <div hidden={screen !== 'shopping'}>
         <ShoppingPage items={data.shopping} foods={data.items} templates={data.templates} blocked={blocked || saving}
@@ -78,6 +84,10 @@ export function App({ store, initial, mode = 'cloud', email, onLogout, onLogin, 
       type="button" disabled={blocked || saving} aria-label="食品を登録" onClick={() => openForm()}>
       <Icon name="plus" />
     </Button>}
+    {iconTarget && <FoodIconPicker foodName={iconTarget.name} category={iconTarget.category}
+      selected={selectedFoodIcon(data.icons, iconTarget.name)} blocked={blocked || saving} error={blocked ? notice : undefined}
+      onSelect={async icon => { if (await changeFoodIcon(iconTarget.name, icon)) setIconTarget(null); }}
+      onClose={() => setIconTarget(null)} />}
     {editor && <FoodEditor item={editor.item} purchase={editor.purchase} templatesOnly={editor.templatesOnly} items={data.items}
       templates={data.templates} blocked={blocked || saving} canRefresh={blocked && !saving} onRefresh={refresh} formError={formError} setFormError={setFormError} onClose={() => setEditor(null)}
       onSave={saveFood} onSaveTemplates={saveTemplates} />}

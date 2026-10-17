@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { MAX_ITEMS, isFood, normalizedName, type Food, type FoodForm, type FoodStatus, type FoodTemplate, type StoragePlace } from '../domain/food';
 import { addStockToFoods } from '../domain/stock';
+import { selectedFoodIcon, type FoodIconName } from '../domain/food-icons';
 import type { AppData } from '../domain/app-data.ts';
 import type { DataStore, Snapshot } from '../data/cloud';
 import { addShopping, registerPurchase, setBought, shoppingFrom, type ShoppingItem } from '../domain/shopping';
@@ -116,11 +117,22 @@ export function useAppModel(store: DataStore, initial: Snapshot, mode: 'local' |
       setNotice(`「${item.name}」を${bought ? '購入済み' : '未購入'}にしました。`);
     } catch (error) { showError(error instanceof Error ? error.message + '両方の項目を保持しました。未購入項目を削除してから解除できます。' : '変更できません。'); }
   }
+  async function changeFoodIcon(name: string, icon: FoodIconName | null): Promise<boolean> {
+    const current = committed.current;
+    const key = normalizedName(name);
+    if (selectedFoodIcon(current.icons, name) === (icon ?? undefined)) return true;
+    const icons = { ...(current.icons ?? {}) };
+    if (icon === null) delete icons[key];
+    else icons[key] = icon;
+    if (!await commitData({ ...current, icons })) return false;
+    setNotice(icon === null ? `「${name}」のアイコンを自動設定に戻しました。` : `「${name}」のアイコンを変更しました。`);
+    return true;
+  }
   async function removeShopping(item: ShoppingItem) {
     if (!window.confirm(`買い物「${item.name}」を削除しますか？`)) return;
     const current = committed.current;
     if (await commitData({ ...current, shopping: current.shopping.filter(value => value.id !== item.id) })) setNotice('買い物項目を削除しました。');
   }
 
-  return { data, saving, blocked, notice, setNotice, formError, setFormError, editor, setEditor, refresh, openForm, saveTemplates, saveFood, addStock, changeStatus, changeQuantity, removeFood, changeLowStock, addToShopping, changeBought, removeShopping };
+  return { data, saving, blocked, notice, setNotice, formError, setFormError, editor, setEditor, refresh, openForm, saveTemplates, saveFood, addStock, changeStatus, changeQuantity, removeFood, changeLowStock, addToShopping, changeBought, removeShopping, changeFoodIcon };
 }
