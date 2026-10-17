@@ -50,11 +50,11 @@ export function FoodGroupCard({ group, totalActiveQuantity, today, view, sort, l
     item.status === 'active' && tracksVolume(item) && (item.volumePercent ?? 100) < 100);
   const compactAmount = group.lowStock ? '残りわずか' :
     finishedCount > 0 ? amount :
-    partlyUsed.length === 1 ? '開封中 ' + volumeLabel(partlyUsed[0].volumePercent ?? 100) :
-    partlyUsed.length > 1 ? '開封中 ' + partlyUsed.length + '件' : amount;
+    group.activeQuantity === 1 && partlyUsed.length === 1 ? '開封中 ' + volumeLabel(partlyUsed[0].volumePercent ?? 100) :
+    partlyUsed.length > 1 && group.activeQuantity === 1 ? '開封中 ' + partlyUsed.length + '件' : amount;
   return <li className={cn('food-row min-w-0 rounded-[13px] border border-border bg-white shadow-[0_2px_8px_rgb(33_43_56/4%)] has-[.food-details[open]]:border-[#A7B9CF] has-[.food-details[open]]:shadow-[0_4px_16px_rgb(33_43_56/7%)]', group.items.length === 1 && 'single-stock', group.activeQuantity === 0 && 'completed')} key={group.key}>
     <details className="food-details overflow-hidden rounded-xl open:[&>summary]:bg-white">
-      <summary className="relative flex min-h-[68px] cursor-pointer list-none items-center gap-2 px-3 py-2.5 pr-3.5 focus-visible:outline-offset-[-3px]" aria-label={group.name + 'の詳細、' + amount + '、' + kinds[group.kind] + ' ' + main.deadline + '、' +
+      <summary className="relative flex min-h-[68px] cursor-pointer list-none items-center gap-2 px-3 py-2.5 pr-3.5 focus-visible:outline-offset-[-3px]" aria-label={group.name + 'の詳細、' + compactAmount + '、' + kinds[group.kind] + ' ' + main.deadline + '、' +
         (main.status === 'active' ? deadlineLabel(main.deadline, today) : main.status === 'used' ? '使用完了' : '廃棄済み')}>
         {(state === 'expired' || state === 'today') && main.status === 'active' &&
           <span className={cn('deadline-accent h-9 w-[3px] shrink-0 rounded-full', state === 'expired' ? 'bg-expired' : 'bg-[#B98545]')} aria-hidden="true" />}
