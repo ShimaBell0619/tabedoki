@@ -1,4 +1,5 @@
 import type { AppData } from '../domain/app-data.ts';
+import { validateFoodIconSelections } from '../domain/food-icons.ts';
 import { MAX_ITEMS, isFood, isV3Food, isLegacyFood, type Food, type FoodTemplate, type LegacyFood } from '../domain/food.ts';
 import { defaultTemplates, validateTemplates } from '../domain/templates.ts';
 import { validateShopping, type ShoppingItem } from '../domain/shopping.ts';
@@ -10,7 +11,7 @@ export const V3_STORAGE_KEY = 'tabedoki:data:v3';
 export const STORAGE_KEY = 'tabedoki:data:v4';
 export const RECOVERY_KEY = 'tabedoki:recovery:previous';
 export const BACKUP_MAX_BYTES = 5 * 1024 * 1024;
-export type BackupData = { items: Food[]; templates?: FoodTemplate[]; shopping?: ShoppingItem[] };
+export type BackupData = { items: Food[]; templates?: FoodTemplate[]; shopping?: ShoppingItem[]; icons?: AppData['icons'] };
 type DataStorage = Pick<Storage, 'getItem' | 'setItem'>;
 export type ReadDataResult = AppData & { error: string; canExport: boolean; raw: string | null };
 export const READ_ERROR = '保存済みデータを読み込めません。原文を退避し、バックアップから復元するか再読み込みしてください。';
@@ -32,13 +33,16 @@ export function validateBackup(value: unknown): BackupData {
     unit: backup.version === 1 ? 'item' as const : item.unit,
     lowStock: backup.version === 4 ? item.lowStock : false,
   }));
-  if (backup.version === 4) return { items, templates: validateTemplates(backup.templates), shopping: validateShopping(backup.shopping) };
+  if (backup.version === 4) {
+    const icons = validateFoodIconSelections(backup.icons);
+    return { items, templates: validateTemplates(backup.templates), shopping: validateShopping(backup.shopping), ...(icons === undefined ? {} : { icons }) };
+  }
   return backup.version === 3 ? { items, templates: validateTemplates(backup.templates) } : { items };
 }
 
 export function validateData(data: AppData): AppData {
   const valid = validateBackup({ ...data, version: 4 });
-  return { items: valid.items, templates: valid.templates!, shopping: valid.shopping! };
+  return { items: valid.items, templates: valid.templates!, shopping: valid.shopping!, ...(valid.icons === undefined ? {} : { icons: valid.icons }) };
 }
 
 export function makeBackup(data: AppData): string {
@@ -53,7 +57,7 @@ export function writeData(storage: Pick<Storage, 'setItem'>, data: AppData): App
 
 /** Replaces only fields present in that backup version. Empty arrays stay empty. */
 export function applyBackup(current: AppData, backup: BackupData): AppData {
-  return validateData({ items: backup.items, templates: backup.templates ?? current.templates, shopping: backup.shopping ?? current.shopping });
+  return validateData({ items: backup.items, templates: backup.templates ?? current.templates, shopping: backup.shopping ?? current.shopping, ...(backup.icons !== undefined ? { icons: backup.icons } : current.icons !== undefined ? { icons: current.icons } : {}) });
 }
 
 export function decodeStored(raw: string, expected?: 1 | 2 | 3 | 4): AppData {
@@ -62,7 +66,7 @@ export function decodeStored(raw: string, expected?: 1 | 2 | 3 | 4): AppData {
     throw new Error('対応していない保存形式です。');
   }
   const valid = validateBackup(value);
-  return { items: valid.items, templates: valid.templates ?? defaultTemplates(), shopping: valid.shopping ?? [] };
+  return { items: valid.items, templates: valid.templates ?? defaultTemplates(), shopping: valid.shopping ?? [], ...(valid.icons === undefined ? {} : { icons: valid.icons }) };
 }
 
 /** Preserve one exact source generation before migration/replacement, never normal edits. */
