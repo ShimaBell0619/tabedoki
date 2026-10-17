@@ -186,3 +186,34 @@ button.settings-row:hover, a.settings-row:hover { background:#F7F9FB; }
 .timeline-more-buttons button { min-height:44px; }
 
 @media (max-width:350px) { .timeline-dialog { padding:12px; } .calendar-food { gap:8px; padding:9px; } }
+
+/* Per-food icon chooser: neutral Lucide icons, explicit selection state. */
+.food-icon-button { appearance:none; border:0; cursor:pointer; }
+.food-icon-button:hover { background:#DCE5EE; }
+.food-icon-button:disabled { opacity:.5; cursor:not-allowed; }
+.icon-picker { box-sizing:border-box; position:fixed; inset:0; margin:auto; width:min(520px,calc(100% - 24px)); max-width:none;
+  max-height:82dvh; overflow-y:auto; overscroll-behavior:contain; padding:18px; border:1px solid var(--color-border);
+  border-radius:16px; background:#fff; color:var(--color-foreground); box-shadow:0 18px 50px #24324633; }
+.icon-picker::backdrop { background:#1F293780; }
+.icon-picker-heading { position:sticky; top:-18px; z-index:1; display:flex; align-items:center; justify-content:space-between;
+  gap:12px; padding:0 0 12px; background:#fff; }
+.icon-picker-heading h2 { margin:0; font-size:17px; font-weight:750; overflow-wrap:anywhere; }
+.icon-picker-heading button { min-height:44px; min-width:44px; }
+.icon-picker-options { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:9px; }
+.icon-picker-option { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; min-width:0; min-height:86px;
+  padding:10px 4px; border:1px solid var(--color-border); border-radius:11px; background:#F7F9FB; color:#45586C; cursor:pointer; }
+.icon-picker-option .icon { width:25px; height:25px; }
+.icon-picker-option span:last-child { color:var(--color-foreground); font-size:11px; text-align:center; }
+.icon-picker-option[aria-pressed="true"] { border-color:var(--color-primary); background:var(--color-panel); box-shadow:inset 0 0 0 1px var(--color-primary); }
+.icon-picker-option:disabled { opacity:.55; cursor:not-allowed; }
+.calendar-food-row { display:flex; align-items:center; gap:10px; min-height:68px; padding:9px 11px; border:1px solid var(--color-border);
+  border-radius:13px; background:#F7F9FB; }
+.calendar-food-row .food-icon-button { flex:0 0 44px; width:44px; height:44px; }
+.calendar-food-row .calendar-food { flex:1; min-width:0; min-height:44px; padding:0; border:0; border-radius:0; background:transparent; }
+.calendar-food-row:hover { border-color:#A9B9C8; }
+@media(max-width:760px) {
+  .icon-picker { inset:auto 0 0; margin:0; width:100%; max-height:80dvh; padding:18px 14px calc(18px + env(safe-area-inset-bottom));
+    border-radius:18px 18px 0 0; }
+  .icon-picker-heading { top:-18px; }
+}
+@media(max-width:350px) { .icon-picker-options { gap:6px; } .icon-picker-option { padding:8px 2px; } }
