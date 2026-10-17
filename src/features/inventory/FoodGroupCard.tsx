@@ -7,6 +7,7 @@ import type { InventoryView, InventorySort } from './selectInventory';
 import { FoodActions } from './FoodActions';
 import { StockAdder } from './StockAdder';
 import { Icon } from '../../components/Icon';
+import { FoodIcon } from '../../components/FoodIcon';
 
 export type InventoryActions = {
   blocked: boolean;
@@ -43,8 +44,9 @@ export function FoodGroupCard({ group, today, view, sort, listed, adding, onTogg
     <details className="food-details overflow-hidden rounded-xl open:[&>summary]:bg-white">
       <summary className="grid min-h-[68px] cursor-pointer list-none grid-cols-[minmax(0,1fr)_auto_auto] grid-rows-[auto_auto] items-center gap-x-2 gap-y-1 px-4 py-2.5 focus-visible:outline-offset-[-3px] mobile:px-3 mobile:py-2.5" aria-label={group.name + 'の詳細、' + amount + '、' + kinds[group.kind] + ' ' + main.deadline + '、' +
         (main.status === 'active' ? deadlineLabel(main.deadline, today) : main.status === 'used' ? '使い切り済み' : '廃棄済み')}>
-        <div className="food-primary col-start-1 row-start-1 min-w-0 [&_h3]:m-0 [&_h3]:text-[17px] [&_h3]:leading-[1.4] [&_h3]:font-[750] [&_h3]:wrap-anywhere mobile:[&_h3]:text-base">
-          <h3>{group.name}</h3>
+        <div className="food-primary col-start-1 row-start-1 flex min-w-0 items-center gap-3 [&_h3]:m-0 [&_h3]:text-[17px] [&_h3]:leading-[1.4] [&_h3]:font-[750] [&_h3]:wrap-anywhere mobile:[&_h3]:text-base">
+          <span className="food-icon"><FoodIcon name={group.name} category={group.category} /></span>
+          <h3 className="min-w-0">{group.name}</h3>
         </div>
         <span className={cn('deadline-chip col-start-2 row-start-1 inline-flex items-center rounded-[5px] text-[13px] font-semibold whitespace-nowrap', 'state-' + state, {
           'bg-expired-surface px-[7px] py-[3px] font-bold text-expired': state === 'expired',
