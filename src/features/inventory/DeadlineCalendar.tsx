@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { deadlineLabel } from '../../domain/deadline.ts';
+import { deadlineLabel, daysLeft } from '../../domain/deadline.ts';
 import { kinds, normalizedName, places, units, type Food } from '../../domain/food.ts';
 import { FoodIcon } from '../../components/FoodIcon';
 import type { InventoryActions } from './FoodGroupCard';
@@ -28,7 +28,8 @@ function fullDate(date: string) {
 /** Select the expiration date first; the existing per-lot detail actions remain available. */
 export function DeadlineCalendar({ items, today, listed, onShowList, blocked, onEdit, onStatus, onRemove, onLowStock, onAddShopping }: Props) {
   const [range, setRange] = useState<Range>(30);
-  const [calendarDate, setCalendarDate] = useState(today);
+  const [selectedOffset, setSelectedOffset] = useState(0);
+  const calendarDate = dateAfter(today, selectedOffset);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const railRef = useRef<HTMLDivElement>(null);
@@ -39,12 +40,11 @@ export function DeadlineCalendar({ items, today, listed, onShowList, blocked, on
   const count = new Map(visible.map(day => [day.deadline, day.items.length]));
   const overdueCount = expired.reduce((sum, day) => sum + day.items.length, 0);
 
-  useEffect(() => { setCalendarDate(today); }, [today]);
   useEffect(() => {
     if (selectedDate && dialogRef.current && !dialogRef.current.open) dialogRef.current.showModal();
   }, [selectedDate]);
   function jumpTo(date: string) {
-    setCalendarDate(date);
+    setSelectedOffset(daysLeft(date,today));
     railRef.current?.querySelector<HTMLElement>(`[data-date="${date}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
   }
   function nextDate() {
@@ -62,7 +62,7 @@ export function DeadlineCalendar({ items, today, listed, onShowList, blocked, on
     </div>
     <div className="calendar-range" role="group" aria-label="カレンダーの表示期間">
       {([14,30,90] as const).map(value => <Button key={value} variant="plain" type="button" aria-pressed={range === value}
-        onClick={() => { setRange(value); setCalendarDate(today); }}>{value}日</Button>)}
+        onClick={() => { setRange(value); setSelectedOffset(0); }}>{value}日</Button>)}
     </div>
     <div ref={railRef} className="calendar-rail" role="group" aria-label="期限の日付を選択">
       {dates.map(date => {
