@@ -46,7 +46,7 @@ export const test = base.extend({
     expect(browserErrors).toEqual([]);
   }
 });
-export async function cloudData(page) { await expect(page.getByRole('heading', {level: 1})).toHaveText(/食品一覧|買い物リスト/); await expect(page.getByLabel('保存状態')).toHaveCount(0); await expect.poll(()=>page.cloud.row?.data).toBeTruthy(); return structuredClone(page.cloud.row.data); }
+export async function cloudData(page) { await expect(page.getByRole('heading', {level: 1})).toHaveText(/食品一覧|買い物リスト|期限カレンダー|設定/); await expect(page.getByLabel('保存状態')).toHaveCount(0); await expect.poll(()=>page.cloud.row?.data).toBeTruthy(); return structuredClone(page.cloud.row.data); }
 
 export async function setCloudData(page, data) {
   page.cloud.row = {...page.cloud.row, data: structuredClone(data), revision: page.cloud.row.revision + 1};
