@@ -120,19 +120,31 @@ for (const width of [320, 390, 430]) {
   });
 }
 
-test('成功通知で画面が動かず、フォーカス中は保持し、非ブロックのエラーも消さない', async ({ page }, info) => {
+test('保存中・成功通知で画面が動かず、フォーカス中は保持し、非ブロックのエラーも消さない', async ({ page }, info) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.clock.install({ time: new Date('2026-10-17T12:00:00') });
   await setup(page);
   const single = page.locator('.food-row').filter({ has: page.getByRole('heading', { name: 'たまご', exact: true }) });
   await single.locator('summary').click();
   const before = await page.getByRole('heading', { level: 1 }).boundingBox();
+  let finishSave;
+  page.cloud.wait = new Promise(resolve => { finishSave = resolve; });
   await single.getByRole('button', { name: 'たまごの数量を1増やす' }).click();
+  await expect(page.getByLabel('保存状態')).toBeVisible();
+  const pending = await page.getByRole('heading', { level: 1 }).boundingBox();
+  expect(pending.y).toBe(before.y);
+  finishSave();
+  page.cloud.wait = null;
   await cloudData(page);
   const toast = page.locator('.notice-toast');
   await expect(toast).toContainText('数量を7に変更しました');
   const after = await page.getByRole('heading', { level: 1 }).boundingBox();
   expect(after.y).toBe(before.y);
+  const toastBox = await toast.boundingBox();
+  const addBox = await page.locator('.mobile-add-button').boundingBox();
+  const navBox = await page.locator('.mobile-navigation').boundingBox();
+  expect(toastBox.x + toastBox.width).toBeLessThanOrEqual(addBox.x - 8);
+  expect(toastBox.y + toastBox.height).toBeLessThanOrEqual(navBox.y - 8);
   await page.screenshot({ path: info.outputPath('android-success-notice-390.png') });
   await page.clock.runFor(4000);
   await toast.getByRole('button', { name: '通知を閉じる' }).focus();
