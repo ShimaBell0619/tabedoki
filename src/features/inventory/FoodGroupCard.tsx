@@ -8,8 +8,11 @@ import { FoodActions } from './FoodActions';
 import { StockAdder } from './StockAdder';
 import { Icon } from '../../components/Icon';
 import { FoodIcon } from './FoodIcon';
+import { selectedFoodIcon, type FoodIconSelections } from '../../domain/food-icons';
 
 export type InventoryActions = {
+  iconSelections: FoodIconSelections | undefined;
+  onPickIcon: (name: string, category: Food['category']) => void;
   blocked: boolean;
   onEdit: (item: Food) => void;
   onStatus: (item: Food, status: FoodStatus) => void;
@@ -31,7 +34,7 @@ type Props = InventoryActions & {
   onCloseAdd: () => void;
 };
 
-export function FoodGroupCard({ group, today, view, sort, listed, adding, onToggleAdd, onCloseAdd, blocked, onEdit, onStatus, onRemove, onLowStock, onQuantity, onAddShopping, onAddStock }: Props) {
+export function FoodGroupCard({ group, today, view, sort, listed, adding, onToggleAdd, onCloseAdd, blocked, onEdit, onStatus, onRemove, onLowStock, onQuantity, onAddShopping, onAddStock, iconSelections, onPickIcon }: Props) {
   const main = group.primary;
   const state = main.status === 'active' ? deadlineState(main.deadline, today) : 'later';
   const date = (main.deadline.slice(0, 4) !== today.slice(0, 4) ? main.deadline.slice(0, 4) + '/' : '') +
@@ -45,7 +48,11 @@ export function FoodGroupCard({ group, today, view, sort, listed, adding, onTogg
       <summary className="grid min-h-[68px] cursor-pointer list-none grid-cols-[minmax(0,1fr)_auto_auto] grid-rows-[auto_auto] items-center gap-x-2 gap-y-1 px-4 py-2.5 focus-visible:outline-offset-[-3px] mobile:px-3 mobile:py-2.5" aria-label={group.name + 'の詳細、' + amount + '、' + kinds[group.kind] + ' ' + main.deadline + '、' +
         (main.status === 'active' ? deadlineLabel(main.deadline, today) : main.status === 'used' ? '使い切り済み' : '廃棄済み')}>
         <div className="food-primary col-start-1 row-start-1 flex min-w-0 items-center gap-3 [&_h3]:m-0 [&_h3]:text-[17px] [&_h3]:leading-[1.4] [&_h3]:font-[750] [&_h3]:wrap-anywhere mobile:[&_h3]:text-base">
-          <span className="food-icon"><FoodIcon name={group.name} category={group.category} /></span>
+          <button type="button" className="food-icon food-icon-button" aria-label={group.name + 'のアイコンを変更'}
+            disabled={blocked} onClick={event => { event.preventDefault(); event.stopPropagation(); onPickIcon(group.name, group.category); }}
+            onKeyDown={event => event.stopPropagation()}>
+            <FoodIcon name={group.name} category={group.category} selected={selectedFoodIcon(iconSelections, group.name)} />
+          </button>
           <h3 className="min-w-0">{group.name}</h3>
         </div>
         <span className={cn('deadline-chip col-start-2 row-start-1 inline-flex items-center rounded-[5px] text-[13px] font-semibold whitespace-nowrap', 'state-' + state, {
