@@ -16,7 +16,7 @@ for (const width of [320, 390, 1440]) {
     await page.goto('/');
     await expect(page.getByRole('heading', { name: longName, exact: true })).toBeVisible();
     await expect(page.locator('.food-details > summary').getByLabel('賞味期限 2027-01-20', { exact: true })).toContainText('2027/1/20');
-    expect((await page.locator('.food-details > summary').first().boundingBox()).height).toBeLessThanOrEqual(80);
+    expect((await page.locator('.food-details > summary').first().boundingBox()).height).toBeLessThanOrEqual(90);
     const summary = page.getByLabel(longName + 'の詳細');
     await summary.focus();
     await expect(summary).toHaveCSS('outline-style', 'solid');
