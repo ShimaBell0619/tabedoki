@@ -5,7 +5,7 @@ import { MAX_ITEMS } from '../src/domain/food.ts';
 import { MAX_SHOPPING, shoppingFrom, registerPurchase } from '../src/domain/shopping.ts';
 import {
   STORAGE_KEY, V4_STORAGE_KEY, V3_STORAGE_KEY, RECOVERY_KEY, V2_STORAGE_KEY, LEGACY_STORAGE_KEY, BACKUP_MAX_BYTES,
-  readData, writeData, replaceData, previousData, previousRaw, validateBackup, makeBackup, applyBackup,
+  readData, writeData, replaceData, previousData, previousRaw, validateBackup, makeBackup, applyBackup, decodeStored,
 } from '../src/data/storage.ts';
 
 const food = { id: 'food', name: ' 牛乳 ', category: 'eggs-dairy', kind: 'use-by', deadline: '2026-12-31', quantity: 3, unit: 'bottle', place: 'chilled', status: 'active', lowStock: true, initialQuantity: 3, consumption: 'drink' };
@@ -133,4 +133,15 @@ test('最大v4出力（エスケープ文字含む）を5MiB内で完全往復�
   const backup = makeBackup(maximum);
   assert.ok(Buffer.byteLength(backup) < BACKUP_MAX_BYTES);
   assert.deepEqual(validateBackup(JSON.parse(backup)), maximum);
+});
+
+
+test('v5追加の容器残量はバックアップ・再読み込みを跨いで保存される', () => {
+  const food = { id:'partial-milk', name:'牛乳', category:'eggs-dairy', kind:'use-by', deadline:'2027-10-19',
+    quantity:2, initialQuantity:2, unit:'bottle', place:'chilled', status:'active', lowStock:false,
+    consumption:'drink', trackingMode:'volume', volumePercent:50 };
+  const data = {items:[food],templates:[],shopping:[]};
+  assert.deepEqual(decodeStored(JSON.stringify({version:5,...data})).items, [food]);
+  assert.deepEqual(JSON.parse(makeBackup(data)).items, [food]);
+  assert.deepEqual(decodeStored(JSON.stringify({version:5,...data,items:[{...food,trackingMode:'count',volumePercent:undefined}]})).items[0].trackingMode,'count');
 });

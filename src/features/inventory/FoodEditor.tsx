@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { NativeSelect } from '@/components/ui/native-select';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { applyFoodCandidate, previousFoods } from '../../domain/templates';
-import { categories, initialFoodForm, inferConsumption, consumptionLabels, units, places, kinds, type DeadlineKind, type Food, type FoodCategory, type FoodForm, type FoodTemplate, type QuantityUnit, type StoragePlace } from '../../domain/food';
+import { categories, initialFoodForm, inferConsumption, defaultVolumeTracking, consumptionLabels, units, places, kinds, type DeadlineKind, type Food, type FoodCategory, type FoodForm, type FoodTemplate, type QuantityUnit, type StoragePlace } from '../../domain/food';
 import { parseDeadline } from '../../domain/deadline';
 import { TemplateManager } from '../templates/TemplateManager';
 import { DeadlineInput } from './DeadlineInput';
@@ -30,7 +30,7 @@ export function FoodEditor({ item, purchase, templatesOnly, items, templates, bl
   const editingId = item?.id;
   const [form, setForm] = useState<FoodForm>(() => item ? {
     name: item.name, category: item.category, kind: item.kind, deadline: item.deadline,
-    quantity: item.quantity, unit: item.unit, place: item.place, consumption: item.consumption,
+    quantity: item.quantity, unit: item.unit, place: item.place, consumption: item.consumption, trackingMode: item.trackingMode,
   } : purchase ? foodFormFromShopping(purchase) : initialFoodForm());
   const [managingTemplates, setManagingTemplates] = useState(templatesOnly);
   const [candidatesOpen, setCandidatesOpen] = useState(false);
@@ -138,6 +138,10 @@ export function FoodEditor({ item, purchase, templatesOnly, items, templates, bl
           </NativeSelect></label>
         </div>
         {form.unit === 'pack' && <p className="form-help mt-[-4px] text-xs leading-[1.7] text-muted">納豆3個組は、個別に減らす場合「3パック」として登録します。</p>}
+        <label>数量の管理方法<NativeSelect value={form.trackingMode ?? (defaultVolumeTracking(form.name, form.unit) ? 'volume' : 'count')}
+          onChange={event => setForm({ ...form, trackingMode: event.target.value as 'count' | 'volume' })}>
+          <option value="count">個数を数える</option><option value="volume">容器の中身も管理する</option>
+        </NativeSelect></label>
         <label>在庫を減らすときの表現<NativeSelect value={form.consumption} onChange={event => setForm({ ...form, consumption: event.target.value as FoodForm['consumption'] })}>
           {Object.entries(consumptionLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
         </NativeSelect></label>

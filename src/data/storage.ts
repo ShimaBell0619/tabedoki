@@ -35,6 +35,8 @@ export function validateBackup(value: unknown): BackupData {
     lowStock: (backup.version === 4 || backup.version === 5) ? item.lowStock : false,
     initialQuantity: backup.version === 5 ? item.initialQuantity : item.quantity,
     consumption: backup.version === 5 ? item.consumption : inferConsumption(item.name, backup.version === 1 ? 'other' : item.category),
+    ...(backup.version === 5 && item.trackingMode !== undefined ? { trackingMode: item.trackingMode } : {}),
+    ...(backup.version === 5 && item.volumePercent !== undefined ? { volumePercent: item.volumePercent } : {}),
   }));
   if (backup.version === 4 || backup.version === 5) {
     const icons = validateFoodIconSelections(backup.icons);

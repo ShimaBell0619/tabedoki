@@ -16,7 +16,7 @@ type Props = InventoryActions & {
   shopping: ShoppingItem[];
 };
 
-export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatus, onRemove, shopping, onLowStock, onQuantity, onAddShopping, onAddStock, iconSelections, onPickIcon }: Props) {
+export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatus, onRemove, shopping, onLowStock, onVolume, onQuantity, onAddShopping, onAddStock, iconSelections, onPickIcon }: Props) {
   const [addingKey, setAddingKey] = useState<string | null>(null);
   const [view, setView] = useState<'active' | 'finished' | 'all'>('active');
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -118,7 +118,7 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
           <FoodGroupCard key={group.key} group={group} totalActiveQuantity={totalByKey.get(group.key) ?? 0} today={today} view={view} sort={sort}
             listed={listed.has(normalizedName(group.name))} adding={addingKey === group.key}
             onToggleAdd={() => setAddingKey(addingKey === group.key ? null : group.key)} onCloseAdd={() => setAddingKey(null)}
-            blocked={blocked} onEdit={onEdit} onStatus={onStatus} onRemove={onRemove} onLowStock={onLowStock}
+            blocked={blocked} onEdit={onEdit} onStatus={onStatus} onRemove={onRemove} onLowStock={onLowStock} onVolume={onVolume}
             iconSelections={iconSelections} onPickIcon={onPickIcon} onAddShopping={onAddShopping} onAddStock={onAddStock} onQuantity={onQuantity} />)}</ul>
       </div>)}
     </section>

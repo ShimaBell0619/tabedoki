@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { MAX_ITEMS, isFood, normalizedName, type Food, type FoodForm, type FoodStatus, type FoodTemplate, type StoragePlace } from '../domain/food';
+import { MAX_ITEMS, isFood, normalizedName, tracksVolume, defaultVolumeTracking, type VolumePercent, type Food, type FoodForm, type FoodStatus, type FoodTemplate, type StoragePlace } from '../domain/food';
 import { addStockToFoods } from '../domain/stock';
 import { selectedFoodIcon, type FoodIconName } from '../domain/food-icons';
 import type { AppData } from '../domain/app-data.ts';
@@ -36,8 +36,10 @@ export function useAppModel(store: DataStore, initial: Snapshot, mode: 'local' |
     if (!editingId && current.items.length >= MAX_ITEMS) { showError('食品は最大3,000件まで登録できます。'); return false; }
     const original = editingId ? current.items.find(item => item.id === editingId) : undefined;
     if (editingId && !original) { showError('編集する食品が見つかりません。'); return false; }
+    const trackingMode = form.trackingMode ?? (defaultVolumeTracking(form.name, form.unit) ? 'volume' : 'count');
     const food: Food = {
-      ...form, name: form.name.trim(), id: original?.id ?? crypto.randomUUID(),
+      ...form, name: form.name.trim(), id: original?.id ?? crypto.randomUUID(), trackingMode,
+      ...(trackingMode === 'volume' ? { volumePercent: original && tracksVolume(original) ? original.volumePercent ?? 100 : 100 as const } : {}),
       status: original?.status ?? 'active', lowStock: original?.lowStock ?? false,
       initialQuantity: original ? Math.max(original.initialQuantity, form.quantity) : form.quantity,
     };
@@ -80,12 +82,29 @@ export function useAppModel(store: DataStore, initial: Snapshot, mode: 'local' |
     const quantity = original.quantity + delta;
     if (quantity < 0 || quantity > 999) return;
     const items = current.items.map(value => value.id === item.id
-      ? quantity === 0 ? { ...value, status: 'used' as const } : { ...value, quantity, initialQuantity: Math.max(value.initialQuantity, quantity) }
+      ? quantity === 0 ? { ...value, status: 'used' as const } :
+        { ...value, quantity, initialQuantity: Math.max(value.initialQuantity, quantity),
+          ...(delta === -1 && tracksVolume(value) ? { volumePercent: 100 as const } : {}) }
       : value);
     if (!await commitData({ ...current, items })) return;
     setNotice(quantity === 0 ? `「${item.name}」の在庫がなくなりました。` :
       `「${item.name}」の数量を${quantity}に変更しました。`);
   }
+  async function changeVolume(item: Food, percent: VolumePercent | null) {
+    const current = committed.current;
+    const original = current.items.find(value => value.id === item.id);
+    if (!original || original.status !== 'active') {
+      showError('変更する在庫が見つかりません。再取得してください。'); return;
+    }
+    const replacement: Food = percent === null
+      ? { ...original, trackingMode: 'count', volumePercent: undefined }
+      : { ...original, trackingMode: 'volume', volumePercent: percent };
+    if (!isFood(replacement)) { showError('残量が正しくありません。'); return; }
+    if (!await commitData({ ...current, items: current.items.map(value => value.id === original.id ? replacement : value) })) return;
+    setNotice(percent === null ? `「${item.name}」を個数管理に変更しました。` :
+      `「${item.name}」の容器の残量を${percent}%に変更しました。`);
+  }
+
   async function removeFood(item: Food) {
     if (!window.confirm(`「${item.name}」を完全に削除しますか？\nこの操作は取り消せません。`)) return;
     const current = committed.current;
@@ -135,5 +154,5 @@ export function useAppModel(store: DataStore, initial: Snapshot, mode: 'local' |
     if (await commitData({ ...current, shopping: current.shopping.filter(value => value.id !== item.id) })) setNotice('買い物項目を削除しました。');
   }
 
-  return { data, saving, blocked, notice, setNotice, formError, setFormError, editor, setEditor, refresh, openForm, saveTemplates, saveFood, addStock, changeStatus, changeQuantity, removeFood, changeLowStock, addToShopping, changeBought, removeShopping, changeFoodIcon };
+  return { data, saving, blocked, notice, setNotice, formError, setFormError, editor, setEditor, refresh, openForm, saveTemplates, saveFood, addStock, changeStatus, changeQuantity, changeVolume, removeFood, changeLowStock, addToShopping, changeBought, removeShopping, changeFoodIcon };
 }

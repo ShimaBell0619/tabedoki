@@ -33,7 +33,7 @@ export function App({ store, initial, mode = 'cloud', email, onLogout, onLogin, 
   const [screen, setScreen] = useState<Screen>('inventory');
   const [iconTarget, setIconTarget] = useState<{ name: string; category: FoodCategory } | null>(null);
   const today = useToday();
-  const { data, saving, blocked, notice, setNotice, formError, setFormError, editor, setEditor, refresh, openForm, saveTemplates, saveFood, addStock, changeStatus, changeQuantity, removeFood, changeLowStock, addToShopping, changeBought, removeShopping, changeFoodIcon } = useAppModel(store, initial, mode);
+  const { data, saving, blocked, notice, setNotice, formError, setFormError, editor, setEditor, refresh, openForm, saveTemplates, saveFood, addStock, changeStatus, changeQuantity, changeVolume, removeFood, changeLowStock, addToShopping, changeBought, removeShopping, changeFoodIcon } = useAppModel(store, initial, mode);
 
   return <div className="page min-h-dvh">
     <header className="topbar h-[68px] border-b border-border bg-white mobile:h-[62px]"><div className="topbar-inner mx-auto flex h-full max-w-[1040px] items-center justify-between gap-4 px-8 mobile:px-[18px]">
@@ -58,14 +58,14 @@ export function App({ store, initial, mode = 'cloud', email, onLogout, onLogin, 
       <div hidden={screen !== 'inventory'}>
         <InventoryPage items={data.items} today={today} blocked={blocked || saving} onCreate={() => openForm()}
           onEdit={openForm} onStatus={changeStatus} onRemove={removeFood} shopping={data.shopping}
-          onLowStock={changeLowStock} onAddShopping={addToShopping} onAddStock={addStock} onQuantity={changeQuantity}
+          onLowStock={changeLowStock} onVolume={changeVolume} onAddShopping={addToShopping} onAddStock={addStock} onQuantity={changeQuantity}
           iconSelections={data.icons} onPickIcon={(name, category) => setIconTarget({ name, category })} />
       </div>
       <div hidden={screen !== 'calendar'}>
         <DeadlineCalendar items={data.items.filter(item => item.status === 'active')} today={today}
           listed={new Set(data.shopping.filter(item => !item.bought).map(item => normalizedName(item.name)))}
           blocked={blocked || saving} onEdit={openForm} onStatus={changeStatus} onRemove={removeFood}
-          onLowStock={changeLowStock} onQuantity={changeQuantity} onAddShopping={addToShopping} onAddStock={addStock}
+          onLowStock={changeLowStock} onVolume={changeVolume} onQuantity={changeQuantity} onAddShopping={addToShopping} onAddStock={addStock}
           onShowList={() => setScreen('inventory')}
           iconSelections={data.icons} onPickIcon={(name, category) => setIconTarget({ name, category })} />
       </div>

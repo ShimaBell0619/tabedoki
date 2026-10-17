@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { daysLeft, deadlineState, validDate, localDate } from '../src/domain/deadline.ts';
-import { categories, MAX_ITEMS, initialFoodForm, isFood, consumptionAction } from '../src/domain/food.ts';
+import { categories, MAX_ITEMS, initialFoodForm, isFood, consumptionAction, tracksVolume, defaultVolumeTracking } from '../src/domain/food.ts';
 import { MAX_TEMPLATES, validateTemplates, defaultTemplates, applyFoodCandidate, previousFoods } from '../src/domain/templates.ts';
 import { groupFoods, foodGroupKey, addStockToFoods } from '../src/domain/stock.ts';
 import { validateBackup, makeBackup, readData, writeData, STORAGE_KEY, V3_STORAGE_KEY, V2_STORAGE_KEY, LEGACY_STORAGE_KEY, BACKUP_MAX_BYTES } from '../src/data/storage.ts';
@@ -262,4 +262,19 @@ test('消費動詞と分割バー基準数量のバリデーション', () => {
   assert.equal(isFood({ ...item, quantity: 3, initialQuantity: 10 }), true);
   assert.equal(isFood({ ...item, quantity: 3, initialQuantity: 2 }), false);
   assert.equal(isFood({ ...item, consumption: 'unknown' }), false);
+});
+
+
+test('容器数と容器内残量を別々に保持し、旧v5食品も受け付ける', () => {
+  assert.equal(defaultVolumeTracking('牛乳', 'bottle'), true);
+  assert.equal(defaultVolumeTracking('たまご', 'piece'), false);
+  assert.equal(defaultVolumeTracking('みそ', 'bottle'), false);
+  assert.equal(tracksVolume({ name: '牛乳', unit: 'bottle' }), true);
+  assert.equal(tracksVolume({ name: '牛乳', unit: 'bottle', trackingMode: 'count' }), false);
+  assert.equal(tracksVolume({ name: 'みそ', unit: 'bottle', trackingMode: 'volume' }), true);
+  assert.equal(isFood(item), true);
+  assert.equal(isFood({ ...item, trackingMode: 'volume', volumePercent: 25 }), true);
+  assert.equal(isFood({ ...item, trackingMode: 'volume', volumePercent: 30 }), false);
+  assert.equal(isFood({ ...item, trackingMode: 'count', volumePercent: 50 }), false);
+  assert.equal(isFood({ ...item, trackingMode: 'invalid' }), false);
 });
