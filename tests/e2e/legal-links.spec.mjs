@@ -34,7 +34,7 @@ for (const width of [320, 390, 1440]) {
     const account = page.getByRole('button', { name: 'アカウント' });
     await account.focus();
     await page.keyboard.press('Enter');
-    await expect(page.getByText('test@example.com', { exact: true })).toBeVisible();
+    await expect(page.getByRole('menu').getByText('test@example.com', { exact: true })).toBeVisible();
     await expect(page.getByRole('menuitem', { name: '利用条件' })).toBeVisible();
     await expect(page.getByRole('menuitem', { name: 'プライバシーポリシー' })).toBeVisible();
     await page.screenshot({ path: info.outputPath(`legal-links-cloud-${width}.png`) });

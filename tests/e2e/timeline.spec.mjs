@@ -7,7 +7,6 @@ const item = (id, name, deadline, extra = {}) => ({
   quantity: 1, unit: 'piece', place: 'chilled', status: 'active',
   lowStock: false, ...extra,
 });
-
 async function setup(page) {
   const items = [
     item('overdue', '納豆', '2026-10-16'),
@@ -25,30 +24,28 @@ async function setup(page) {
 }
 
 for (const width of [320, 390, 1440]) {
-  test('期限の実寸タイムラインと期限別操作 ' + width + 'px', async ({ page }) => {
+  test(`横型カレンダー・4タブ・食品操作 ${width}px`, async ({ page }, info) => {
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
     await page.setViewportSize({ width, height: 850 });
     await page.clock.install({ time: new Date('2026-10-17T12:00:00') });
     await setup(page);
     await expect(page.locator('.food-row')).toHaveCount(6);
-    await page.getByRole('button', { name: 'タイムライン', exact: true }).click();
-    await expect(page.getByRole('button', { name: '次の期限へ' })).toBeEnabled();
-    await expect(page.locator('.timeline-hit')).toHaveCount(3);
-    await expect(page.locator('.timeline-overdue-row')).toHaveCount(1);
-    await expect(page.locator('.timeline-later')).toContainText('30日より先の在庫が2件');
+    await page.getByRole('button', { name: 'カレンダー', exact: true }).click();
+    await expect(page.getByRole('heading', { name: '期限カレンダー' })).toBeVisible();
+    await expect(page.locator('.calendar-day')).toHaveCount(31);
+    await expect(page.locator('.calendar-overdue-item')).toHaveCount(1);
+    await expect(page.locator('.calendar-footer')).toContainText('30日より先の在庫が2件');
+    await expect(page.getByRole('button', { name: '10月17日（土）、1件、今日' })).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('.calendar-food')).toHaveCount(1);
+    await expect(page.locator('.calendar-food-label')).toHaveCSS('color', 'rgb(150, 90, 18)');
 
-    const milk = page.locator('.timeline-hit').filter({ hasText: '牛乳' });
-    const eggs = page.locator('.timeline-hit').filter({ hasText: 'たまご' });
-    await expect(eggs).toContainText('2件');
-    const delta = await milk.evaluate((element, target) => {
-      const next = document.querySelectorAll('.timeline-hit')[2];
-      return next.getBoundingClientRect().top - element.getBoundingClientRect().top;
-    });
-    expect(delta).toBe(5 * 48);
-
-    await eggs.click();
+    await page.getByRole('button', { name: '10月24日（土）、2件' }).click();
+    await expect(page.locator('.calendar-food')).toHaveCount(2);
+    await expect(page.locator('.calendar-food').first()).toContainText('たまご');
+    await page.locator('.calendar-food').first().click();
     const dialog = page.getByRole('dialog', { name: '10/24の在庫' });
     await expect(dialog).toBeVisible();
-    // Native dialog positioning must not fall back to the top-left (Tailwind reset).
     const bounds = await dialog.boundingBox();
     expect(bounds).not.toBeNull();
     if (width <= 760) {
@@ -62,14 +59,24 @@ for (const width of [320, 390, 1440]) {
     await expect(dialog.locator('.timeline-dialog-item')).toHaveCount(2);
     await dialog.getByRole('button', { name: 'たまごを使い切り' }).click();
     await expect(dialog).not.toBeVisible();
-    const stored = await cloudData(page);
-    expect(stored.items.find(entry => entry.id === 'egg').status).toBe('used');
-    await expect(page.locator('.timeline-hit').filter({ hasText: '豆腐' })).toHaveCount(1);
+    expect((await cloudData(page)).items.find(entry => entry.id === 'egg').status).toBe('used');
+    await expect(page.locator('.calendar-food')).toHaveCount(1);
 
     await page.getByRole('button', { name: '90日', exact: true }).click();
-    await expect(page.locator('.timeline-hit').filter({ hasText: 'パスタ' })).toHaveCount(1);
-    expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+    await page.getByRole('button', { name: '1月15日（金）、1件' }).click();
+    await expect(page.locator('.calendar-food')).toContainText('パスタ');
+    await expect(page.locator('.calendar-food-label')).toHaveCSS('color', 'rgb(115, 127, 143)');
+
+    await page.getByRole('button', { name: '設定', exact: true }).click();
+    await expect(page.getByRole('heading', { name: '設定' })).toBeVisible();
+    await expect(page.locator('.settings-page').getByRole('button', { name: /定番食品/ })).toBeVisible();
+    await page.getByRole('button', { name: '買い物', exact: true }).click();
+    await expect(page.getByRole('heading', { name: /買い物リスト/ })).toBeVisible();
     await page.getByRole('button', { name: '一覧', exact: true }).click();
     await expect(page.locator('.food-row')).toHaveCount(6);
+    await page.getByRole('button', { name: 'カレンダー', exact: true }).click();
+    await page.screenshot({ path: info.outputPath(`calendar-${width}.png`) });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+    expect(errors).toEqual([]);
   });
 }

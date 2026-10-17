@@ -165,7 +165,7 @@ for (const width of [320, 390, 1440]) {
     await setup(page);
     const bg = await page.locator('body').evaluate(el => getComputedStyle(el).backgroundColor);
     const rootBg = await page.locator('html').evaluate(el => getComputedStyle(el).backgroundColor);
-    expect([bg,rootBg]).toContain('rgb(246, 247, 249)');
+    expect([bg,rootBg]).toContain('rgb(255, 255, 255)');
     const single = page.locator('.food-row').filter({has:page.getByRole('heading', {name:'みそ', exact:true})});
     await expect(single.locator('.quantity')).toHaveText('1本');
     await expect(single.locator('.deadline-prefix')).toHaveCount(0);
