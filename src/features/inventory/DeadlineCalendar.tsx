@@ -88,7 +88,7 @@ export function DeadlineCalendar({ items, today, listed, onShowList, blocked, on
         aria-label={`${item.name}、${item.quantity}${units[item.unit]}、${places[item.place]}、詳細を開く`}>
         <span className="food-icon"><FoodIcon name={item.name} category={item.category} /></span>
         <span className="calendar-food-name"><strong>{item.name}</strong><small>{places[item.place]} · {item.quantity}{units[item.unit]}</small></span>
-        <span className="calendar-food-label">{deadlineLabel(item.deadline,today)}</span>
+        <span className={`calendar-food-label ${daysLeft(item.deadline, today) <= 3 ? 'calendar-food-label-urgent' : ''}`}>{deadlineLabel(item.deadline, today)}</span>
       </button>
     </li>)}</ul> : <div className="calendar-empty">この日に期限を迎える食品はありません</div>}
     <div className="calendar-footer">
