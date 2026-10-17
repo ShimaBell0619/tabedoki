@@ -131,6 +131,12 @@ button.settings-row:hover, a.settings-row:hover { background:#F7F9FB; }
   .page:has(> .mobile-add-button) .main { padding-bottom:calc(164px + env(safe-area-inset-bottom)); }
   .inventory { margin-bottom:0; }
   .food-primary { gap:8px; }
+  /* A quieter rhythm between category sections; in-category cards keep a tighter 12px gap. */
+  .inventory-section + .inventory-section { margin-top:30px; }
+  .inventory-section + .inventory-section > .group-heading { margin-top:0; }
+  .food-row .food-icon { background:#F2F5F8; color:#526479; }
+  .food-details > summary::after { border-color:#8D9BAD; }
+  .food-row .deadline-chip.state-later { color:#68778A; }
   .food-secondary { column-gap:6px; font-size:13px; }
   .stock-preview > span, .stock-progress > span { font-size:12px; color:var(--color-muted); }
   .filters select { color:var(--color-foreground); }
