@@ -95,7 +95,7 @@ for (const width of [320, 390, 1440]) {
     expect(boxes.status.x).toBeGreaterThanOrEqual(boxes.title.x + boxes.title.width - 1);
     expect(boxes.quantity.y).toBeGreaterThanOrEqual(boxes.title.y);
     expect(boxes.progress.y + boxes.progress.height).toBeCloseTo(boxes.summary.y + boxes.summary.height, 0);
-    expect(boxes.progress.height).toBe(3);
+    expect(boxes.progress.height).toBe(width <= 760 ? 2 : 3);
     expect(boxes.summary.height).toBeLessThanOrEqual(104);
     await expect(card.locator('summary time')).toHaveCount(0);
     await expect(card.locator('summary .deadline-prefix')).toHaveCount(0);
