@@ -36,19 +36,19 @@ export function useAppModel(store: DataStore, initial: Snapshot, mode: 'local' |
     if (!editingId && current.items.length >= MAX_ITEMS) { showError('食品は最大3,000件まで登録できます。'); return false; }
     const original = editingId ? current.items.find(item => item.id === editingId) : undefined;
     if (editingId && !original) { showError('編集する食品が見つかりません。'); return false; }
+    const initialQuantity = form.initialQuantity ?? (original ? Math.max(original.initialQuantity, form.quantity) : form.quantity);
+    if (!Number.isInteger(initialQuantity) || initialQuantity < form.quantity || initialQuantity > 999) {
+      showError('バーの満量は現在の数量以上、999以下の整数で指定してください。');
+      return false;
+    }
     const trackingMode = form.trackingMode ?? (defaultVolumeTracking(form.name, form.unit) ? 'volume' : 'count');
     const food: Food = {
       ...form, name: form.name.trim(), id: original?.id ?? crypto.randomUUID(), trackingMode,
       ...(trackingMode === 'volume' ? { volumePercent: original && tracksVolume(original) ? original.volumePercent ?? 100 : 100 as const } : {}),
       status: original?.status ?? 'active', lowStock: original?.lowStock ?? false,
-      initialQuantity: form.initialQuantity ?? (original ? Math.max(original.initialQuantity, form.quantity) : form.quantity),
+      initialQuantity,
     };
-    if (!isFood(food)) {
-      showError(food.initialQuantity < food.quantity || !Number.isInteger(food.initialQuantity) || food.initialQuantity > 999
-        ? 'バーの満量は現在の数量以上、999以下の整数で指定してください。'
-        : '食品名、期限の日付、数量と選択項目を確認してください。');
-      return false;
-    }
+    if (!isFood(food)) { showError('食品名、期限の日付、数量と選択項目を確認してください。'); return false; }
     let next: AppData;
     try {
       next = editor?.purchase ? registerPurchase(current, editor.purchase.id, food) : {
