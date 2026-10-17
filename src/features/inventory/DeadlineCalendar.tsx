@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { deadlineLabel, daysLeft } from '../../domain/deadline.ts';
-import { consumptionAction, kinds, normalizedName, places, units, type Food } from '../../domain/food.ts';
+import { consumptionAction, tracksVolume, kinds, normalizedName, places, units, type Food } from '../../domain/food.ts';
 import { foodGroupKey, groupFoods } from '../../domain/stock.ts';
 import { StockProgress } from './StockProgress';
-import { VolumeControls } from './VolumeControls';
 import { FoodIcon } from './FoodIcon';
 import { selectedFoodIcon } from '../../domain/food-icons';
 import type { InventoryActions } from './FoodGroupCard';
@@ -140,18 +139,23 @@ export function DeadlineCalendar({ items, today, listed, onShowList, blocked, on
                 <Button type="button" variant="secondary" disabled={blocked} onClick={() => void onAddShopping(item)}>買い物に追加</Button>}
             </div>}
             <StockProgress item={item} />
-            <VolumeControls item={item} blocked={blocked} onChange={onVolume} />
+            {item.status === 'active' && tracksVolume(item) && <Button variant="secondary" type="button"
+              disabled={blocked || (item.volumePercent ?? 100) >= 100}
+              aria-label={item.name.trim() + 'の残量を10%増やす'}
+              onClick={() => onVolume(item, 10)}>＋10%</Button>}
             <div className="timeline-dialog-actions">
               <Button variant="secondary" type="button" disabled={blocked} aria-label={`${item.name}を編集`}
                 onClick={() => { dismiss(); onEdit(item); }}>編集</Button>
               <Button variant="default" type="button" disabled={blocked}
-                aria-label={`${item.name.trim()}を${item.status === 'active' ? consumptionAction(item.consumption, units[item.unit], totalByKey.get(foodGroupKey(item)) === 1) : '管理中に戻す'}`}
-                onClick={() => { dismiss(); if (item.status === 'active') onQuantity(item, -1); else onStatus(item, 'active'); }}>
+                aria-label={`${item.name.trim()}を${item.status === 'active' ? (tracksVolume(item) ? '10%使った' : (tracksVolume(item) ? '10%使った' : consumptionAction(item.consumption, units[item.unit], totalByKey.get(foodGroupKey(item)) === 1))) : '管理中に戻す'}`}
+                onClick={() => { dismiss(); if (item.status === 'active') { if (tracksVolume(item)) onVolume(item, -10); else onQuantity(item, -1); } else onStatus(item, 'active'); }}>
                 {item.status === 'active' ? consumptionAction(item.consumption, units[item.unit], totalByKey.get(foodGroupKey(item)) === 1) : '戻す'}
               </Button>
               <details className="timeline-more">
                 <summary>その他の操作</summary>
                 <div className="timeline-more-buttons">
+                  {item.status === 'active' && tracksVolume(item) && <Button variant="secondary" type="button" disabled={blocked}
+                    onClick={() => { dismiss(); onQuantity(item, -1); }}>1{units[item.unit]}使い切った</Button>}
                   {item.status === 'active' && <Button variant="secondary" type="button" disabled={blocked}
                     onClick={() => { dismiss(); onStatus(item, 'discarded'); }}>廃棄として記録</Button>}
                   <Button variant="secondary" type="button" disabled={blocked}
