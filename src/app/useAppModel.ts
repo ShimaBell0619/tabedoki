@@ -23,7 +23,7 @@ export function useAppModel(store: DataStore, initial: Snapshot, mode: 'local' |
     setNotice(message, true);
     if (editor) setFormError(message);
   }
-  const { data, committed, saving, blocked, commitData, refresh } = useCloudData(store, initial, showError, () => {
+  const { data, committed, saving, showSaving, blocked, commitData, refresh } = useCloudData(store, initial, showError, () => {
     setFormError('');
     setNotice(mode === 'local' ? '端末のデータを再取得しました。' : 'クラウドを再取得しました。入力中の内容は残っています。');
   });
@@ -162,5 +162,5 @@ export function useAppModel(store: DataStore, initial: Snapshot, mode: 'local' |
     if (await commitData({ ...current, shopping: current.shopping.filter(value => value.id !== item.id) })) setNotice('買い物項目を削除しました。');
   }
 
-  return { data, saving, blocked, notice, dismissNotice, formError, setFormError, editor, setEditor, refresh, openForm, saveTemplates, saveFood, addStock, changeStatus, changeQuantity, changeVolume, removeFood, changeLowStock, addToShopping, changeBought, removeShopping, changeFoodIcon };
+  return { data, saving, showSaving, blocked, notice, dismissNotice, formError, setFormError, editor, setEditor, refresh, openForm, saveTemplates, saveFood, addStock, changeStatus, changeQuantity, changeVolume, removeFood, changeLowStock, addToShopping, changeBought, removeShopping, changeFoodIcon };
 }
