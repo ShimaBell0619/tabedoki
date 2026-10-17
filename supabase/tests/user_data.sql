@@ -46,7 +46,7 @@ set data = '{"version":5,"items":[],"templates":[],"shopping":[]}',
     previous = '{"version":5,"items":[],"templates":[],"shopping":[]}',
     write_id = gen_random_uuid()
 where user_id = '00000000-0000-4000-a000-000000000001' and revision = 2;
-do $ begin
+do $$ begin
   if (select revision from public.user_data) <> 3 then raise exception 'v5 revision failed'; end if;
   if (select data->>'version' from public.user_data) <> '5' then raise exception 'v5 data rejected'; end if;
   if (select previous->>'version' from public.user_data) <> '5' then raise exception 'v5 recovery rejected'; end if;
@@ -54,7 +54,11 @@ do $ begin
     update public.user_data set data = '{"version":6,"items":[],"templates":[],"shopping":[]}' where revision = 3;
     raise exception 'unknown version accepted';
   exception when check_violation then null; end;
-end $;
+  begin
+    update public.user_data set previous = '{"version":6,"items":[],"templates":[],"shopping":[]}' where revision = 3;
+    raise exception 'unsupported recovery version accepted';
+  exception when check_violation then null; end;
+end $$;
 select set_config('request.jwt.claim.sub','00000000-0000-4000-a000-000000000002',true);
 do $$ declare affected int; begin
   if (select count(*) from public.user_data) <> 0 then raise exception 'foreign read visible'; end if;

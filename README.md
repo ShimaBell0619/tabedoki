@@ -56,7 +56,7 @@ UIはTailwind CSS v4のViteプラグインとshadcn/uiのButton・Input・Native
 
 `.env.example` の2変数を `.env.local` に設定します。Vercelでは同名変数を対象環境に設定してください。ブラウザへ渡すのはURLとPublishable Keyのみです。Google Client SecretはSupabaseのGoogle Providerに保存し、Vercel・GitHub・ソースに置きません。
 
-- DB変更：`supabase/migrations`。本人のみのRLS、列単位GRANT、DB側revision加算。実DB権限テスト：`supabase/tests/user_data.sql`（全変更をrollback）。型は実DBから生成した `src/data/database.types.ts`。
+- DB変更：`supabase/migrations`。GitHubのSQLファイル名はSupabase本番のマイグレーション履歴と同じタイムスタンプを使い、DBを新旧両形式に対応させてからアプリを公開します。GitHub Actionsの `db-test` は使い捨てPostgreSQL 17上で全SQLを順に適用し、`supabase/tests/user_data.sql` でRLS・CAS・v4/v5互換を検証します。本番DBの実行や変更はCIでは行いません。本人のみのRLS、列単位GRANT、DB側revision加算。実DB権限テスト：`supabase/tests/user_data.sql`（全変更をrollback）。型は実DBから生成した `src/data/database.types.ts`。
 - Supabase Auth：Googleのみ有効。Google Web OAuthのリダイレクトは `https://<project-ref>.supabase.co/auth/v1/callback`。SupabaseのSite URLは本番公開元、Redirect URLsは本番・対象Preview・localhostの正確なURLを登録します。公開元全体へのワイルドカードは使いません。
 - E2E：ビルド時に架空の専用URLを設定してAPIをモックします。実Google同意画面や実DBへの接続は自動テストと分けます。
 - Freeには自動バックアップ・SLAがなく、非利用で停止することがあります。停止時は管理者がSupabaseを復旧します。必要なデータ退避は管理者がDBから行います。
