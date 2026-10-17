@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { MAX_ITEMS, isFood, normalizedName, tracksVolume, defaultVolumeTracking, adjustVolume, type Food, type FoodForm, type FoodStatus, type FoodTemplate, type StoragePlace } from '../domain/food';
+import { MAX_ITEMS, isFood, normalizedName, tracksVolume, defaultVolumeTracking, adjustVolume, units, type Food, type FoodForm, type FoodStatus, type FoodTemplate, type StoragePlace } from '../domain/food';
 import { addStockToFoods } from '../domain/stock';
 import { selectedFoodIcon, type FoodIconName } from '../domain/food-icons';
 import type { AppData } from '../domain/app-data.ts';
@@ -116,7 +116,7 @@ export function useAppModel(store: DataStore, initial: Snapshot, mode: 'local' |
     setNotice(replacement.status === 'used'
       ? `「${item.name}」の在庫がなくなりました。`
       : replacement.quantity < original.quantity
-        ? `「${item.name}」を1${({ item: '点', piece: '個', pack: 'パック', bag: '袋', bottle: '本' } as const)[item.unit]}使い切りました。`
+        ? `「${item.name}」を1${units[item.unit]}使い切りました。`
         : `「${item.name}」の残量を${replacement.volumePercent}%に変更しました。`);
   }
 

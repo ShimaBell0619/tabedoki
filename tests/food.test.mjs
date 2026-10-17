@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { daysLeft, deadlineState, validDate, localDate } from '../src/domain/deadline.ts';
-import { categories, MAX_ITEMS, initialFoodForm, isFood, consumptionAction, tracksVolume, defaultVolumeTracking } from '../src/domain/food.ts';
+import { categories, MAX_ITEMS, initialFoodForm, isFood, consumptionAction, tracksVolume, defaultVolumeTracking, adjustVolume } from '../src/domain/food.ts';
 import { MAX_TEMPLATES, validateTemplates, defaultTemplates, applyFoodCandidate, previousFoods } from '../src/domain/templates.ts';
 import { groupFoods, foodGroupKey, addStockToFoods } from '../src/domain/stock.ts';
 import { validateBackup, makeBackup, readData, writeData, STORAGE_KEY, V3_STORAGE_KEY, V2_STORAGE_KEY, LEGACY_STORAGE_KEY, BACKUP_MAX_BYTES } from '../src/data/storage.ts';
@@ -274,7 +274,36 @@ test('容器数と容器内残量を別々に保持し、旧v5食品も受け付
   assert.equal(tracksVolume({ name: 'みそ', unit: 'bottle', trackingMode: 'volume' }), true);
   assert.equal(isFood(item), true);
   assert.equal(isFood({ ...item, trackingMode: 'volume', volumePercent: 25 }), true);
-  assert.equal(isFood({ ...item, trackingMode: 'volume', volumePercent: 30 }), false);
+  assert.equal(isFood({ ...item, trackingMode: 'volume', volumePercent: 30 }), true);
+  assert.equal(isFood({ ...item, trackingMode: 'volume', volumePercent: 0 }), false);
+  assert.equal(isFood({ ...item, trackingMode: 'volume', volumePercent: 101 }), false);
   assert.equal(isFood({ ...item, trackingMode: 'count', volumePercent: 50 }), false);
   assert.equal(isFood({ ...item, trackingMode: 'invalid' }), false);
+});
+
+test('10%刻みの残量操作は開封中の1容器だけを変更し、使い切り時だけ本数を減らす', () => {
+  const original = { ...item, quantity: 2, initialQuantity: 2, trackingMode: 'volume', volumePercent: 100 };
+  const reduced = Array.from({ length: 9 }).reduce(food => adjustVolume(food, -10), original);
+  assert.deepEqual([reduced.quantity, reduced.volumePercent, reduced.status], [2, 10, 'active']);
+  const next = adjustVolume(reduced, -10);
+  assert.deepEqual([next.quantity, next.volumePercent, next.status], [1, 100, 'active']);
+  assert.equal(isFood(next), true);
+  assert.equal(adjustVolume(next, -10).volumePercent, 90);
+  const finished = Array.from({ length: 10 }).reduce(food => adjustVolume(food, -10), next);
+  assert.deepEqual([finished.quantity, finished.volumePercent, finished.status], [1, 100, 'used']);
+  assert.equal(isFood(finished), true);
+  assert.deepEqual(original, { ...item, quantity: 2, initialQuantity: 2, trackingMode: 'volume', volumePercent: 100 });
+  assert.equal(adjustVolume({ ...original, volumePercent: 60 }, 10).volumePercent, 70);
+  assert.equal(adjustVolume(original, 10).volumePercent, 100);
+});
+
+test('旧v5の25%/75%を保持し、残り10%未満も最後の操作で使い切れる', () => {
+  const legacy = { ...item, trackingMode: 'volume', volumePercent: 25 };
+  assert.equal(isFood(legacy), true);
+  assert.equal(adjustVolume(legacy, -10).volumePercent, 15);
+  assert.equal(adjustVolume({ ...legacy, volumePercent: 15 }, -10).volumePercent, 5);
+  assert.equal(adjustVolume({ ...legacy, volumePercent: 5 }, -10).status, 'used');
+  assert.equal(isFood({ ...legacy, volumePercent: 15 }), true);
+  assert.equal(isFood({ ...legacy, volumePercent: 5 }), true);
+  assert.throws(() => adjustVolume({ ...item, trackingMode: 'count' }, -10));
 });

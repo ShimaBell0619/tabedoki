@@ -146,7 +146,7 @@ export function FoodEditor({ item, purchase, templatesOnly, items, templates, bl
             {Object.entries(units).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </NativeSelect></label>
         </div>
-        <label>{(form.trackingMode ?? (defaultVolumeTracking(form.name, form.unit) ? 'volume' : 'count')) === 'volume' ? '一覧バーの基準本数' : 'バーの満量'}<Input type="number" required min={Math.max(1,form.quantity)} max="999" step="1"
+        <label>{(form.trackingMode ?? (defaultVolumeTracking(form.name, form.unit) ? 'volume' : 'count')) === 'volume' ? '一覧バーの満量' : 'バーの満量'}<Input type="number" required min={Math.max(1,form.quantity)} max="999" step="1"
           value={(form.initialQuantity ?? form.quantity) || ''}
           onChange={event => setForm({ ...form, initialQuantity: Number(event.target.value) })} /></label>
         <p className="form-help mt-[-4px] text-xs leading-[1.7] text-muted">

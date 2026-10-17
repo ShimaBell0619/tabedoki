@@ -52,6 +52,6 @@ test('調味料と飲料では最後の一単位を明確に区別する', async
   const milk = page.locator('.food-row').filter({ has: page.getByRole('heading', { name: '牛乳' }) });
   await sauce.locator('summary').click();
   await milk.locator('summary').click();
-  await expect(sauce.getByRole('button', { name: 'しょうゆを使い終わった' })).toBeVisible();
-  await expect(milk.getByRole('button', { name: '牛乳を飲み終わった' })).toBeVisible();
+  await expect(sauce.getByRole('button', { name: 'しょうゆを10%使った' })).toBeVisible();
+  await expect(milk.getByRole('button', { name: '牛乳を10%使った' })).toBeVisible();
 });
