@@ -85,7 +85,7 @@ export function App({ store, initial, mode = 'cloud', email, onLogout, onLogin, 
       <Icon name="plus" />
     </Button>}
     {iconTarget && <FoodIconPicker foodName={iconTarget.name} category={iconTarget.category}
-      selected={selectedFoodIcon(data.icons, iconTarget.name)} blocked={blocked || saving}
+      selected={selectedFoodIcon(data.icons, iconTarget.name)} blocked={blocked || saving} error={blocked ? notice : undefined}
       onSelect={async icon => { if (await changeFoodIcon(iconTarget.name, icon)) setIconTarget(null); }}
       onClose={() => setIconTarget(null)} />}
     {editor && <FoodEditor item={editor.item} purchase={editor.purchase} templatesOnly={editor.templatesOnly} items={data.items}
