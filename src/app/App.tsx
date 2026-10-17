@@ -33,9 +33,9 @@ export function App({ store, initial, mode = 'cloud', email, onLogout, onLogin, 
   const [screen, setScreen] = useState<Screen>('inventory');
   const [iconTarget, setIconTarget] = useState<{ name: string; category: FoodCategory } | null>(null);
   const today = useToday();
-  const { data, saving, blocked, notice, dismissNotice, formError, setFormError, editor, setEditor, refresh, openForm, saveTemplates, saveFood, addStock, changeStatus, changeQuantity, changeVolume, removeFood, changeLowStock, addToShopping, changeBought, removeShopping, changeFoodIcon } = useAppModel(store, initial, mode);
+  const { data, saving, showSaving, blocked, notice, dismissNotice, formError, setFormError, editor, setEditor, refresh, openForm, saveTemplates, saveFood, addStock, changeStatus, changeQuantity, changeVolume, removeFood, changeLowStock, addToShopping, changeBought, removeShopping, changeFoodIcon } = useAppModel(store, initial, mode);
 
-  return <div className="page min-h-dvh">
+  return <div className="page min-h-dvh" data-saving={saving ? "true" : undefined}>
     <header className="topbar h-[68px] border-b border-border bg-white mobile:h-[62px]"><div className="topbar-inner mx-auto flex h-full max-w-[1040px] items-center justify-between gap-4 px-8 mobile:px-[18px]">
       <Brand />
       <ScreenNavigation className="desktop-navigation mobile:hidden" screen={screen} onChange={setScreen} />
@@ -48,7 +48,7 @@ export function App({ store, initial, mode = 'cloud', email, onLogout, onLogin, 
     </div></header>
     <main className="main mx-auto max-w-[1040px] px-8 pt-8 pb-10 mobile:px-4 mobile:pt-6 mobile:pb-[calc(110px+env(safe-area-inset-bottom))]">
       {loginError && <p role="alert" className="notice notice-error mb-5 rounded-[10px] bg-[#fff0ec] p-3 text-[13px] text-[#8e372b]">{loginError}</p>}
-      {saving && <p className="cloud-pending mb-4 text-[13px] text-muted" role="status" aria-label="保存状態">保存・読み込み中…</p>}
+      {showSaving && <p className="cloud-pending mb-4 text-[13px] text-muted" role="status" aria-label="保存状態">保存・読み込み中…</p>}
       {notice && <AppNotice key={notice.id} id={notice.id} message={notice.message} error={notice.error || blocked}
         blocked={blocked} saving={saving} refreshLabel={mode === 'local' ? '端末のデータを再取得' : 'クラウドを再取得'}
         onRefresh={refresh} onDismiss={dismissNotice} />}

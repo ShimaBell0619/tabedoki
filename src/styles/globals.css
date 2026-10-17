@@ -139,6 +139,10 @@ button.settings-row:hover, a.settings-row:hover { background:#F7F9FB; }
   .stock-lot-controls .finish-food { white-space:normal; overflow-wrap:anywhere; }
   .stock-lot-controls .finish-food .icon { flex-shrink:0; }
   .food-form .field-label { display:inline-flex; align-items:baseline; }
+  /* Keep stock controls visually stable while writes are locked. */
+  .page[data-saving="true"] :is(.food-row button, .mobile-add-button):disabled {
+    opacity:1;
+  }
   .notice-toast, .cloud-pending {
     position:fixed;
     z-index:40;
