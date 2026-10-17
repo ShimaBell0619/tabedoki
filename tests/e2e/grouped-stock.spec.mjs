@@ -92,9 +92,11 @@ for (const width of [320, 390, 1440]) {
     });
     expect(boxes.status.x).toBeGreaterThanOrEqual(boxes.title.x + boxes.title.width);
     expect(Math.abs((boxes.status.y + boxes.status.height / 2) - (boxes.title.y + boxes.title.height / 2))).toBeLessThanOrEqual(4);
-    expect(boxes.secondary.y).toBeGreaterThanOrEqual(boxes.title.y + boxes.title.height);
+    expect(boxes.secondary.y).toBeGreaterThanOrEqual(boxes.title.y);
+    expect(boxes.secondary.y + boxes.secondary.height).toBeLessThanOrEqual(boxes.title.y + boxes.title.height + 1);
     expect(boxes.quantity.y).toBeGreaterThanOrEqual(boxes.secondary.y);
     expect(boxes.date.y).toBeGreaterThanOrEqual(boxes.secondary.y);
+    expect((await card.locator('summary').boundingBox()).height).toBeLessThanOrEqual(104);
     await expect(card.locator('.deadline-chip')).toHaveCSS('color', 'rgb(115, 127, 143)');
     await expect(card.locator('.deadline-chip')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
