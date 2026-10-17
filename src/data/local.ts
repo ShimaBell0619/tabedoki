@@ -14,7 +14,8 @@ export class LocalStore implements DataStore {
     if (result.error) throw new Error(result.error);
     const raw = this.storage.getItem(STORAGE_KEY);
     const snapshot: Snapshot = {
-      data: { items: result.items, templates: result.templates, shopping: result.shopping },
+      data: { items: result.items, templates: result.templates, shopping: result.shopping,
+        ...(result.icons === undefined ? {} : { icons: result.icons }) },
       revision: (this.snapshot?.revision ?? 0) + 1,
       previous: null,
       writeId: '',
