@@ -10,20 +10,22 @@ type Props = {
   category: FoodCategory;
   selected?: FoodIconName;
   blocked: boolean;
+  error?: string;
   onSelect: (name: FoodIconName | null) => void;
   onClose: () => void;
 };
 /** The native dialog traps focus and handles Escape, including on mobile. */
-export function FoodIconPicker({ foodName, category, selected, blocked, onSelect, onClose }: Props) {
+export function FoodIconPicker({ foodName, category, selected, blocked, error, onSelect, onClose }: Props) {
   const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => { dialog.current?.showModal(); }, []);
   return <dialog ref={dialog} className="icon-picker" aria-labelledby="icon-picker-title" onClose={onClose}>
     <div className="icon-picker-heading">
       <h2 id="icon-picker-title">{foodName}のアイコン</h2>
-      <Button variant="plain" type="button" aria-label="閉じる" disabled={blocked} onClick={() => dialog.current?.close()}>
+      <Button variant="plain" type="button" aria-label="閉じる" onClick={() => dialog.current?.close()}>
         <Icon name="x" />
       </Button>
     </div>
+    {error && <p role="alert" className="icon-picker-error">{error}</p>}
     <div className="icon-picker-options">
       <button type="button" className="icon-picker-option" disabled={blocked} aria-pressed={selected === undefined}
         onClick={() => onSelect(null)} autoFocus={selected === undefined}>
