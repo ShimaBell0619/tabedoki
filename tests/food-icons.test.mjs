@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { validateData, validateBackup, decodeStored, writeData, makeBackup, applyBackup } from '../src/data/storage.ts';
 import { validateFoodIconSelections, selectedFoodIcon } from '../src/domain/food-icons.ts';
+import { LocalStore } from '../src/data/local.ts';
 
 const base = { items: [], templates: [], shopping: [] };
 function store() { const map = new Map(); return { map, setItem: (key, value) => map.set(key, value), getItem: key => map.get(key) ?? null }; }
@@ -33,4 +34,13 @@ test('壊れたアイコン設定は黙って破棄せず不正データとし�
   assert.equal(selectedFoodIcon({ 'constructor': 'pizza' }, 'constructor'), 'pizza');
   assert.equal(selectedFoodIcon({}, 'constructor'), undefined);
   assert.deepEqual(validateFoodIconSelections({ '牛乳': 'pizza' }), { '牛乳': 'pizza' });
+});
+
+test('LocalStoreは次回起動時にもアイコンの明示選択を復元する', async () => {
+  const storage = store();
+  const first = new LocalStore(storage);
+  await first.load();
+  await first.save({ ...base, icons: { 'たまご': 'fish' } });
+  const restarted = new LocalStore(storage);
+  assert.deepEqual((await restarted.load()).data.icons, { 'たまご': 'fish' });
 });
