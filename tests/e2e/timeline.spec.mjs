@@ -67,7 +67,7 @@ for (const width of [320, 390, 1440]) {
 
     await page.getByRole('button', { name: '設定', exact: true }).click();
     await expect(page.getByRole('heading', { name: '設定' })).toBeVisible();
-    await expect(page.getByRole('button', { name: /定番食品/ })).toBeVisible();
+    await expect(page.locator('.settings-page').getByRole('button', { name: /定番食品/ })).toBeVisible();
     await page.getByRole('button', { name: '買い物', exact: true }).click();
     await expect(page.getByRole('heading', { name: /買い物リスト/ })).toBeVisible();
     await page.getByRole('button', { name: '一覧', exact: true }).click();
