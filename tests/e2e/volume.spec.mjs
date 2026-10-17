@@ -27,6 +27,7 @@ test('牛乳は10%ずつ直接減らせ、バー・残りわずか・保存値�
   await expect(milk.locator('.volume-controls')).toHaveCount(0);
   await milk.getByRole('button',{name:'牛乳を10%使った'}).click();
   await expect(milk.locator('.stock-progress')).toHaveAttribute('aria-label',/90%、在庫2本/);
+  await expect(page.locator('.notice-toast')).toHaveCount(0);
   await milk.getByRole('button',{name:'牛乳を10%使った'}).click();
   await milk.getByRole('button',{name:'牛乳の残量を10%増やす'}).click();
   await expect(milk.locator('summary .stock-preview')).toHaveAttribute('aria-label',/開封中 90%/);
