@@ -217,3 +217,6 @@ button.settings-row:hover, a.settings-row:hover { background:#F7F9FB; }
   .icon-picker-heading { top:-18px; }
 }
 @media(max-width:350px) { .icon-picker-options { gap:6px; } .icon-picker-option { padding:8px 2px; } }
+
+.food-icon-button { min-width:44px; min-height:44px; }
+.icon-picker-error { padding:10px 12px; border-radius:8px; background:var(--color-expired-surface); color:var(--color-expired); font-size:13px; }
