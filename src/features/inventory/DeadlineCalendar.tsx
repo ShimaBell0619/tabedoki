@@ -4,6 +4,7 @@ import { deadlineLabel, daysLeft } from '../../domain/deadline.ts';
 import { consumptionAction, kinds, normalizedName, places, units, type Food } from '../../domain/food.ts';
 import { foodGroupKey, groupFoods } from '../../domain/stock.ts';
 import { StockProgress } from './StockProgress';
+import { VolumeControls } from './VolumeControls';
 import { FoodIcon } from './FoodIcon';
 import { selectedFoodIcon } from '../../domain/food-icons';
 import type { InventoryActions } from './FoodGroupCard';
@@ -29,7 +30,7 @@ function fullDate(date: string) {
   return `${value.getUTCMonth() + 1}月${value.getUTCDate()}日（${weekday[value.getUTCDay()]}）`;
 }
 /** Select the expiration date first; the existing per-lot detail actions remain available. */
-export function DeadlineCalendar({ items, today, listed, onShowList, blocked, onEdit, onStatus, onQuantity, onRemove, onLowStock, onAddShopping, iconSelections, onPickIcon }: Props) {
+export function DeadlineCalendar({ items, today, listed, onShowList, blocked, onEdit, onStatus, onQuantity, onVolume, onRemove, onLowStock, onAddShopping, iconSelections, onPickIcon }: Props) {
   const [range, setRange] = useState<Range>(30);
   const [selectedOffset, setSelectedOffset] = useState(0);
   const calendarDate = dateAfter(today, selectedOffset);
@@ -139,6 +140,7 @@ export function DeadlineCalendar({ items, today, listed, onShowList, blocked, on
                 <Button type="button" variant="secondary" disabled={blocked} onClick={() => void onAddShopping(item)}>買い物に追加</Button>}
             </div>}
             <StockProgress item={item} />
+            <VolumeControls item={item} blocked={blocked} onChange={onVolume} />
             <div className="timeline-dialog-actions">
               <Button variant="secondary" type="button" disabled={blocked} aria-label={`${item.name}を編集`}
                 onClick={() => { dismiss(); onEdit(item); }}>編集</Button>
