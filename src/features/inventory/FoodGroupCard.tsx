@@ -1,6 +1,6 @@
 import { cn } from '@/components/ui/utils';
 import { Button } from '@/components/ui/button';
-import { categories, units, places, kinds, tracksVolume, volumeLabel, type VolumePercent, type Food, type FoodStatus, type StoragePlace } from '../../domain/food';
+import { categories, consumptionAction, units, places, kinds, tracksVolume, volumeLabel, type Food, type FoodStatus, type StoragePlace } from '../../domain/food';
 import { deadlineState, deadlineLabel } from '../../domain/deadline';
 import type { FoodGroup } from '../../domain/stock';
 import type { InventoryView, InventorySort } from './selectInventory';
@@ -8,7 +8,6 @@ import { FoodActions } from './FoodActions';
 import { StockAdder } from './StockAdder';
 import { StockProgress } from './StockProgress';
 import { StockPreview } from './StockPreview';
-import { VolumeControls } from './VolumeControls';
 import { Icon } from '../../components/Icon';
 import { FoodIcon } from './FoodIcon';
 import { selectedFoodIcon, type FoodIconSelections } from '../../domain/food-icons';
@@ -22,7 +21,7 @@ export type InventoryActions = {
   onRemove: (item: Food) => void;
   onLowStock: (item: Food, lowStock: boolean) => void;
   onQuantity: (item: Food, delta: -1 | 1) => void;
-  onVolume: (item: Food, percent: VolumePercent | null) => void;
+  onVolume: (item: Food, delta: -10 | 10) => void;
   onAddShopping: (item: Food) => Promise<boolean>;
   onAddStock: (item: Food, deadline: string, quantity: number, place: StoragePlace) => Promise<boolean>;
 };
@@ -78,41 +77,55 @@ export function FoodGroupCard({ group, totalActiveQuantity, today, view, sort, l
         </span>
         <StockPreview group={group} />
       </summary>
-      <div className="food-expanded flex flex-col gap-3 border-t border-border bg-panel p-4 mobile:p-3">
-        <div className="food-meta flex flex-wrap items-center gap-x-2.5 gap-y-[7px] text-xs text-muted mobile:gap-x-2 mobile:gap-y-1.5"><span>{kinds[group.kind]}</span>{sort !== 'category' && <span>{categories[group.category]}</span>}</div>
+      <div className="food-expanded flex flex-col gap-3 border-t border-border bg-panel p-3.5 mobile:p-3">
         {group.items.length > 1 && <h4 className="stock-heading m-0 text-[13px] font-bold text-[#354F70]">期限別の在庫</h4>}
-        <ul className="stock-lot-list m-0 flex list-none flex-col gap-2 p-0">{group.items.map(item => <li className="stock-lot flex min-w-0 flex-col gap-2 rounded-[10px] border border-border bg-white p-3 shadow-[0_1px_3px_rgb(36_50_70/3%)]" key={item.id}>
-          <div className={`stock-lot-info flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1.5 text-[13px] [&_time]:font-bold
-          [&_time]:whitespace-nowrap [&_time]:tabular-nums [&>span:not(.stock-finished)]:text-muted mobile:mb-1.5`}>
-            <time dateTime={item.deadline} aria-label={kinds[item.kind] + ' ' + item.deadline}>
-              {item.deadline.replaceAll('-', '/')}
-            </time>
-            {item.status !== 'active' && <span>{item.quantity}{units[item.unit]}</span>}
-            <span>{places[item.place]}</span>
-            {item.status !== 'active' && <span className="stock-finished text-[#965C4F]">
-              {item.status === 'used' ? '使用完了' : '廃棄済み'}
-            </span>}
-          </div>
-          <StockProgress item={item} />
-          <VolumeControls item={item} blocked={blocked} onChange={onVolume} />
-          <div className="stock-lot-controls flex flex-wrap items-center justify-between gap-2">
-            {item.status === 'active' && <div className="stock-lot-primary-controls">
-              <div className="stock-quantity inline-flex min-h-11 items-center gap-2 rounded-lg border border-border bg-panel px-1">
-                <span className="min-w-10 text-center text-[13px] font-bold tabular-nums whitespace-nowrap" aria-live="polite">{item.quantity}{units[item.unit]}</span>
-                <Button variant="plain" type="button" className="flex size-11 items-center justify-center rounded-md text-primary hover:bg-white"
-                  disabled={blocked || item.quantity >= 999} onClick={() => onQuantity(item, 1)} aria-label={item.name.trim() + 'の数量を1増やす'}>＋</Button>
+        <ul className="stock-lot-list m-0 flex list-none flex-col gap-2 p-0">{group.items.map(item => {
+          const volume = tracksVolume(item);
+          const action = volume ? '10%使った' : consumptionAction(item.consumption, units[item.unit], totalActiveQuantity === 1);
+          return <li className="stock-lot flex min-w-0 flex-col gap-3 rounded-[10px] border border-border bg-white p-3 shadow-[0_1px_3px_rgb(36_50_70/3%)]" key={item.id}>
+            <div className="stock-lot-info flex min-w-0 items-center gap-1.5">
+              <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[13px]">
+                <time className="font-bold tabular-nums whitespace-nowrap" dateTime={item.deadline} aria-label={kinds[item.kind] + ' ' + item.deadline}>
+                  {item.deadline.replaceAll('-', '/')}
+                </time>
+                <span className="text-muted">· {places[item.place]}</span>
+                {sort !== 'category' && <span className="text-xs text-muted">· {categories[group.category]}</span>}
+                {item.status !== 'active' && <span className="stock-finished text-xs text-[#965C4F]">{item.status === 'used' ? '使用完了' : '廃棄済み'}</span>}
               </div>
-              <label className="stock-lot-low inline-flex min-h-11 cursor-pointer items-center gap-[5px] text-xs whitespace-nowrap text-muted [&_input]:size-5 [&_input]:accent-primary">
-                <input type="checkbox" checked={item.lowStock} disabled={blocked}
-                  onChange={event => onLowStock(item, event.target.checked)}
-                  aria-label={item.name + 'の残りわずか'} />残りわずか
-              </label>
+              <FoodActions item={item} blocked={blocked} onEdit={() => onEdit(item)}
+                onConsume={() => onQuantity(item, -1)} onDiscard={() => onStatus(item, 'discarded')} onRemove={() => onRemove(item)} />
+            </div>
+            {item.status === 'active' ? <>
+              <div className="stock-lot-balance flex min-w-0 items-start justify-between gap-2">
+                <StockProgress item={item} />
+                <label className="stock-lot-low inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-1 text-xs whitespace-nowrap text-muted [&_input]:size-5 [&_input]:accent-primary">
+                  <input type="checkbox" checked={item.lowStock} disabled={blocked}
+                    onChange={event => onLowStock(item, event.target.checked)}
+                    aria-label={item.name + 'の残りわずか'} />残りわずか
+                </label>
+              </div>
+              <div className="stock-lot-controls flex min-w-0 gap-2">
+                <Button variant="action" type="button" className="finish-food flex min-h-11 min-w-0 flex-1 items-center justify-center gap-1.5 border-primary bg-primary px-3 text-white hover:bg-[#293F5C] [&_.icon]:size-4 [&_.icon]:brightness-0 [&_.icon]:invert"
+                  disabled={blocked} onClick={() => volume ? onVolume(item, -10) : onQuantity(item, -1)}
+                  aria-label={`${item.name.trim()}を${action}`}>
+                  <Icon name="check" />{action}
+                </Button>
+                <Button variant="secondary" type="button" className="stock-quantity flex size-11 shrink-0 items-center justify-center px-0"
+                  disabled={blocked || (volume ? (item.volumePercent ?? 100) >= 100 : item.quantity >= 999)}
+                  onClick={() => volume ? onVolume(item, 10) : onQuantity(item, 1)}
+                  aria-label={volume ? item.name.trim() + 'の残量を10%増やす' : item.name.trim() + 'の数量を1増やす'}>
+                  <Icon name="plus" />
+                </Button>
+              </div>
+            </> : <div className="flex items-center justify-between gap-3">
+              <span className="text-xs text-muted">{item.quantity}{units[item.unit]}</span>
+              <Button variant="secondary" type="button" className="secondary min-h-11 text-xs" disabled={blocked}
+                onClick={() => onStatus(item, 'active')} aria-label={item.name.trim() + 'を管理中に戻す'}>
+                <Icon name="refresh-cw" />管理中に戻す
+              </Button>
             </div>}
-            <FoodActions item={item} blocked={blocked} onEdit={() => onEdit(item)} lastInGroup={totalActiveQuantity === 1}
-              onConsume={() => onQuantity(item, -1)} onRestore={() => onStatus(item, 'active')}
-              onDiscard={() => onStatus(item, 'discarded')} onRemove={() => onRemove(item)} />
-          </div>
-        </li>)}</ul>
+          </li>;
+        })}</ul>
         {view !== 'finished' && <div className={`stock-group-actions flex flex-wrap items-center justify-between gap-2 [&_.secondary]:min-h-11
           [&_.secondary]:text-[13px] [&_.icon]:size-4 mobile:[&_.secondary]:px-3 mobile:[&_.secondary]:py-[9px]`}>
           <Button variant="secondary" type="button" className="secondary" disabled={blocked}
