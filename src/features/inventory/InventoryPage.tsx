@@ -41,7 +41,7 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
       </Button>
     </div>
     <section className="inventory mb-[30px]" aria-labelledby="inventory-heading">
-      <div className="list-toolbar mb-4 flex flex-wrap items-center justify-between gap-3 mobile:mb-3.5">
+      <div className="list-toolbar mb-3 flex flex-wrap items-center justify-between gap-2">
         <div className={`tabs flex gap-0.5 rounded-[10px] border border-[#E1E6ED] bg-panel p-[3px] [&_button]:min-h-11
           [&_button]:rounded-[7px] [&_button]:border-0 [&_button]:bg-transparent [&_button]:px-[18px] [&_button]:py-2
           [&_button]:text-[13px] [&_button]:font-bold [&_button]:text-muted [&_button[aria-pressed=true]]:bg-white
@@ -76,8 +76,8 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
           onChange={event => setDeadlineFilter(event.target.value as DeadlineFilter)}>
           {Object.entries(deadlineFilters).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
         </NativeSelect></label>
-        <label className="sort-control"><span className="sr-only">一覧の表示方法</span>
-            <NativeSelect className="min-h-11 w-auto rounded-lg border-border p-1.5 text-xs text-muted mobile:p-1.5" value={sort} onChange={event => setSort(event.target.value as typeof sort)}>
+        <label className="sort-control">並び順<span className="sr-only">一覧の表示方法</span>
+            <NativeSelect className="min-h-11 w-full rounded-lg border-[#CAD3DF] px-2.5 py-2 text-sm text-[#334b40]" value={sort} onChange={event => setSort(event.target.value as typeof sort)}>
               <option value="category">カテゴリ別</option><option value="deadline">期限順</option><option value="place">保存場所別</option>
             </NativeSelect>
           </label>
@@ -111,10 +111,10 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
         </Button>}
       </div> :
         sections.filter(section => section.items.length > 0).map(section => <div key={section.name ?? 'deadline'}>
-        {section.name && <h2 className="group-heading mt-[18px] mb-2 text-[15px] font-bold" aria-label={section.name}>
+        {section.name && <h2 className="group-heading mt-3.5 mb-1.5 text-[15px] font-bold" aria-label={section.name}>
           {section.name}<span className="group-count ml-2 text-xs font-medium text-muted" aria-hidden="true">{section.items.length}件</span>
         </h2>}
-        <ul className="food-list m-0 flex list-none flex-col gap-2.5 p-0">{section.items.map(group =>
+        <ul className="food-list m-0 flex list-none flex-col gap-1.5 p-0">{section.items.map(group =>
           <FoodGroupCard key={group.key} group={group} totalActiveQuantity={totalByKey.get(group.key) ?? 0} today={today} view={view} sort={sort}
             listed={listed.has(normalizedName(group.name))} adding={addingKey === group.key}
             onToggleAdd={() => setAddingKey(addingKey === group.key ? null : group.key)} onCloseAdd={() => setAddingKey(null)}
