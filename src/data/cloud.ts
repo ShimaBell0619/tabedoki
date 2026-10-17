@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from './database.types.ts';
-import { validateData } from './storage.ts';
+import { validateData, decodeStored } from './storage.ts';
 import type { AppData } from '../domain/app-data.ts';
 
 export type CloudRow = { user_id: string; data: unknown; revision: number; write_id: string; previous: unknown | null };
@@ -13,8 +13,8 @@ export const CLOUD_SAVE_ERROR = '保存結果を確認できません。入力�
 export function decodeRow(row: CloudRow, userId: string): Snapshot {
   if (row.user_id !== userId || !Number.isSafeInteger(row.revision) || row.revision < 1) throw new CloudError('invalid', 'クラウドデータを確認できません。');
   const payload = row.data as Record<string, unknown> | null;
-  if (!payload || payload.version !== 4) throw new CloudError('invalid', '対応していないクラウド形式です。');
-  return { data: validateData(payload as AppData), revision: row.revision, previous: row.previous === null ? null : validateData(row.previous as AppData), writeId: row.write_id };
+  if (!payload || (payload.version !== 4 && payload.version !== 5)) throw new CloudError('invalid', '対応していないクラウド形式です。');
+  return { data: decodeStored(JSON.stringify(payload)), revision: row.revision, previous: row.previous === null ? null : decodeStored(JSON.stringify(row.previous)), writeId: row.write_id };
 }
 
 /** One account, one serialized writer. RLS is the server-side authorization boundary. */
@@ -36,10 +36,10 @@ export class CloudStore {
     this.busy = true;
     const base = this.snapshot;
     const writeId = crypto.randomUUID();
-    const payload = { data: { version: 4, ...valid }, write_id: writeId };
+    const payload = { data: { version: 5, ...valid }, write_id: writeId };
     try {
       const query = base
-        ? this.client.from('user_data').update({ ...payload, ...(replacement ? { previous: { version: 4, ...base.data } } : {}) }).eq('user_id', this.userId).eq('revision', base.revision)
+        ? this.client.from('user_data').update({ ...payload, ...(replacement ? { previous: { version: 5, ...base.data } } : {}) }).eq('user_id', this.userId).eq('revision', base.revision)
         : this.client.from('user_data').insert({ ...payload, user_id: this.userId });
       const { data, error } = await query.select('user_id,data,revision,write_id,previous').retry(false).maybeSingle();
       if (!error && !data) throw new CloudError('conflict', '別の端末で更新されています。入力を残しています。クラウドを再取得してください。');

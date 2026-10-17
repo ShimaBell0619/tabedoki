@@ -1,5 +1,5 @@
 import { test, expect, cloudData } from './helpers/cloud.mjs';
-import { STORAGE_KEY } from '../../src/data/storage.ts';
+import { V4_STORAGE_KEY as STORAGE_KEY } from '../../src/data/storage.ts';
 import { defaultTemplates } from '../../src/domain/templates.ts';
 
 const stock = (id, name, deadline, quantity, place = 'pantry', extra = {}) => ({
@@ -58,7 +58,7 @@ for (const width of [320, 390, 1440]) {
     await expect(row.locator('.quantity')).toHaveText('6本');
 
     const earliest = row.locator('.stock-lot').first();
-    await earliest.getByRole('button', { name: 'しょうゆを使い切り' }).click();
+    await earliest.getByRole('button', { name: 'しょうゆを1本使い終わった' }).click();
     await expect(row.locator('.stock-lot')).toHaveCount(2);
     await expect(row.locator('summary time')).toHaveAttribute('datetime', '2027-03-31');
     const after = await cloudData(page);
@@ -109,11 +109,11 @@ test('カテゴリ・単位・期限種別が異なる食品を合算せず、�
   const row = page.locator('.food-row').filter({ has: page.locator('summary[aria-label*="賞味期限"]') }).filter({ has: page.getByRole('heading', { name: 'しょうゆ', exact: true }) });
   await row.locator('summary').click();
   await expect(row.locator('.stock-lot')).toHaveCount(3);
-  await expect(row.locator('.quantity')).toHaveText('管理中 3本・完了 5本');
+  await expect(row.locator('.quantity')).toHaveText('管理中 3本・完了 1件');
   await page.getByRole('button', { name: '完了', exact: true }).click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('食品一覧 1件');
   const completed = page.locator('.food-row').first();
-  const restore = completed.getByRole('button', { name: '戻す' });
+  const restore = completed.getByRole('button', { name: 'しょうゆを管理中に戻す' });
   if (!await restore.isVisible()) await completed.locator('summary').click();
   await restore.click();
   await page.getByRole('button', { name: '管理中', exact: true }).click();
@@ -147,7 +147,7 @@ for (const width of [320, 390, 1440]) {
     });
     expect(backgrounds[0]).not.toBe(backgrounds[1]);
     await expect(card.locator('.food-meta')).toHaveText('賞味期限');
-    const finish = card.getByRole('button', { name: 'みそを使い切り' });
+    const finish = card.getByRole('button', { name: 'みそを使い終わった' });
     await expect(finish).toBeVisible();
     const finishBg = await finish.evaluate(node => getComputedStyle(node).backgroundColor);
     const editBg = await card.getByRole('button', { name: 'みそを編集' }).evaluate(node => getComputedStyle(node).backgroundColor);
@@ -180,7 +180,7 @@ for (const width of [320, 390, 1440]) {
     const actions = await lot.locator('.stock-lot-controls').boundingBox();
     if (width <= 390) expect(actions.y).toBeGreaterThanOrEqual(infoBox.y + infoBox.height - 1);
     const edit = await lot.getByRole('button',{name:'みそを編集'}).boundingBox();
-    const use = await lot.getByRole('button',{name:'みそを使い切り'}).boundingBox();
+    const use = await lot.getByRole('button',{name:'みそを使い終わった'}).boundingBox();
     const more = await lot.getByRole('button',{name:'みそのその他の操作'}).boundingBox();
     expect(Math.abs(edit.y - use.y)).toBeLessThanOrEqual(1);
     expect(Math.abs(more.y - use.y)).toBeLessThanOrEqual(1);
@@ -200,12 +200,12 @@ test('数量の増減と最終1個の使い切りを在庫単位で保存する'
   await row.locator('summary').click();
   const lots = row.locator('.stock-lot');
   const second = lots.filter({ has: page.getByText('2027/03/31', { exact: true }) });
-  await second.getByRole('button', { name: 'しょうゆの数量を1減らす' }).click();
+  await second.getByRole('button', { name: 'しょうゆを1本使い終わった' }).click();
   expect((await cloudData(page)).items.find(item => item.id === 'new').quantity).toBe(1);
   await second.getByRole('button', { name: 'しょうゆの数量を1増やす' }).click();
   expect((await cloudData(page)).items.find(item => item.id === 'new').quantity).toBe(2);
   const first = lots.filter({ has: page.getByText('2026/10/31', { exact: true }) });
-  await first.getByRole('button', { name: 'しょうゆの数量を1減らす' }).click();
+  await first.getByRole('button', { name: 'しょうゆを1本使い終わった' }).click();
   expect((await cloudData(page)).items.find(item => item.id === 'old')).toMatchObject({ quantity: 1, status: 'used' });
   await page.getByRole('button', { name: '完了', exact: true }).click();
   await expect(page.locator('.stock-lot').first()).toHaveCount(1);

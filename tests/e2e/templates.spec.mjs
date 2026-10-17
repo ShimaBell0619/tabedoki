@@ -2,9 +2,10 @@ import { cloudData, setCloudData } from './helpers/cloud.mjs';
 import { openCandidates, openFoodActions } from './helpers/inventory.mjs';
 import { test, expect } from './helpers/cloud.mjs';
 import { defaultTemplates } from '../../src/domain/templates.ts';
-import { STORAGE_KEY } from '../../src/data/storage.ts';
+import { V4_STORAGE_KEY as STORAGE_KEY } from '../../src/data/storage.ts';
 
 const stock = { id: 'stock-1', name: '在庫の牛乳', kind: 'use-by', deadline: '2026-12-01', quantity: 7, unit: 'bottle', category: 'eggs-dairy', place: 'chilled', status: 'active', lowStock: false };
+const normalizedStock = { ...stock, initialQuantity: 7, consumption: 'drink' };
 const initial = () => ({ version: 4, items: [stock], templates: defaultTemplates(), shopping: [] });
 let errors;
 test.beforeEach(({ page }) => {
@@ -39,7 +40,7 @@ test('定番の追加・編集・削除を保存し、在庫を変えず新規�
   await dialog.getByLabel('初期数量').fill('2');
   await dialog.getByRole('button', { name: '定番を保存', exact: true }).click();
   await expect(dialog.getByRole('button', { name: '定番の低脂肪牛乳を編集' })).toBeVisible();
-  expect(JSON.parse(await saved(page)).items).toEqual([stock]);
+  expect(JSON.parse(await saved(page)).items).toEqual([normalizedStock]);
   expect(page.cloud.writes).toBe(1);
   await dialog.getByRole('button', { name: '定番食品を追加', exact: true }).click();
   await dialog.getByRole('textbox', { name: /定番食品名/ }).fill('オートミール');
@@ -61,7 +62,7 @@ test('定番の追加・編集・削除を保存し、在庫を変えず新規�
   await dialog.getByLabel(/期限の日付/).fill('2026-12-20');
   await dialog.getByRole('button', { name: '登録する', exact: true }).click();
   const foods = JSON.parse(await saved(page)).items;
-  expect(foods[0]).toEqual(stock);
+  expect(foods[0]).toEqual(normalizedStock);
   expect(foods[1]).toMatchObject({ name: '低脂肪牛乳', quantity: 2, kind: 'use-by', unit: 'bottle', deadline: '2026-12-20' });
   expect(foods[1].id).not.toBe(after.templates.find(x => x.name === '低脂肪牛乳').id);
   dialog = await manage(page);
@@ -103,12 +104,13 @@ test('定番の重複名を拒否し、50件上限を表示する', async ({ pag
   const raw = JSON.stringify(initial());
   await seed(page, { [STORAGE_KEY]: raw });
   await page.goto('/');
+  const beforeInvalid = JSON.parse(await saved(page));
   const dialog = await manage(page);
   await dialog.getByRole('button', { name: '定番食品を追加' }).click();
   await dialog.getByRole('textbox').fill('  牛乳  ');
   await dialog.getByRole('button', { name: '定番を保存' }).click();
   await expect(dialog.getByRole('alert')).toContainText('同じ名前');
-  expect(JSON.parse(await saved(page))).toEqual(JSON.parse(raw));
+  expect(JSON.parse(await saved(page))).toEqual(beforeInvalid);
   await dialog.getByRole('button', { name: '閉じる' }).click();
   const templates = Array.from({ length: 50 }, (_, i) => ({ ...defaultTemplates()[0], id: 'template-' + i, name: '定番' + i }));
   await setCloudData(page, { version: 4, items: [stock], templates, shopping: [] });

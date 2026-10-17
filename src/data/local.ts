@@ -35,7 +35,7 @@ export class LocalStore implements DataStore {
     try {
       saved = writeData(this.storage, next);
       const raw = this.storage.getItem(STORAGE_KEY);
-      if (raw === null || JSON.stringify(decodeStored(raw, 4)) !== JSON.stringify(saved)) {
+      if (raw === null || JSON.stringify(decodeStored(raw, 5)) !== JSON.stringify(saved)) {
         throw new Error(SAVE_ERROR);
       }
       this.raw = raw;

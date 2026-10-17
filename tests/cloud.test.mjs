@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { CloudStore, decodeRow } from '../src/data/cloud.ts';
 import { claimMigration, localSource, migrationOwner } from '../src/data/migration.ts';
-import { STORAGE_KEY, V3_STORAGE_KEY } from '../src/data/storage.ts';
+import { STORAGE_KEY, V4_STORAGE_KEY, V3_STORAGE_KEY } from '../src/data/storage.ts';
 const data = { items: [], templates: [], shopping: [] };
 const row = (revision=1, id='A', value=data, write='existing') => ({ user_id:id,data:{version:4,...value},revision,write_id:write,previous:null });
 function client(initial=row()) {
@@ -28,7 +28,7 @@ function client(initial=row()) {
 }
 test('CAS rejects stale update and initial insert without overwriting the other device',async()=>{
   const c=client(), a=new CloudStore(c,'A'),b=new CloudStore(c,'A');await a.load();await b.load();
-  await a.save(data,true); assert.equal(c.row.revision,2);assert.deepEqual(c.row.previous,{version:4,...data});
+  await a.save(data,true); assert.equal(c.row.revision,2);assert.deepEqual(c.row.previous,{version:5,...data});
   await assert.rejects(b.save(data),e=>e.kind==='conflict');assert.equal(c.row.revision,2);
   const fresh=new CloudStore(c,'A'); await assert.rejects(fresh.save(data),e=>e.kind==='conflict');
 });
@@ -57,4 +57,21 @@ test('migration reads v1-v4 without writes and binds before upload across accoun
 test('failed migration backup never permits upload and preserves the original',()=>{
   const raw=JSON.stringify({version:4,...data});const storage={getItem:key=>key===STORAGE_KEY?raw:null,setItem(){throw Error('quota');}};
   assert.throws(()=>claimMigration(storage,'project','A',localSource(storage)));assert.equal(storage.getItem(STORAGE_KEY),raw);
+});
+
+test('v4とv5の端末データを正本優先で明示移行でき、原文に書き込まない', () => {
+  const map = new Map();
+  const store = {getItem: key => map.get(key) ?? null,setItem: (key,value)=>map.set(key,value)};
+  const v4 = JSON.stringify({ version: 4, items: [], templates: [], shopping: [] });
+  const v5 = JSON.stringify({ version: 5, items: [], templates: [], shopping: [] });
+  map.set(V4_STORAGE_KEY, v4);
+  assert.deepEqual(localSource(store)?.data, data);
+  assert.equal(localSource(store)?.raw, v4);
+  map.set(STORAGE_KEY, v5);
+  assert.deepEqual(localSource(store)?.data, data);
+  assert.equal(localSource(store)?.raw, v5);
+  assert.equal(map.get(STORAGE_KEY), v5);
+  map.set(STORAGE_KEY, '{broken');
+  assert.equal(localSource(store)?.data, null);
+  assert.equal(localSource(store)?.raw, '{broken');
 });

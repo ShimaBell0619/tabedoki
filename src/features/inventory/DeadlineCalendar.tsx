@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { deadlineLabel, daysLeft } from '../../domain/deadline.ts';
-import { kinds, normalizedName, places, units, type Food } from '../../domain/food.ts';
+import { consumptionAction, kinds, normalizedName, places, units, type Food } from '../../domain/food.ts';
+import { foodGroupKey, groupFoods } from '../../domain/stock.ts';
+import { StockProgress } from './StockProgress';
 import { FoodIcon } from './FoodIcon';
 import { selectedFoodIcon } from '../../domain/food-icons';
 import type { InventoryActions } from './FoodGroupCard';
@@ -27,7 +29,7 @@ function fullDate(date: string) {
   return `${value.getUTCMonth() + 1}月${value.getUTCDate()}日（${weekday[value.getUTCDay()]}）`;
 }
 /** Select the expiration date first; the existing per-lot detail actions remain available. */
-export function DeadlineCalendar({ items, today, listed, onShowList, blocked, onEdit, onStatus, onRemove, onLowStock, onAddShopping, iconSelections, onPickIcon }: Props) {
+export function DeadlineCalendar({ items, today, listed, onShowList, blocked, onEdit, onStatus, onQuantity, onRemove, onLowStock, onAddShopping, iconSelections, onPickIcon }: Props) {
   const [range, setRange] = useState<Range>(30);
   const [selectedOffset, setSelectedOffset] = useState(0);
   const calendarDate = dateAfter(today, selectedOffset);
@@ -35,6 +37,7 @@ export function DeadlineCalendar({ items, today, listed, onShowList, blocked, on
   const dialogRef = useRef<HTMLDialogElement>(null);
   const railRef = useRef<HTMLDivElement>(null);
   const { expired, visible, later } = selectTimeline(items, today, range);
+  const totalByKey = new Map(groupFoods(items.filter(item => item.status === 'active')).map(group => [group.key, group.activeQuantity]));
   const selectedDay = [...expired, ...visible].find(day => day.deadline === selectedDate);
   const current = visible.find(day => day.deadline === calendarDate);
   const dates = Array.from({ length: range + 1 }, (_, i) => dateAfter(today, i));
@@ -127,7 +130,7 @@ export function DeadlineCalendar({ items, today, listed, onShowList, blocked, on
             </div>
             <div className="timeline-dialog-item-meta">
               <span>{kinds[item.kind]}</span>
-              {item.status !== 'active' && <span>{item.status === 'used' ? '使い切り済み' : '廃棄済み'}</span>}
+              {item.status !== 'active' && <span>{item.status === 'used' ? '使用完了' : '廃棄済み'}</span>}
             </div>
             {item.status === 'active' && <div className="timeline-dialog-extras">
               <label><input type="checkbox" checked={item.lowStock} disabled={blocked}
@@ -135,13 +138,14 @@ export function DeadlineCalendar({ items, today, listed, onShowList, blocked, on
               {listed.has(normalizedName(item.name)) ? <span>買い物に追加済み</span> :
                 <Button type="button" variant="secondary" disabled={blocked} onClick={() => void onAddShopping(item)}>買い物に追加</Button>}
             </div>}
+            <StockProgress item={item} />
             <div className="timeline-dialog-actions">
               <Button variant="secondary" type="button" disabled={blocked} aria-label={`${item.name}を編集`}
                 onClick={() => { dismiss(); onEdit(item); }}>編集</Button>
               <Button variant="default" type="button" disabled={blocked}
-                aria-label={item.status === 'active' ? `${item.name}を使い切り` : `${item.name}を管理中に戻す`}
-                onClick={() => { dismiss(); onStatus(item, item.status === 'active' ? 'used' : 'active'); }}>
-                {item.status === 'active' ? '使い切り' : '戻す'}
+                aria-label={`${item.name.trim()}を${item.status === 'active' ? consumptionAction(item.consumption, units[item.unit], totalByKey.get(foodGroupKey(item)) === 1) : '管理中に戻す'}`}
+                onClick={() => { dismiss(); if (item.status === 'active') onQuantity(item, -1); else onStatus(item, 'active'); }}>
+                {item.status === 'active' ? consumptionAction(item.consumption, units[item.unit], totalByKey.get(foodGroupKey(item)) === 1) : '戻す'}
               </Button>
               <details className="timeline-more">
                 <summary>その他の操作</summary>

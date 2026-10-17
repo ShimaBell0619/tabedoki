@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { STORAGE_KEY } from '../../src/data/storage.ts';
+import { STORAGE_KEY, V4_STORAGE_KEY } from '../../src/data/storage.ts';
 import { defaultTemplates } from '../../src/domain/templates.ts';
 
 test('未ログインでもアイコン設定が端末保存され、再読み込み後も残る', async ({ page }) => {
@@ -9,7 +9,7 @@ test('未ログインでもアイコン設定が端末保存され、再読み�
     localStorage.setItem(key, JSON.stringify(data));
     sessionStorage.setItem('icon-seeded', 'yes');
   }, {
-    key: STORAGE_KEY,
+    key: V4_STORAGE_KEY,
     data: { version: 4, shopping: [], templates: defaultTemplates(),
       items: [{ id: 'test', name: 'たまご', category: 'eggs-dairy', kind: 'best-before',
         deadline: '2026-12-31', quantity: 3, unit: 'piece', place: 'chilled', status: 'active', lowStock: false }] },

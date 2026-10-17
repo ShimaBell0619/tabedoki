@@ -4,11 +4,11 @@ import { defaultTemplates, MAX_TEMPLATES } from '../src/domain/templates.ts';
 import { MAX_ITEMS } from '../src/domain/food.ts';
 import { MAX_SHOPPING, shoppingFrom, registerPurchase } from '../src/domain/shopping.ts';
 import {
-  STORAGE_KEY, V3_STORAGE_KEY, RECOVERY_KEY, V2_STORAGE_KEY, LEGACY_STORAGE_KEY, BACKUP_MAX_BYTES,
+  STORAGE_KEY, V4_STORAGE_KEY, V3_STORAGE_KEY, RECOVERY_KEY, V2_STORAGE_KEY, LEGACY_STORAGE_KEY, BACKUP_MAX_BYTES,
   readData, writeData, replaceData, previousData, previousRaw, validateBackup, makeBackup, applyBackup,
 } from '../src/data/storage.ts';
 
-const food = { id: 'food', name: ' 牛乳 ', category: 'eggs-dairy', kind: 'use-by', deadline: '2026-12-31', quantity: 3, unit: 'bottle', place: 'chilled', status: 'active', lowStock: true };
+const food = { id: 'food', name: ' 牛乳 ', category: 'eggs-dairy', kind: 'use-by', deadline: '2026-12-31', quantity: 3, unit: 'bottle', place: 'chilled', status: 'active', lowStock: true, initialQuantity: 3, consumption: 'drink' };
 const data = { items: [food], templates: [], shopping: [shoppingFrom('パン', 'shop')] };
 function storage(seed = {}, failKey = null, failRead = null) {
   const map = new Map(Object.entries(seed));
@@ -20,12 +20,12 @@ function storage(seed = {}, failKey = null, failRead = null) {
 }
 
 test('v3の原文・順序・全項目・空定番を退避して一度だけv4へ移行する', () => {
-  const { lowStock, ...old } = food;
+  const { lowStock, initialQuantity, consumption, ...old } = food;
   const raw = JSON.stringify({ version: 3, items: [old, { ...old, id: 'second', status: 'discarded' }], templates: [] });
   const store = storage({ [V3_STORAGE_KEY]: raw });
   const result = readData(store);
   assert.equal(result.error, '');
-  assert.deepEqual(result.items, [{ ...old, lowStock: false }, { ...old, id: 'second', status: 'discarded', lowStock: false }]);
+  assert.deepEqual(result.items, [{ ...old, lowStock: false, initialQuantity: 3, consumption: 'drink' }, { ...old, id: 'second', status: 'discarded', lowStock: false, initialQuantity: 3, consumption: 'drink' }]);
   assert.deepEqual(result.templates, []); assert.deepEqual(result.shopping, []);
   assert.equal(store.map.get(RECOVERY_KEY), raw);
   assert.deepEqual(store.writes.map(x => x[0]), [RECOVERY_KEY, STORAGE_KEY]);
@@ -46,14 +46,15 @@ test('退避失敗・正本失敗・確認失敗を区別し既存原文と読�
   }
   const store = storage({ [V3_STORAGE_KEY]: raw }, null, STORAGE_KEY);
   assert.match(readData(store).error, /保存結果を確認できません/);
-  assert.equal(JSON.parse(store.map.get(STORAGE_KEY)).version, 4);
+  assert.equal(JSON.parse(store.map.get(STORAGE_KEY)).version, 5);
   assert.equal(store.map.get(RECOVERY_KEY), raw);
 });
 
 test('v4正本があれば古いタブによるv3の上書きを無視し、v4正本の破損でもv3へ戻さない', () => {
   const previous = JSON.stringify({ version: 3, items: [{ ...food, lowStock: undefined }], templates: [] });
-  const current = JSON.stringify({ version: 4, ...data });
-  const store = storage({ [V3_STORAGE_KEY]: previous, [STORAGE_KEY]: current });
+  const current = JSON.stringify({ version: 5, ...data });
+  const staleV4 = JSON.stringify({ version: 4, items: [{ ...food, initialQuantity: undefined, consumption: undefined }], templates: [], shopping: [] });
+  const store = storage({ [V3_STORAGE_KEY]: previous, [V4_STORAGE_KEY]: staleV4, [STORAGE_KEY]: current });
   assert.deepEqual(readData(store).items, [food]);
   store.setItem(V3_STORAGE_KEY, JSON.stringify({ version: 3, items: [], templates: [] }));
   assert.deepEqual(readData(store).shopping, data.shopping);
@@ -76,7 +77,7 @@ test('最新の破損/未知形式は旧キーへ戻らず原文を取得する�
 });
 
 test('v1/v2/v3/v4復元の置換/保持範囲と旧lowの初期化を検証する', () => {
-  const { category, unit, lowStock, ...legacy } = food;
+  const { category, unit, lowStock, initialQuantity, consumption, ...legacy } = food;
   for (const version of [1, 2, 3, 4]) {
     const incoming = validateBackup({ version, items: [version === 1 ? legacy : food], templates: [], shopping: [] });
     const next = applyBackup(data, incoming);
@@ -91,7 +92,7 @@ test('v1/v2/v3/v4復元の置換/保持範囲と旧lowの初期化を検証す�
 });
 
 test('置換前の退避・初期化・直前復元は一世代だけ保持し通常編集では更新しない', () => {
-  const raw = JSON.stringify({ version: 4, ...data });
+  const raw = JSON.stringify({ version: 5, ...data });
   const store = storage({ [STORAGE_KEY]: raw });
   replaceData(store, { items: [], templates: [], shopping: [] });
   assert.equal(store.map.get(RECOVERY_KEY), raw);
@@ -113,7 +114,7 @@ test('購入登録+買い物削除は検証して正本へ1回保存し、失敗
   const shopping = [{ ...data.shopping[0], bought: true }];
   const current = { ...data, shopping };
   const fresh = { ...food, id: 'fresh', lowStock: false };
-  const raw = JSON.stringify({ version: 4, ...current });
+  const raw = JSON.stringify({ version: 5, ...current });
   const failed = storage({ [STORAGE_KEY]: raw }, STORAGE_KEY);
   const next = registerPurchase(current, shopping[0].id, fresh);
   assert.throws(() => writeData(failed, next));

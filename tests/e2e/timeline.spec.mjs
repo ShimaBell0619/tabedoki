@@ -1,5 +1,5 @@
 import { test, expect, cloudData } from './helpers/cloud.mjs';
-import { STORAGE_KEY } from '../../src/data/storage.ts';
+import { V4_STORAGE_KEY as STORAGE_KEY } from '../../src/data/storage.ts';
 import { defaultTemplates } from '../../src/domain/templates.ts';
 
 const item = (id, name, deadline, extra = {}) => ({
@@ -57,10 +57,11 @@ for (const width of [320, 390, 1440]) {
       expect(Math.abs(bounds.y + bounds.height / 2 - 850 / 2)).toBeLessThanOrEqual(2);
     }
     await expect(dialog.locator('.timeline-dialog-item')).toHaveCount(2);
-    await dialog.getByRole('button', { name: 'たまごを使い切り' }).click();
+    await dialog.getByRole('button', { name: 'たまごを1個食べた' }).click();
     await expect(dialog).not.toBeVisible();
-    expect((await cloudData(page)).items.find(entry => entry.id === 'egg').status).toBe('used');
-    await expect(page.locator('.calendar-food')).toHaveCount(1);
+    expect((await cloudData(page)).items.find(entry => entry.id === 'egg').status).toBe('active');
+    expect((await cloudData(page)).items.find(entry => entry.id === 'egg').quantity).toBe(5);
+    await expect(page.locator('.calendar-food')).toHaveCount(2);
 
     await page.getByRole('button', { name: '90日', exact: true }).click();
     await page.getByRole('button', { name: '1月15日（金）、1件' }).click();

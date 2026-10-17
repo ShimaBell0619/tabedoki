@@ -6,6 +6,7 @@ import type { FoodGroup } from '../../domain/stock';
 import type { InventoryView, InventorySort } from './selectInventory';
 import { FoodActions } from './FoodActions';
 import { StockAdder } from './StockAdder';
+import { StockProgress } from './StockProgress';
 import { Icon } from '../../components/Icon';
 import { FoodIcon } from './FoodIcon';
 import { selectedFoodIcon, type FoodIconSelections } from '../../domain/food-icons';
@@ -25,6 +26,7 @@ export type InventoryActions = {
 
 type Props = InventoryActions & {
   group: FoodGroup;
+  totalActiveQuantity: number;
   today: string;
   view: InventoryView;
   sort: InventorySort;
@@ -34,19 +36,19 @@ type Props = InventoryActions & {
   onCloseAdd: () => void;
 };
 
-export function FoodGroupCard({ group, today, view, sort, listed, adding, onToggleAdd, onCloseAdd, blocked, onEdit, onStatus, onRemove, onLowStock, onQuantity, onAddShopping, onAddStock, iconSelections, onPickIcon }: Props) {
+export function FoodGroupCard({ group, totalActiveQuantity, today, view, sort, listed, adding, onToggleAdd, onCloseAdd, blocked, onEdit, onStatus, onRemove, onLowStock, onQuantity, onAddShopping, onAddStock, iconSelections, onPickIcon }: Props) {
   const main = group.primary;
   const state = main.status === 'active' ? deadlineState(main.deadline, today) : 'later';
   const date = (main.deadline.slice(0, 4) !== today.slice(0, 4) ? main.deadline.slice(0, 4) + '/' : '') +
     Number(main.deadline.slice(5, 7)) + '/' + Number(main.deadline.slice(8));
-  const amount = view === 'all' && group.finishedQuantity > 0
-    ? (group.activeQuantity > 0 ? '管理中 ' + group.activeQuantity + units[group.unit] + '・' : '') +
-      '完了 ' + group.finishedQuantity + units[group.unit]
-    : group.quantity + units[group.unit];
+  const finishedCount = group.items.filter(item => item.status !== 'active').length;
+  const amount = finishedCount > 0
+    ? (group.activeQuantity > 0 ? '管理中 ' + group.activeQuantity + units[group.unit] + '・' : '') + '完了 ' + finishedCount + '件'
+    : group.activeQuantity + units[group.unit];
   return <li className={cn('food-row min-w-0 rounded-[13px] border border-border bg-white shadow-[0_2px_8px_rgb(33_43_56/4%)] has-[.food-details[open]]:border-[#A7B9CF] has-[.food-details[open]]:shadow-[0_4px_16px_rgb(33_43_56/7%)]', group.activeQuantity === 0 && 'completed')} key={group.key}>
     <details className="food-details overflow-hidden rounded-xl open:[&>summary]:bg-white">
       <summary className="grid min-h-[68px] cursor-pointer list-none grid-cols-[minmax(0,1fr)_auto_auto] grid-rows-[auto_auto] items-center gap-x-2 gap-y-1 px-4 py-2.5 focus-visible:outline-offset-[-3px] mobile:px-3 mobile:py-2.5" aria-label={group.name + 'の詳細、' + amount + '、' + kinds[group.kind] + ' ' + main.deadline + '、' +
-        (main.status === 'active' ? deadlineLabel(main.deadline, today) : main.status === 'used' ? '使い切り済み' : '廃棄済み')}>
+        (main.status === 'active' ? deadlineLabel(main.deadline, today) : main.status === 'used' ? '使用完了' : '廃棄済み')}>
         <div className="food-primary col-start-1 row-start-1 flex min-w-0 items-center gap-3 [&_h3]:m-0 [&_h3]:text-[17px] [&_h3]:leading-[1.4] [&_h3]:font-[750] [&_h3]:wrap-anywhere mobile:[&_h3]:text-base">
           <button type="button" className="food-icon food-icon-button" aria-label={group.name + 'のアイコンを変更'}
             disabled={blocked} onClick={event => { event.preventDefault(); event.stopPropagation(); onPickIcon(group.name, group.category); }}
@@ -61,7 +63,7 @@ export function FoodGroupCard({ group, today, view, sort, listed, adding, onTogg
           'text-muted': state === 'later',
         })}>
           {main.status === 'active' ? deadlineLabel(main.deadline, today) :
-            main.status === 'used' ? '使い切り済み' : '廃棄済み'}
+            main.status === 'used' ? '使用完了' : '廃棄済み'}
         </span>
         <div className="food-secondary col-span-3 row-start-2 flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1 text-[13px] text-muted mobile:text-xs">
           <span className="quantity whitespace-nowrap">{amount}</span>
@@ -84,13 +86,12 @@ export function FoodGroupCard({ group, today, view, sort, listed, adding, onTogg
             {item.status !== 'active' && <span>{item.quantity}{units[item.unit]}</span>}
             <span>{places[item.place]}</span>
             {item.status !== 'active' && <span className="stock-finished text-[#965C4F]">
-              {item.status === 'used' ? '使い切り済み' : '廃棄済み'}
+              {item.status === 'used' ? '使用完了' : '廃棄済み'}
             </span>}
           </div>
+          <StockProgress item={item} />
           <div className="stock-lot-controls flex flex-wrap items-center justify-between gap-2">
             {item.status === 'active' && <div className="stock-quantity inline-flex min-h-11 items-center gap-2 rounded-lg border border-border bg-panel px-1">
-              <Button variant="plain" type="button" className="flex size-11 items-center justify-center rounded-md text-primary hover:bg-white"
-                disabled={blocked} onClick={() => onQuantity(item, -1)} aria-label={item.name.trim() + 'の数量を1減らす'}>−</Button>
               <span className="min-w-10 text-center text-[13px] font-bold tabular-nums whitespace-nowrap" aria-live="polite">{item.quantity}{units[item.unit]}</span>
               <Button variant="plain" type="button" className="flex size-11 items-center justify-center rounded-md text-primary hover:bg-white"
                 disabled={blocked || item.quantity >= 999} onClick={() => onQuantity(item, 1)} aria-label={item.name.trim() + 'の数量を1増やす'}>＋</Button>
@@ -101,8 +102,8 @@ export function FoodGroupCard({ group, today, view, sort, listed, adding, onTogg
                   onChange={event => onLowStock(item, event.target.checked)}
                   aria-label={item.name + 'の残りわずか'} />残りわずか
               </label>}
-              <FoodActions item={item} blocked={blocked} onEdit={() => onEdit(item)}
-                onFinish={() => onStatus(item, item.status === 'active' ? 'used' : 'active')}
+              <FoodActions item={item} blocked={blocked} onEdit={() => onEdit(item)} lastInGroup={totalActiveQuantity === 1}
+                onConsume={() => onQuantity(item, -1)} onRestore={() => onStatus(item, 'active')}
                 onDiscard={() => onStatus(item, 'discarded')} onRemove={() => onRemove(item)} />
             </div>
           </div>

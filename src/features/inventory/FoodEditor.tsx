@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { NativeSelect } from '@/components/ui/native-select';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { applyFoodCandidate, previousFoods } from '../../domain/templates';
-import { categories, initialFoodForm, units, places, kinds, type DeadlineKind, type Food, type FoodCategory, type FoodForm, type FoodTemplate, type QuantityUnit, type StoragePlace } from '../../domain/food';
+import { categories, initialFoodForm, inferConsumption, consumptionLabels, units, places, kinds, type DeadlineKind, type Food, type FoodCategory, type FoodForm, type FoodTemplate, type QuantityUnit, type StoragePlace } from '../../domain/food';
 import { parseDeadline } from '../../domain/deadline';
 import { TemplateManager } from '../templates/TemplateManager';
 import { DeadlineInput } from './DeadlineInput';
@@ -30,7 +30,7 @@ export function FoodEditor({ item, purchase, templatesOnly, items, templates, bl
   const editingId = item?.id;
   const [form, setForm] = useState<FoodForm>(() => item ? {
     name: item.name, category: item.category, kind: item.kind, deadline: item.deadline,
-    quantity: item.quantity, unit: item.unit, place: item.place,
+    quantity: item.quantity, unit: item.unit, place: item.place, consumption: item.consumption,
   } : purchase ? foodFormFromShopping(purchase) : initialFoodForm());
   const [managingTemplates, setManagingTemplates] = useState(templatesOnly);
   const [candidatesOpen, setCandidatesOpen] = useState(false);
@@ -101,7 +101,7 @@ export function FoodEditor({ item, purchase, templatesOnly, items, templates, bl
         </div>}
         <label>食品名 <span className="required ml-1 text-[11px] font-medium text-expired">必須</span>
           <Input ref={nameInput} required maxLength={80} placeholder="例：牛乳" value={form.name}
-            onChange={event => { setForm({ ...form, name: event.target.value }); setSelectedCandidate(null); }} />
+            onChange={event => { const name = event.target.value; setForm({ ...form, name, consumption: form.consumption === inferConsumption(form.name, form.category) ? inferConsumption(name, form.category) : form.consumption }); setSelectedCandidate(null); }} />
         </label>
         <DeadlineInput value={form.deadline} inputRef={deadlineInput} onChange={deadline => setForm({ ...form, deadline })} />
         {!editingId && <div>
@@ -137,12 +137,15 @@ export function FoodEditor({ item, purchase, templatesOnly, items, templates, bl
             {Object.entries(units).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </NativeSelect></label>
         </div>
-        {form.unit === 'pack' && <p className="form-help mt-[-4px] text-xs leading-[1.7] text-muted">3個組の納豆なら1パック。個別に数える場合は「個」に変更してください。</p>}
+        {form.unit === 'pack' && <p className="form-help mt-[-4px] text-xs leading-[1.7] text-muted">納豆3個組は、個別に減らす場合「3パック」として登録します。</p>}
+        <label>在庫を減らすときの表現<NativeSelect value={form.consumption} onChange={event => setForm({ ...form, consumption: event.target.value as FoodForm['consumption'] })}>
+          {Object.entries(consumptionLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+        </NativeSelect></label>
         <div className="form-group grid grid-cols-2 gap-3 mobile:gap-2.5">
           <label>保存場所<NativeSelect value={form.place} onChange={event => setForm({ ...form, place: event.target.value as StoragePlace })}>
             {Object.entries(places).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </NativeSelect></label>
-          <label>食品カテゴリ<NativeSelect value={form.category} onChange={event => setForm({ ...form, category: event.target.value as FoodCategory })}>
+          <label>食品カテゴリ<NativeSelect value={form.category} onChange={event => { const category = event.target.value as FoodCategory; setForm({ ...form, category, consumption: form.consumption === inferConsumption(form.name, form.category) ? inferConsumption(form.name, category) : form.consumption }); }}>
             {Object.entries(categories).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </NativeSelect></label>
         </div>

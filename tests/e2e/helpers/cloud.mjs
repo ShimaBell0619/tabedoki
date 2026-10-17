@@ -25,9 +25,9 @@ export const test = base.extend({
       if (!request.url().includes('/rest/v1/user_data')) { await route.fulfill({status:200,contentType:'application/json',body:'{}'}); return; }
       const db = page.cloud;
       if (db.row === undefined) {
-        const source = await page.evaluate(() => ['tabedoki:data:v4','tabedoki:data:v3','tabedoki:foods:v2','tabedoki:foods:v1'].map(key=>localStorage.getItem(key)).find(value=>value!==null)??null);
+        const source = await page.evaluate(() => ['tabedoki:data:v5','tabedoki:data:v4','tabedoki:data:v3','tabedoki:foods:v2','tabedoki:foods:v1'].map(key=>localStorage.getItem(key)).find(value=>value!==null)??null);
         const data = source ? decodeStored(source) : {items:[],templates:defaultTemplates(),shopping:[]};
-        db.row = {user_id:userId,data:{version:4,...data},revision:1,write_id:'existing',previous:null};
+        db.row = {user_id:userId,data:{version:5,...data},revision:1,write_id:'existing',previous:null};
       }
       if (db.offline) { await route.abort(); return; }
       const write = request.method() !== 'GET';

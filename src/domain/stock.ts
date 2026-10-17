@@ -47,15 +47,15 @@ export function addStockToFoods(
 ): Food[] {
   const candidate: Food = {
     id, name: base.name.trim(), category: base.category, kind: base.kind, unit: base.unit,
-    ...lot, status: 'active', lowStock: false,
+    ...lot, initialQuantity: lot.quantity, consumption: base.consumption, status: 'active', lowStock: false,
   };
   if (!isFood(candidate)) throw new Error('期限・数量・保存場所を確認してください。');
   const existing = items.find(item =>
     item.status === 'active' && foodGroupKey(item) === foodGroupKey(base) &&
     item.deadline === lot.deadline && item.place === lot.place);
   if (existing) {
-    if (existing.quantity + lot.quantity > 999) throw new Error('同じ期限・保存場所の在庫は999まで登録できます。');
-    return items.map(item => item.id === existing.id ? { ...item, quantity: item.quantity + lot.quantity } : item);
+    if (existing.quantity + lot.quantity > 999 || existing.initialQuantity + lot.quantity > 999) throw new Error('同じ期限・保存場所の在庫は999まで登録できます。');
+    return items.map(item => item.id === existing.id ? { ...item, quantity: item.quantity + lot.quantity, initialQuantity: item.initialQuantity + lot.quantity } : item);
   }
   if (items.length >= MAX_ITEMS) throw new Error('食品は最大3,000件まで登録できます。');
   return [...items, candidate];

@@ -1,10 +1,10 @@
-import { decodeStored, STORAGE_KEY, V3_STORAGE_KEY, V2_STORAGE_KEY, LEGACY_STORAGE_KEY } from './storage.ts';
+import { decodeStored, STORAGE_KEY, V4_STORAGE_KEY, V3_STORAGE_KEY, V2_STORAGE_KEY, LEGACY_STORAGE_KEY } from './storage.ts';
 import type { AppData } from '../domain/app-data.ts';
 type Store = Pick<Storage, 'getItem' | 'setItem'>;
 export type LocalSource = { raw: string; data: AppData | null; error: string };
 /** Read without upgrading or touching any legacy key, even for v1-v3. */
 export function localSource(storage: Pick<Storage, 'getItem'>): LocalSource | null {
-  for (const [key, version] of [[STORAGE_KEY, 4], [V3_STORAGE_KEY, 3], [V2_STORAGE_KEY, 2], [LEGACY_STORAGE_KEY, 1]] as const) {
+  for (const [key, version] of [[STORAGE_KEY, 5], [V4_STORAGE_KEY, 4], [V3_STORAGE_KEY, 3], [V2_STORAGE_KEY, 2], [LEGACY_STORAGE_KEY, 1]] as const) {
     const raw = storage.getItem(key);
     if (raw !== null) {
       try { return { raw, data: decodeStored(raw, version), error: '' }; }

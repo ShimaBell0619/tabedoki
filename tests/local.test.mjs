@@ -3,7 +3,7 @@ import test from 'node:test';
 import { LocalStore } from '../src/data/local.ts';
 import { STORAGE_KEY, V3_STORAGE_KEY } from '../src/data/storage.ts';
 
-const food = { id: 'milk', name: '牛乳', category: 'eggs-dairy', kind: 'use-by', deadline: '2026-12-31', quantity: 1, unit: 'bottle', place: 'chilled', status: 'active', lowStock: false };
+const food = { id: 'milk', name: '牛乳', category: 'eggs-dairy', kind: 'use-by', deadline: '2026-12-31', quantity: 1, unit: 'bottle', place: 'chilled', status: 'active', lowStock: false, initialQuantity: 1, consumption: 'drink' };
 const empty = { items: [], shopping: [], templates: [] };
 function mock(seed = {}, rejectWrite = false) {
   const values = new Map(Object.entries(seed));
@@ -21,7 +21,7 @@ test('未ログインの保存・再読込をv4正本で維持する', async () 
   const saved = await store.save({ ...empty, items: [food] });
   assert.deepEqual(saved.data.items, [food]);
   assert.deepEqual((await new LocalStore(storage).load()).data.items, [food]);
-  assert.equal(JSON.parse(storage.values.get(STORAGE_KEY)).version, 4);
+  assert.equal(JSON.parse(storage.values.get(STORAGE_KEY)).version, 5);
 });
 test('既存v3を元データを消さずにv4へ移行する', async () => {
   const { lowStock, ...old } = food;

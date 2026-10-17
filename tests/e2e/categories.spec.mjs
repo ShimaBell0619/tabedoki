@@ -1,7 +1,7 @@
 import { cloudData } from './helpers/cloud.mjs';
 import { test, expect } from './helpers/cloud.mjs';
 import { defaultTemplates } from '../../src/domain/templates.ts';
-import { STORAGE_KEY } from '../../src/data/storage.ts';
+import { V4_STORAGE_KEY as STORAGE_KEY } from '../../src/data/storage.ts';
 
 test('カテゴリ別を初期表示し、期限順・場所別への切替と絞り込みを保つ', async ({ page }) => {
   const item = (id, name, category, place, deadline) => ({
@@ -69,7 +69,7 @@ test('パスタ・レトルトカレーを初期定番から登録し、新カ�
     await expect(dialog).not.toBeVisible();
   }
   const stored = await cloudData(page);
-  expect(stored.version).toBe(4);
+  expect(stored.version).toBe(5);
   expect(stored.items.map(({ name, category }) => ({ name, category }))).toEqual([
     { name: 'パスタ', category: 'staples' },
     { name: 'レトルトカレー', category: 'retort-canned' },

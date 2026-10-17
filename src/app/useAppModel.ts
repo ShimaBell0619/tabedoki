@@ -39,6 +39,7 @@ export function useAppModel(store: DataStore, initial: Snapshot, mode: 'local' |
     const food: Food = {
       ...form, name: form.name.trim(), id: original?.id ?? crypto.randomUUID(),
       status: original?.status ?? 'active', lowStock: original?.lowStock ?? false,
+      initialQuantity: original ? Math.max(original.initialQuantity, form.quantity) : form.quantity,
     };
     if (!isFood(food)) { showError('食品名、期限の日付、数量と選択項目を確認してください。'); return false; }
     let next: AppData;
@@ -67,7 +68,7 @@ export function useAppModel(store: DataStore, initial: Snapshot, mode: 'local' |
   async function changeStatus(item: Food, status: FoodStatus) {
     const current = committed.current;
     if (!await commitData({ ...current, items: current.items.map(value => value.id === item.id ? { ...value, status } : value) })) return;
-    const label = status === 'used' ? '使い切り' : status === 'discarded' ? '廃棄' : '管理中に戻す';
+    const label = status === 'used' ? '完了' : status === 'discarded' ? '廃棄' : '管理中に戻す';
     setNotice(`「${item.name}」を${label}にしました。`);
   }
   async function changeQuantity(item: Food, delta: -1 | 1) {
@@ -79,10 +80,10 @@ export function useAppModel(store: DataStore, initial: Snapshot, mode: 'local' |
     const quantity = original.quantity + delta;
     if (quantity < 0 || quantity > 999) return;
     const items = current.items.map(value => value.id === item.id
-      ? quantity === 0 ? { ...value, status: 'used' as const } : { ...value, quantity }
+      ? quantity === 0 ? { ...value, status: 'used' as const } : { ...value, quantity, initialQuantity: Math.max(value.initialQuantity, quantity) }
       : value);
     if (!await commitData({ ...current, items })) return;
-    setNotice(quantity === 0 ? `「${item.name}」を使い切りにしました。` :
+    setNotice(quantity === 0 ? `「${item.name}」の在庫がなくなりました。` :
       `「${item.name}」の数量を${quantity}に変更しました。`);
   }
   async function removeFood(item: Food) {
