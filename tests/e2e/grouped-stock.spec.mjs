@@ -97,7 +97,7 @@ for (const width of [320, 390, 1440]) {
     expect(boxes.quantity.y).toBeGreaterThanOrEqual(boxes.secondary.y);
     expect(boxes.date.y).toBeGreaterThanOrEqual(boxes.secondary.y);
     expect((await card.locator('summary').boundingBox()).height).toBeLessThanOrEqual(104);
-    await expect(card.locator('.deadline-chip')).toHaveCSS('color', 'rgb(115, 127, 143)');
+    await expect(card.locator('.deadline-chip')).toHaveCSS('color', width <= 760 ? 'rgb(91, 108, 127)' : 'rgb(115, 127, 143)');
     await expect(card.locator('.deadline-chip')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
     await page.screenshot({ path: info.outputPath('card-summary-' + width + '.png'), fullPage: true });

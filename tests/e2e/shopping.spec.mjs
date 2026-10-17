@@ -103,7 +103,7 @@ test('NFKC重複・購入済みへの再追加・解除競合・定番からの�
     await expect(page.getByLabel('milkの購入状態', { exact: true })).toBeChecked();
   await add(page, 'milk');
   await page.getByLabel('購入済み', { exact: true }).getByRole('checkbox').click();
-  await expect(page.locator('.notice[role=status]')).toContainText('同名');
+  await expect(page.locator('.notice[role=alert]')).toContainText('同名');
   expect((await saved(page)).shopping.map(item => item.bought)).toEqual([true, false]);
   page.once('dialog', dialog => dialog.accept());
   await page.getByLabel('未購入', { exact: true }).getByRole('button', { name: '買い物のmilkを削除' }).click();

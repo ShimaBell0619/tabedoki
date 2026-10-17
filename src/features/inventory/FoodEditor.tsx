@@ -91,7 +91,7 @@ export function FoodEditor({ item, purchase, templatesOnly, items, templates, bl
     {managingTemplates ? <TemplateManager templates={templates} blocked={blocked} error={formError}
       onError={setFormError} onSave={saveTemplates} onDone={closeTemplates} returning={returnToFood.current} /> :
       <form onSubmit={saveFood} className={`food-form flex flex-col gap-[18px] p-6 [&_label]:flex [&_label]:min-w-0 [&_label]:scroll-mb-[104px]
-          [&_label]:flex-col [&_label]:gap-[7px] [&_label]:text-[13px] [&_label]:font-[650] mobile:gap-4 mobile:px-4
+          [&_label]:flex-col [&_label]:gap-[7px] [&_label]:text-[13px] [&_label]:font-[650] mobile:gap-3.5 mobile:px-4
           mobile:py-5`}>
         <div className="dialog-head flex items-center justify-between gap-3 [&_h2]:m-0 [&_h2]:text-[23px] [&_h2]:font-[750] [&_h2]:tracking-[-.03em] mobile:[&_h2]:text-[21px]">
           <h2 id="dialog-heading">{editingId ? '食品を編集' : '食品を登録'}</h2>
@@ -104,7 +104,7 @@ export function FoodEditor({ item, purchase, templatesOnly, items, templates, bl
               aria-pressed={selectedCandidate === `template:${candidate.id}`} aria-label={`定番の${candidate.name}`}
               onClick={() => chooseCandidate(candidate, 'template')}>{candidate.name}</Button>)}</div>
         </div>}
-        <label>食品名 <span className="required ml-1 text-[11px] font-medium text-expired">必須</span>
+        <label><span className="field-label">食品名 <span className="required ml-1 text-[11px] font-medium text-expired">必須</span></span>
           <Input ref={nameInput} required maxLength={80} placeholder="例：牛乳" value={form.name}
             onChange={event => { const name = event.target.value; setForm({ ...form, name, consumption: form.consumption === inferConsumption(form.name, form.category) ? inferConsumption(name, form.category) : form.consumption }); setSelectedCandidate(null); }} />
         </label>

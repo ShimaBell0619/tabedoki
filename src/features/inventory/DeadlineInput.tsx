@@ -8,7 +8,7 @@ export function DeadlineInput({ value, onChange, inputRef }: Props) {
   const id = useId();
   const iso = parseDeadline(value);
   return <div className="deadline-input [&_.form-help]:my-2">
-    <label htmlFor={id}>期限の日付 <span className="required ml-1 text-[11px] font-medium text-expired">必須</span></label>
+    <label htmlFor={id}><span className="field-label">期限の日付 <span className="required ml-1 text-[11px] font-medium text-expired">必須</span></span></label>
     <div className="mt-[7px] flex gap-2">
       <Input id={id} ref={inputRef} type="text" inputMode="numeric" required maxLength={10}
         className="min-w-0 flex-1" placeholder="YYYYMMDD" autoComplete="off" value={value}

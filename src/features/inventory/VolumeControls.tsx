@@ -9,7 +9,7 @@ export function VolumeControls({ item, blocked, onChange }: {
 }) {
   if (item.status !== 'active') return null;
   const volume = tracksVolume(item);
-  return <div className="volume-controls flex flex-col gap-2 rounded-lg bg-[#F2F5F9] p-2.5">
+  return <div className={`volume-controls flex flex-col gap-2 rounded-lg bg-[#F2F5F9] p-2.5 ${volume ? 'volume-controls-volume' : 'volume-controls-count'}`}>
     <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
       <span className="font-semibold text-[#354F70]">{volume ? '開封中の容器の残量' : '数量の管理方法'}</span>
       <Button variant="plain" type="button" className="h-9 px-2 text-xs text-[#536780] underline"

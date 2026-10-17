@@ -5,7 +5,7 @@ import { DeadlineCalendar } from '../features/inventory/DeadlineCalendar';
 import { FoodIconPicker } from '../features/inventory/FoodIconPicker';
 import { selectedFoodIcon } from '../domain/food-icons';
 import type { FoodCategory } from '../domain/food';
-import { cn } from '@/components/ui/utils';
+import { AppNotice } from './AppNotice';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import type { DataStore, Snapshot } from '../data/cloud';
@@ -33,7 +33,7 @@ export function App({ store, initial, mode = 'cloud', email, onLogout, onLogin, 
   const [screen, setScreen] = useState<Screen>('inventory');
   const [iconTarget, setIconTarget] = useState<{ name: string; category: FoodCategory } | null>(null);
   const today = useToday();
-  const { data, saving, blocked, notice, setNotice, formError, setFormError, editor, setEditor, refresh, openForm, saveTemplates, saveFood, addStock, changeStatus, changeQuantity, changeVolume, removeFood, changeLowStock, addToShopping, changeBought, removeShopping, changeFoodIcon } = useAppModel(store, initial, mode);
+  const { data, saving, blocked, notice, dismissNotice, formError, setFormError, editor, setEditor, refresh, openForm, saveTemplates, saveFood, addStock, changeStatus, changeQuantity, changeVolume, removeFood, changeLowStock, addToShopping, changeBought, removeShopping, changeFoodIcon } = useAppModel(store, initial, mode);
 
   return <div className="page min-h-dvh">
     <header className="topbar h-[68px] border-b border-border bg-white mobile:h-[62px]"><div className="topbar-inner mx-auto flex h-full max-w-[1040px] items-center justify-between gap-4 px-8 mobile:px-[18px]">
@@ -49,11 +49,9 @@ export function App({ store, initial, mode = 'cloud', email, onLogout, onLogin, 
     <main className="main mx-auto max-w-[1040px] px-8 pt-8 pb-10 mobile:px-4 mobile:pt-6 mobile:pb-[calc(110px+env(safe-area-inset-bottom))]">
       {loginError && <p role="alert" className="notice notice-error mb-5 rounded-[10px] bg-[#fff0ec] p-3 text-[13px] text-[#8e372b]">{loginError}</p>}
       {saving && <p className="cloud-pending mb-4 text-[13px] text-muted" role="status" aria-label="保存状態">保存・読み込み中…</p>}
-      {notice && <div className={cn('notice mb-5 flex items-center justify-between gap-3 rounded-[10px] bg-panel py-2.5 pr-3 pl-4 text-[13px] text-[#354F70] wrap-anywhere', blocked && 'notice-error bg-[#fff0ec] text-[#8e372b]')} role="status">
-        <span>{notice}</span>
-        {blocked ? <Button variant="ghost" className="min-h-11 text-inherit" type="button" disabled={saving} onClick={refresh}>{mode === 'local' ? '端末のデータを再取得' : 'クラウドを再取得'}</Button> :
-          <Button variant="ghost" size="icon" className="icon-button border-0 bg-transparent text-inherit" type="button" aria-label="通知を閉じる" onClick={() => setNotice('')}><Icon name="x" /></Button>}
-      </div>}
+      {notice && <AppNotice key={notice.id} id={notice.id} message={notice.message} error={notice.error || blocked}
+        blocked={blocked} saving={saving} refreshLabel={mode === 'local' ? '端末のデータを再取得' : 'クラウドを再取得'}
+        onRefresh={refresh} onDismiss={dismissNotice} />}
       <>
       <div hidden={screen !== 'inventory'}>
         <InventoryPage items={data.items} today={today} blocked={blocked || saving} onCreate={() => openForm()}
@@ -85,7 +83,7 @@ export function App({ store, initial, mode = 'cloud', email, onLogout, onLogin, 
       <Icon name="plus" />
     </Button>}
     {iconTarget && <FoodIconPicker foodName={iconTarget.name} category={iconTarget.category}
-      selected={selectedFoodIcon(data.icons, iconTarget.name)} blocked={blocked || saving} error={blocked ? notice : undefined}
+      selected={selectedFoodIcon(data.icons, iconTarget.name)} blocked={blocked || saving} error={blocked ? notice?.message : undefined}
       onSelect={async icon => { if (await changeFoodIcon(iconTarget.name, icon)) setIconTarget(null); }}
       onClose={() => setIconTarget(null)} />}
     {editor && <FoodEditor item={editor.item} purchase={editor.purchase} templatesOnly={editor.templatesOnly} items={data.items}
