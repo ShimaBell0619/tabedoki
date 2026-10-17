@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { tracksVolume, volumeLabel, type Food, type VolumePercent } from '../../domain/food';
+import { tracksVolume, volumeLabel, units, type Food, type VolumePercent } from '../../domain/food';
 
 const levels = [100, 75, 50, 25] as const;
 
@@ -28,7 +28,7 @@ export function VolumeControls({ item, blocked, onChange }: {
           {volumeLabel(percent)}
         </button>)}
       </div>
-      {item.quantity > 1 && <p className="m-0 text-[11px] text-muted">残り{item.quantity}本のうち1本の残量です。ほかは満量として計算します。</p>}
+      {item.quantity > 1 && <p className="m-0 text-[11px] text-muted">残り{item.quantity}{units[item.unit]}のうち1{units[item.unit]}の残量です。ほかは満量として計算します。</p>}
     </>}
   </div>;
 }

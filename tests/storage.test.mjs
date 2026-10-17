@@ -134,3 +134,14 @@ test('最大v4出力（エスケープ文字含む）を5MiB内で完全往復�
   assert.ok(Buffer.byteLength(backup) < BACKUP_MAX_BYTES);
   assert.deepEqual(validateBackup(JSON.parse(backup)), maximum);
 });
+
+
+test('v5追加の容器残量はバックアップ・再読み込みを跨いで保存される', () => {
+  const food = { id:'partial-milk', name:'牛乳', category:'eggs-dairy', kind:'use-by', deadline:'2027-10-19',
+    quantity:2, initialQuantity:2, unit:'bottle', place:'chilled', status:'active', lowStock:false,
+    consumption:'drink', trackingMode:'volume', volumePercent:50 };
+  const data = {items:[food],templates:[],shopping:[]};
+  assert.deepEqual(decodeStored(JSON.stringify({version:5,...data})).items, [food]);
+  assert.deepEqual(JSON.parse(makeBackup(data)).items, [food]);
+  assert.deepEqual(decodeStored(JSON.stringify({version:5,...data,items:[{...food,trackingMode:'count',volumePercent:undefined}]})).items[0].trackingMode,'count');
+});
