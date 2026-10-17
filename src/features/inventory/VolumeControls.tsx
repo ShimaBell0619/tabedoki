@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { tracksVolume, volumeLabel, units, type Food, type VolumePercent } from '../../domain/food';
 
-const levels = [100, 75, 50, 25] as const;
+const levels = [25, 50, 75, 100] as const;
 
 /** A percentage describes exactly one open container; quantity counts the containers. */
 export function VolumeControls({ item, blocked, onChange }: {
