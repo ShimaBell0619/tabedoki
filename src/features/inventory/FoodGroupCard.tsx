@@ -61,13 +61,13 @@ export function FoodGroupCard({ group, totalActiveQuantity, today, view, sort, l
           <div className="food-caption flex min-w-0 flex-col gap-0.5">
             <h3 className="min-w-0">{group.name}</h3>
             <div className="food-secondary flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-0.5 text-xs text-muted">
-                      <span className="quantity whitespace-nowrap">{amount}</span>
-                      <div className="food-deadline flex flex-wrap items-center gap-x-2 [&_time]:tabular-nums">
+              <span className="quantity wrap-anywhere">{amount}</span>
+              <div className="food-deadline flex flex-wrap items-center gap-x-2 [&_time]:tabular-nums">
                         {group.items.length > 1 && <span className="deadline-prefix text-xs">{main.status === 'active' ? '最短期限' : '期限'}</span>}
                         <time dateTime={main.deadline} aria-label={kinds[group.kind] + ' ' + main.deadline}>{date}</time>
-                      </div>
-                      {group.lowStock && <span className="low-stock rounded-md border border-[#DCA66A] bg-[#FAE9D4] px-1.5 py-0.5 text-[11px] font-bold text-[#945119]">残りわずか</span>}
-                    </div>
+              </div>
+              {group.lowStock && <span className="low-stock rounded-md border border-[#DCA66A] bg-[#FAE9D4] px-1.5 py-0.5 text-[11px] font-bold text-[#945119]">残りわずか</span>}
+            </div>
           </div>
         </div>
         <span className={cn('deadline-chip col-start-2 row-start-1 inline-flex items-center rounded-[5px] text-[13px] font-semibold whitespace-nowrap', 'state-' + state, {
