@@ -147,9 +147,9 @@ export function DeadlineCalendar({ items, today, listed, onShowList, blocked, on
               <Button variant="secondary" type="button" disabled={blocked} aria-label={`${item.name}を編集`}
                 onClick={() => { dismiss(); onEdit(item); }}>編集</Button>
               <Button variant="default" type="button" disabled={blocked}
-                aria-label={`${item.name.trim()}を${item.status === 'active' ? (tracksVolume(item) ? '10%使った' : (tracksVolume(item) ? '10%使った' : consumptionAction(item.consumption, units[item.unit], totalByKey.get(foodGroupKey(item)) === 1))) : '管理中に戻す'}`}
+                aria-label={`${item.name.trim()}を${item.status === 'active' ? (tracksVolume(item) ? '10%使った' : consumptionAction(item.consumption, units[item.unit], totalByKey.get(foodGroupKey(item)) === 1)) : '管理中に戻す'}`}
                 onClick={() => { dismiss(); if (item.status === 'active') { if (tracksVolume(item)) onVolume(item, -10); else onQuantity(item, -1); } else onStatus(item, 'active'); }}>
-                {item.status === 'active' ? consumptionAction(item.consumption, units[item.unit], totalByKey.get(foodGroupKey(item)) === 1) : '戻す'}
+                {item.status === 'active' ? (tracksVolume(item) ? '10%使った' : consumptionAction(item.consumption, units[item.unit], totalByKey.get(foodGroupKey(item)) === 1)) : '戻す'}
               </Button>
               <details className="timeline-more">
                 <summary>その他の操作</summary>
