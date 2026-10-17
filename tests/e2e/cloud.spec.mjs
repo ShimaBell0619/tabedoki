@@ -15,10 +15,10 @@ test('ログアウト後は未ログインの端末保存へ戻り、クラウ�
  await page.reload();await expect(page.getByRole('heading',{name:/食品一覧/})).toBeVisible();
  await expect(page.getByRole('heading',{name:food.name,exact:true})).toHaveCount(0);
 });
-for(const [key,version] of [[LEGACY_STORAGE_KEY,1],[V2_STORAGE_KEY,2],[V3_STORAGE_KEY,3],[V4_STORAGE_KEY,4]]) {
+for(const [key,version] of [[LEGACY_STORAGE_KEY,1],[V2_STORAGE_KEY,2],[V3_STORAGE_KEY,3],[V4_STORAGE_KEY,4],[STORAGE_KEY,5]]) {
  test(`v${version}を明示操作で移行・照合し、再読込や二度目で原文とクラウドを保持する`,async({page})=>{
-  page.cloud.row=null;let item={...food};if(version<4)delete item.lowStock;if(version===1){delete item.category;delete item.unit;}
-  const raw=JSON.stringify({version,items:[item],...(version>=3?{templates:[]}:{}),...(version===4?{shopping:[]}:{} )});
+  page.cloud.row=null;let item={...food};if(version<4)delete item.lowStock;if(version<5){delete item.initialQuantity;delete item.consumption;}else{item.initialQuantity=item.quantity;item.consumption='drink';}if(version===1){delete item.category;delete item.unit;}
+  const raw=JSON.stringify({version,items:[item],...(version>=3?{templates:[]}:{}),...(version>=4?{shopping:[]}:{} )});
   await page.addInitScript(({key,raw})=>localStorage.setItem(key,raw),{key,raw});await page.goto('/');
   await expect(page.getByRole('button',{name:'test@example.com に移行'})).toBeVisible();expect(page.cloud.writes).toBe(0);
   await expect(page.getByRole('button',{name:/退避|バックアップ/})).toHaveCount(0);
