@@ -29,7 +29,7 @@ for (const width of [320, 390, 1440]) {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('食品一覧 3件');
     const row = page.locator('.food-row').filter({ has: page.locator('summary[aria-label*="賞味期限"]') }).filter({ has: page.getByRole('heading', { name: 'しょうゆ', exact: true }) });
     await expect(row.locator('.quantity')).toHaveText('3本');
-    await expect(row.locator('summary time')).toHaveAttribute('datetime', '2026-10-31');
+    await expect(row.locator('summary')).toHaveAttribute('aria-label', /賞味期限 2026-10-31/);
     await row.locator('summary').click();
     await expect(row.locator('.stock-lot')).toHaveCount(2);
     await expect(row.locator('.stock-lot time')).toHaveText(['2026/10/31', '2027/03/31']);
@@ -60,7 +60,7 @@ for (const width of [320, 390, 1440]) {
     const earliest = row.locator('.stock-lot').first();
     await earliest.getByRole('button', { name: 'しょうゆを1本使い終わった' }).click();
     await expect(row.locator('.stock-lot')).toHaveCount(2);
-    await expect(row.locator('summary time')).toHaveAttribute('datetime', '2027-03-31');
+    await expect(row.locator('summary')).toHaveAttribute('aria-label', /賞味期限 2027-03-31/);
     const after = await cloudData(page);
     expect(after.items.find(item => item.id === 'old').status).toBe('used');
     expect(after.items.find(item => item.id === 'new').status).toBe('active');
@@ -74,7 +74,7 @@ for (const width of [320, 390, 1440]) {
 }
 
 for (const width of [320, 390, 1440]) {
-  test('食品名と残り日数を上段、数量と期限日を下段に配置する ' + width + 'px', async ({ page }, info) => {
+  test('B1は食品名・残量・残り日数だけを表示し、下端に在庫ラインを置く ' + width + 'px', async ({ page }, info) => {
     await page.setViewportSize({ width, height: 900 });
     await page.clock.install({ time: new Date('2026-10-15T12:00:00') });
     await setup(page);
@@ -86,17 +86,18 @@ for (const width of [320, 390, 1440]) {
         return { x, y, width, height };
       };
       return {
+        summary: summary.getBoundingClientRect(),
         title: bounds('.food-primary'), status: bounds('.deadline-chip'),
-        secondary: bounds('.food-secondary'), quantity: bounds('.quantity'), date: bounds('.food-deadline'),
+        quantity: bounds('.quantity'), progress: bounds('.stock-preview'),
       };
     });
-    expect(boxes.status.x).toBeGreaterThanOrEqual(boxes.title.x + boxes.title.width);
-    expect(Math.abs((boxes.status.y + boxes.status.height / 2) - (boxes.title.y + boxes.title.height / 2))).toBeLessThanOrEqual(4);
-    expect(boxes.secondary.y).toBeGreaterThanOrEqual(boxes.title.y);
-    expect(boxes.secondary.y + boxes.secondary.height).toBeLessThanOrEqual(boxes.title.y + boxes.title.height + 1);
-    expect(boxes.quantity.y).toBeGreaterThanOrEqual(boxes.secondary.y);
-    expect(boxes.date.y).toBeGreaterThanOrEqual(boxes.secondary.y);
-    expect((await card.locator('summary').boundingBox()).height).toBeLessThanOrEqual(104);
+    expect(boxes.status.x).toBeGreaterThanOrEqual(boxes.title.x + boxes.title.width - 1);
+    expect(boxes.quantity.y).toBeGreaterThanOrEqual(boxes.title.y);
+    expect(boxes.progress.y + boxes.progress.height).toBeCloseTo(boxes.summary.y + boxes.summary.height, 0);
+    expect(boxes.progress.height).toBe(3);
+    expect(boxes.summary.height).toBeLessThanOrEqual(104);
+    await expect(card.locator('summary time')).toHaveCount(0);
+    await expect(card.locator('summary .deadline-prefix')).toHaveCount(0);
     await expect(card.locator('.deadline-chip')).toHaveCSS('color', width <= 760 ? 'rgb(91, 108, 127)' : 'rgb(115, 127, 143)');
     await expect(card.locator('.deadline-chip')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
@@ -189,7 +190,7 @@ for (const width of [320, 390, 1440]) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
     const multi = page.locator('.food-row').filter({has:page.locator('summary[aria-label*="賞味期限"]')})
       .filter({has:page.getByRole('heading',{name:'しょうゆ',exact:true})});
-    await expect(multi.locator('.deadline-prefix')).toHaveText('最短期限');
+    await expect(multi.locator('summary .deadline-prefix')).toHaveCount(0);
     await multi.locator('summary').click();
     await expect(multi.locator('.stock-heading')).toHaveText('期限別の在庫');
     await page.screenshot({path:info.outputPath('natural-inventory-'+width+'.png'),fullPage:true});
