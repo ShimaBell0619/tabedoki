@@ -23,6 +23,7 @@ test('閉じたカードの残数バーと手動フラグは残量変更後も�
   await expect(egg.locator('summary .stock-preview')).toHaveAttribute('aria-label',/7個/);
   await expect(milk.locator('summary .stock-preview')).toBeVisible();
   await milk.locator('summary').click();
+  await expect(milk.getByRole('group',{name:'牛乳の残量'}).getByRole('button')).toHaveText(['少し','半分','多め','満量']);
   await milk.getByRole('button',{name:'牛乳の残量を半分にする'}).click();
   await expect(milk.locator('summary .stock-preview')).toHaveAttribute('aria-label',/開封中 半分/);
   expect((await cloudData(page)).items.find(x=>x.id==='milk')).toMatchObject({
