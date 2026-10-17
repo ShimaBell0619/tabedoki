@@ -24,7 +24,7 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
   const [placeFilter, setPlaceFilter] = useState<'all' | StoragePlace>('all');
   const [deadlineFilter, setDeadlineFilter] = useState<DeadlineFilter>('all');
   const [sort, setSort] = useState<'category' | 'deadline' | 'place'>('category');
-  const { active, displayed, foodGroups, sections } = selectInventory(items, today, { view, categoryFilter, placeFilter, deadlineFilter, sort });
+  const { active, foodGroups, sections } = selectInventory(items, today, { view, categoryFilter, placeFilter, deadlineFilter, sort });
   const filterCount = Number(categoryFilter !== 'all') + Number(placeFilter !== 'all') + Number(deadlineFilter !== 'all');
   const hasFilters = filterCount > 0;
   const listed = new Set(shopping.filter(item => !item.bought).map(item => normalizedName(item.name)));
@@ -52,11 +52,11 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
             </Button>)}
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {<label className="sort-control"><span className="sr-only">一覧の表示方法</span>
+          <label className="sort-control"><span className="sr-only">一覧の表示方法</span>
             <NativeSelect className="min-h-11 w-auto rounded-lg border-border p-1.5 text-xs text-muted mobile:p-1.5" value={sort} onChange={event => setSort(event.target.value as typeof sort)}>
               <option value="category">カテゴリ別</option><option value="deadline">期限順</option><option value="place">保存場所別</option>
             </NativeSelect>
-          </label>}
+          </label>
           <Button variant="secondary" type="button" className="filter-toggle secondary shrink-0 px-3.5 aria-expanded:border-[#A0B1C6] aria-expanded:bg-[#EAF0F6] mobile:p-2.5 mobile:text-xs mobile:[&_.icon]:size-[17px] tiny:gap-[5px]" aria-expanded={filtersOpen}
             aria-controls="filter-panel" onClick={() => setFiltersOpen(!filtersOpen)}>
             <Icon name="sliders-horizontal" />絞り込み{filterCount > 0 && <span className="filter-count min-w-5 rounded-full bg-primary text-center text-[11px] leading-5 text-white">{filterCount}</span>}
