@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { NativeSelect } from '@/components/ui/native-select';
 import { Icon } from '../../components/Icon';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { categories, units, places, kinds, initialFoodForm, type FoodTemplate } from '../../domain/food';
+import { categories, units, places, kinds, initialFoodForm, inferConsumption, consumptionLabels, type FoodTemplate } from '../../domain/food';
 import { MAX_TEMPLATES, validateTemplates } from '../../domain/templates';
 
 type Draft = Omit<FoodTemplate, 'id'>;
@@ -35,7 +35,7 @@ export function TemplateManager({ templates, blocked, error, onError, onSave, on
     setEditingId(template?.id ?? null);
     setDraft(template ? {
       name: template.name, category: template.category, kind: template.kind,
-      quantity: template.quantity, place: template.place, unit: template.unit,
+      quantity: template.quantity, place: template.place, unit: template.unit, consumption: template.consumption,
     } : blankDraft());
     onError(''); setEditing(true);
   }
@@ -68,12 +68,12 @@ export function TemplateManager({ templates, blocked, error, onError, onSave, on
       <label>
           <span>定番食品名 <span className="required ml-1 text-[11px] font-medium text-expired">必須</span>
           </span>
-          <Input autoFocus required maxLength={80} value={draft.name} onChange={event => setDraft({ ...draft, name: event.target.value })}/>
+          <Input autoFocus required maxLength={80} value={draft.name} onChange={event => { const name = event.target.value; setDraft({ ...draft, name, consumption: draft.consumption === inferConsumption(draft.name, draft.category) ? inferConsumption(name, draft.category) : draft.consumption }); }}/>
           </label>
       <div className="form-group grid grid-cols-2 gap-3 mobile:gap-2.5">
           <label>期限の種類<NativeSelect value={draft.kind} onChange={event => setDraft({ ...draft, kind: event.target.value as Draft['kind'] })}>{Object.entries(kinds).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</NativeSelect>
           </label>
-          <label>食品カテゴリ<NativeSelect value={draft.category} onChange={event => setDraft({ ...draft, category: event.target.value as Draft['category'] })}>{Object.entries(categories).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</NativeSelect>
+          <label>食品カテゴリ<NativeSelect value={draft.category} onChange={event => { const category = event.target.value as Draft['category']; setDraft({ ...draft, category, consumption: draft.consumption === inferConsumption(draft.name, draft.category) ? inferConsumption(draft.name, category) : draft.consumption }); }}>{Object.entries(categories).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</NativeSelect>
           </label>
           </div>
       <label>保存場所<NativeSelect value={draft.place} onChange={event => setDraft({ ...draft, place: event.target.value as Draft['place'] })}>{Object.entries(places).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</NativeSelect>
@@ -84,6 +84,7 @@ export function TemplateManager({ templates, blocked, error, onError, onSave, on
           <label>数量の単位<NativeSelect value={draft.unit} onChange={event => setDraft({ ...draft, unit: event.target.value as Draft['unit'] })}>{Object.entries(units).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</NativeSelect>
           </label>
           </div>
+      <label>在庫を減らすときの表現<NativeSelect value={draft.consumption} onChange={event => setDraft({ ...draft, consumption: event.target.value as Draft['consumption'] })}>{Object.entries(consumptionLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</NativeSelect></label>
       {error && <p className="form-error m-0 rounded-lg bg-[#fff0ec] p-3 text-[13px] text-[#8e372b] wrap-anywhere" role="alert">{error}</p>}
       <div className="dialog-actions mt-2 flex justify-end gap-2 sticky bottom-[-24px] z-2 mb-[-24px] border-t border-[#E2E7ED] bg-white pt-3.5 pb-6 mobile:bottom-[-20px] mobile:mb-[-20px] mobile:pb-5">
           <Button variant="secondary" type="button" className="secondary text-muted" onClick={() => { setEditing(false); onError(''); }}>一覧に戻る</Button>

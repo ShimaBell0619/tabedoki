@@ -15,7 +15,7 @@ type Props = {
 
 export function StockAdder({ base, blocked, onAdd, onClose }: Props) {
   const [deadline, setDeadline] = useState('');
-  const [quantity, setQuantity] = useState('1');
+  const [quantity, setQuantity] = useState(String(base.initialQuantity));
   const [place, setPlace] = useState<StoragePlace>(base.place);
   const [error, setError] = useState('');
   const saving = useRef(false);
