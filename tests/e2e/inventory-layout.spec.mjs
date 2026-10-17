@@ -24,6 +24,7 @@ for (const width of [320, 390, 1440]) {
     await page.keyboard.press('Enter');
     await expect(page.getByRole('button', { name: longName + 'を編集', exact: true })).toBeVisible();
     await page.keyboard.press('Shift+Tab'); await page.keyboard.press('Tab');
+    await page.getByRole('button', { name: /^絞り込み/ }).click();
     await page.getByRole('button', { name: '0〜14日 2件', exact: true }).click();
     await expect(page.locator('.food-row')).toHaveCount(2);
     await page.getByRole('button', { name: '15〜30日 2件', exact: true }).click();
