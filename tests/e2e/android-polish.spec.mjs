@@ -61,19 +61,17 @@ for (const width of [320, 390, 430]) {
           const { x, y, width, height } = element.getBoundingClientRect();
           return { x, y, width, height };
         };
-        return { lot: bounds(node), quantity: bounds(node.querySelector('.stock-quantity')),
-          low: bounds(node.querySelector('.stock-lot-low')),
-          buttons: [...node.querySelectorAll('.food-actions button')].map(bounds) };
+        return { lot: bounds(node), info: bounds(node.querySelector('.stock-lot-info')),
+          balance: bounds(node.querySelector('.stock-lot-balance')),
+          controls: bounds(node.querySelector('.stock-lot-controls')),
+          buttons: [...node.querySelectorAll('.stock-lot-controls button, .food-actions button')].map(bounds) };
       });
-      expect(boxes.quantity.x + boxes.quantity.width).toBeLessThanOrEqual(boxes.low.x + 1);
+      expect(boxes.balance.y).toBeGreaterThanOrEqual(boxes.info.y + boxes.info.height - 1);
+      expect(boxes.controls.y).toBeGreaterThanOrEqual(boxes.balance.y + boxes.balance.height - 1);
       for (const button of boxes.buttons) {
-        expect(button.y).toBeGreaterThanOrEqual(Math.max(boxes.quantity.y + boxes.quantity.height, boxes.low.y + boxes.low.height) + 6);
         expect(button.x).toBeGreaterThanOrEqual(boxes.lot.x);
         expect(button.x + button.width).toBeLessThanOrEqual(boxes.lot.x + boxes.lot.width + 1);
         expect(button.height).toBeGreaterThanOrEqual(44);
-      }
-      for (let i = 1; i < boxes.buttons.length; i++) {
-        expect(boxes.buttons[i].x).toBeGreaterThanOrEqual(boxes.buttons[i - 1].x + boxes.buttons[i - 1].width + 4);
       }
     }
     await multi.locator('.stock-lot').first().getByRole('button', { name: `${name}を1パック使い終わった` }).click();

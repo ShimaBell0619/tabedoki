@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { MAX_ITEMS, isFood, normalizedName, tracksVolume, defaultVolumeTracking, type VolumePercent, type Food, type FoodForm, type FoodStatus, type FoodTemplate, type StoragePlace } from '../domain/food';
+import { MAX_ITEMS, isFood, normalizedName, tracksVolume, defaultVolumeTracking, adjustVolume, units, type Food, type FoodForm, type FoodStatus, type FoodTemplate, type StoragePlace } from '../domain/food';
 import { addStockToFoods } from '../domain/stock';
 import { selectedFoodIcon, type FoodIconName } from '../domain/food-icons';
 import type { AppData } from '../domain/app-data.ts';
@@ -102,19 +102,22 @@ export function useAppModel(store: DataStore, initial: Snapshot, mode: 'local' |
     setNotice(quantity === 0 ? `「${item.name}」の在庫がなくなりました。` :
       `「${item.name}」の数量を${quantity}に変更しました。`);
   }
-  async function changeVolume(item: Food, percent: VolumePercent | null) {
+  async function changeVolume(item: Food, delta: -10 | 10) {
     const current = committed.current;
     const original = current.items.find(value => value.id === item.id);
     if (!original || original.status !== 'active') {
       showError('変更する在庫が見つかりません。再取得してください。'); return;
     }
-    const replacement: Food = percent === null
-      ? { ...original, trackingMode: 'count', volumePercent: undefined }
-      : { ...original, trackingMode: 'volume', volumePercent: percent };
+    let replacement: Food;
+    try { replacement = adjustVolume(original, delta); }
+    catch (error) { showError(error instanceof Error ? error.message : '残量を変更できません。'); return; }
     if (!isFood(replacement)) { showError('残量が正しくありません。'); return; }
     if (!await commitData({ ...current, items: current.items.map(value => value.id === original.id ? replacement : value) })) return;
-    setNotice(percent === null ? `「${item.name}」を個数管理に変更しました。` :
-      `「${item.name}」の容器の残量を${percent}%に変更しました。`);
+    setNotice(replacement.status === 'used'
+      ? `「${item.name}」の在庫がなくなりました。`
+      : replacement.quantity < original.quantity
+        ? `「${item.name}」を1${units[item.unit]}使い切りました。`
+        : `「${item.name}」の残量を${replacement.volumePercent}%に変更しました。`);
   }
 
   async function removeFood(item: Food) {

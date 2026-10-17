@@ -5,7 +5,7 @@ export type StoragePlace = 'chilled' | 'frozen' | 'pantry';
 export type FoodStatus = 'active' | 'used' | 'discarded';
 export type Consumption = 'eat' | 'use' | 'drink';
 export type TrackingMode = 'count' | 'volume';
-export type VolumePercent = 25 | 50 | 75 | 100;
+export type VolumePercent = number; // Integer 1–100; legacy 25/50/75/100 values remain valid.
 export function defaultVolumeTracking(name: string, unit: QuantityUnit): boolean {
   return unit === 'bottle' && /牛乳|ミルク|ジュース|飲料|ドリンク|お茶|しょうゆ|醤油|みりん|酢|食用油|オリーブオイル|ソース|ドレッシング|めんつゆ|白だし/.test(name);
 }
@@ -13,7 +13,16 @@ export function tracksVolume(food: Pick<Food, 'name' | 'unit' | 'trackingMode'>)
   return food.trackingMode === 'volume' || (food.trackingMode !== 'count' && defaultVolumeTracking(food.name, food.unit));
 }
 export function volumeLabel(percent: VolumePercent): string {
-  return ({100: '満量', 75: '多め', 50: '半分', 25: '少し'} as const)[percent];
+  return ({100: '満量', 75: '多め', 50: '半分', 25: '少し'} as Record<number, string>)[percent] ?? `${percent}%`;
+}
+/** Adjust only the open container. Consuming its last portion advances to a full next
+ * container, or completes the lot; the number of containers never denotes percent. */
+export function adjustVolume(food: Food, delta: -10 | 10): Food {
+  if (food.status !== 'active' || !tracksVolume(food)) throw new Error('残量管理中の在庫ではありません。');
+  const next = Math.min(100, (food.volumePercent ?? 100) + delta);
+  if (next > 0) return { ...food, trackingMode: 'volume', volumePercent: next };
+  if (food.quantity > 1) return { ...food, quantity: food.quantity - 1, trackingMode: 'volume', volumePercent: 100 };
+  return { ...food, trackingMode: 'volume', volumePercent: 100, status: 'used' };
 }
 export const consumptionLabels: Record<Consumption, string> = { eat: '食べる', use: '使う', drink: '飲む' };
 export function inferConsumption(name: string, category: FoodCategory): Consumption {
@@ -95,7 +104,6 @@ export function isFood(value: unknown): value is Food {
     v.initialQuantity >= (v.quantity as number) && v.initialQuantity <= 999 &&
     (v.consumption === 'eat' || v.consumption === 'use' || v.consumption === 'drink') &&
     (v.trackingMode === undefined || v.trackingMode === 'count' || v.trackingMode === 'volume') &&
-    (v.volumePercent === undefined || ((v.volumePercent === 25 || v.volumePercent === 50 ||
-      v.volumePercent === 75 || v.volumePercent === 100) && (v.trackingMode === 'volume' || (v.trackingMode === undefined &&
+    (v.volumePercent === undefined || (Number.isInteger(v.volumePercent) && (v.volumePercent as number) >= 1 && (v.volumePercent as number) <= 100 && (v.trackingMode === 'volume' || (v.trackingMode === undefined &&
       defaultVolumeTracking(v.name as string, v.unit as QuantityUnit)))));
 }

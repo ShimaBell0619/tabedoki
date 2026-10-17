@@ -15,42 +15,66 @@ async function seed(page) {
   await page.goto('/');
 }
 
-test('閉じたカードの残数バーと手動フラグは残量変更後も整合する',async ({page})=>{
+test('牛乳は10%ずつ直接減らせ、バー・残りわずか・保存値が一致する',async ({page})=>{
   await page.setViewportSize({width:390,height:850});
   await seed(page);
   const egg=page.locator('.food-row').filter({has:page.getByRole('heading',{name:'たまご'})});
   const milk=page.locator('.food-row').filter({has:page.getByRole('heading',{name:'牛乳'})});
   await expect(egg.locator('summary .stock-preview')).toHaveAttribute('aria-label',/7個/);
-  await expect(milk.locator('summary .stock-preview')).toBeVisible();
   await milk.locator('summary').click();
-  await expect(milk.getByRole('group',{name:'牛乳の残量'}).getByRole('button')).toHaveText(['少し','半分','多め','満量']);
-  await milk.getByRole('button',{name:'牛乳の残量を半分にする'}).click();
-  await expect(milk.locator('summary .stock-preview')).toHaveAttribute('aria-label',/開封中 半分/);
+  await expect(milk.locator('.stock-progress')).toHaveAttribute('aria-label',/100%、在庫2本/);
+  await expect(milk.locator('.stock-progress [aria-hidden="true"] > span')).toHaveCount(10);
+  await expect(milk.locator('.volume-controls')).toHaveCount(0);
+  await milk.getByRole('button',{name:'牛乳を10%使った'}).click();
+  await expect(milk.locator('.stock-progress')).toHaveAttribute('aria-label',/90%、在庫2本/);
+  await milk.getByRole('button',{name:'牛乳を10%使った'}).click();
+  await milk.getByRole('button',{name:'牛乳の残量を10%増やす'}).click();
+  await expect(milk.locator('summary .stock-preview')).toHaveAttribute('aria-label',/開封中 90%/);
   expect((await cloudData(page)).items.find(x=>x.id==='milk')).toMatchObject({
-    quantity:2,trackingMode:'volume',volumePercent:50,lowStock:false,
+    quantity:2,trackingMode:'volume',volumePercent:90,lowStock:false,
   });
-  await milk.getByRole('button',{name:'牛乳の残量を少しにする'}).click();
-  await expect(milk.locator('summary .quantity')).not.toHaveText('残りわずか');
   await milk.getByRole('checkbox',{name:'牛乳の残りわずか'}).click();
+  await expect(milk.getByRole('checkbox',{name:'牛乳の残りわずか'})).toBeChecked();
   await expect(milk.locator('summary .quantity')).toHaveText('残りわずか');
   await page.reload();
-  await expect(milk.locator('summary .stock-preview')).toHaveAttribute('aria-label',/開封中 少し/);
-  const saved=(await cloudData(page)).items.find(x=>x.id==='milk');
-  expect(saved).toMatchObject({quantity:2,trackingMode:'volume',volumePercent:25,lowStock:true});
+  await expect(milk.locator('summary .stock-preview')).toHaveAttribute('aria-label',/開封中 90%/);
+  expect((await cloudData(page)).items.find(x=>x.id==='milk')).toMatchObject({
+    quantity:2,trackingMode:'volume',volumePercent:90,lowStock:true,
+  });
   expect(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)).toBeLessThanOrEqual(1);
 });
 
-test('開封中の容器を飲み終わると1本減り、次の容器は満量になる',async ({page})=>{
+test('2本ある牛乳は10%操作で開封中だけを減らし、使い切り時に次の満量容器へ移る',async ({page})=>{
   await seed(page);
   const row=page.locator('.food-row').filter({has:page.getByRole('heading',{name:'牛乳'})});
   await row.locator('summary').click();
-  await row.getByRole('button',{name:'牛乳の残量を半分にする'}).click();
-  await row.getByRole('button',{name:'牛乳を1本飲み終わった'}).click();
+  for(let i=0;i<10;i++) await row.getByRole('button',{name:'牛乳を10%使った'}).click();
   expect((await cloudData(page)).items.find(x=>x.id==='milk')).toMatchObject({quantity:1,volumePercent:100,status:'active'});
   await expect(row.locator('summary .stock-preview')).toHaveAttribute('aria-label',/満量/);
-  await row.getByRole('button',{name:'牛乳の残量を少しにする'}).click();
-  await row.getByRole('button',{name:'牛乳を飲み終わった'}).click();
+  await row.getByRole('button',{name:'牛乳のその他の操作'}).click();
+  await page.getByRole('menuitem',{name:'牛乳を1本使い切る'}).click();
   expect((await cloudData(page)).items.find(x=>x.id==='milk').status).toBe('used');
   await page.getByRole('button',{name:'完了',exact:true}).click();
-  await expect(page.locator('.food-row').filter({has:page.getByRole('heading',{name:'牛乳'})})).toBeVisible();
+  const finished=page.locator('.food-row').filter({has:page.getByRole('heading',{name:'牛乳'})});
+  await finished.locator('summary').click();
+  await finished.getByRole('button',{name:'牛乳を管理中に戻す'}).click();
+  expect((await cloudData(page)).items.find(x=>x.id==='milk')).toMatchObject({quantity:1,status:'active'});
+});
+
+test('登録・編集で個数管理と残量管理を切り替えても本数は変換されない',async ({page})=>{
+  await seed(page);
+  const row=page.locator('.food-row').filter({has:page.getByRole('heading',{name:'牛乳'})});
+  await row.locator('summary').click();
+  await row.getByRole('button',{name:'牛乳を編集'}).click();
+  const edit=page.getByRole('dialog',{name:'食品を編集'});
+  await expect(edit.getByLabel('数量の管理方式')).toHaveValue('volume');
+  await edit.getByLabel('数量の管理方式').selectOption('count');
+  await edit.getByRole('button',{name:'変更を保存'}).click();
+  expect((await cloudData(page)).items.find(x=>x.id==='milk')).toMatchObject({quantity:2,trackingMode:'count'});
+  await expect(row.getByRole('button',{name:'牛乳を1本飲み終わった'})).toBeVisible();
+  await row.getByRole('button',{name:'牛乳を編集'}).click();
+  const again=page.getByRole('dialog',{name:'食品を編集'});
+  await again.getByLabel('数量の管理方式').selectOption('volume');
+  await again.getByRole('button',{name:'変更を保存'}).click();
+  expect((await cloudData(page)).items.find(x=>x.id==='milk')).toMatchObject({quantity:2,trackingMode:'volume',volumePercent:100});
 });

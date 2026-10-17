@@ -58,7 +58,8 @@ for (const width of [320, 390, 1440]) {
     await expect(row.locator('.quantity')).toHaveText('6本');
 
     const earliest = row.locator('.stock-lot').first();
-    await earliest.getByRole('button', { name: 'しょうゆを1本使い終わった' }).click();
+    await earliest.getByRole('button', { name: 'しょうゆのその他の操作' }).click();
+    await page.getByRole('menuitem', { name: 'しょうゆを1本使い切る' }).click();
     await expect(row.locator('.stock-lot')).toHaveCount(2);
     await expect(row.locator('summary')).toHaveAttribute('aria-label', /賞味期限 2027-03-31/);
     const after = await cloudData(page);
@@ -149,7 +150,7 @@ for (const width of [320, 390, 1440]) {
       return [getComputedStyle(parent).backgroundColor, getComputedStyle(lot).backgroundColor];
     });
     expect(backgrounds[0]).not.toBe(backgrounds[1]);
-    await expect(card.locator('.food-meta')).toHaveText('賞味期限');
+    await expect(card.locator('.food-meta')).toHaveCount(0);
     const finish = card.getByRole('button', { name: 'みそを使い終わった' });
     await expect(finish).toBeVisible();
     const finishBg = await finish.evaluate(node => getComputedStyle(node).backgroundColor);
@@ -176,7 +177,7 @@ for (const width of [320, 390, 1440]) {
     expect(arrow).toBe('""');
     await single.locator('summary').click();
     await expect(single.locator('.stock-heading')).toHaveCount(0);
-    await expect(single.locator('.food-meta')).toHaveText('賞味期限');
+    await expect(single.locator('.food-meta')).toHaveCount(0);
     await expect(single.locator('.stock-lot')).toHaveCount(1);
     const lot = single.locator('.stock-lot');
     const infoBox = await lot.locator('.stock-lot-info').boundingBox();
@@ -185,8 +186,8 @@ for (const width of [320, 390, 1440]) {
     const edit = await lot.getByRole('button',{name:'みそを編集'}).boundingBox();
     const use = await lot.getByRole('button',{name:'みそを使い終わった'}).boundingBox();
     const more = await lot.getByRole('button',{name:'みそのその他の操作'}).boundingBox();
-    expect(Math.abs(edit.y - use.y)).toBeLessThanOrEqual(1);
-    expect(Math.abs(more.y - use.y)).toBeLessThanOrEqual(1);
+    expect(use.y).toBeGreaterThanOrEqual(edit.y + edit.height);
+    expect(Math.abs(more.y - edit.y)).toBeLessThanOrEqual(1);
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
     const multi = page.locator('.food-row').filter({has:page.locator('summary[aria-label*="賞味期限"]')})
       .filter({has:page.getByRole('heading',{name:'しょうゆ',exact:true})});
@@ -203,12 +204,16 @@ test('数量の増減と最終1個の使い切りを在庫単位で保存する'
   await row.locator('summary').click();
   const lots = row.locator('.stock-lot');
   const second = lots.filter({ has: page.getByText('2027/03/31', { exact: true }) });
-  await second.getByRole('button', { name: 'しょうゆを1本使い終わった' }).click();
+  await second.getByRole('button', { name: 'しょうゆのその他の操作' }).click();
+  await page.getByRole('menuitem', { name: 'しょうゆを1本使い切る' }).click();
   expect((await cloudData(page)).items.find(item => item.id === 'new').quantity).toBe(1);
-  await second.getByRole('button', { name: 'しょうゆの数量を1増やす' }).click();
-  expect((await cloudData(page)).items.find(item => item.id === 'new').quantity).toBe(2);
+  await second.getByRole('button', { name: 'しょうゆを10%使った' }).click();
+  expect((await cloudData(page)).items.find(item => item.id === 'new')).toMatchObject({ quantity: 1, volumePercent: 90 });
+  await second.getByRole('button', { name: 'しょうゆの残量を10%増やす' }).click();
+  expect((await cloudData(page)).items.find(item => item.id === 'new')).toMatchObject({ quantity: 1, volumePercent: 100 });
   const first = lots.filter({ has: page.getByText('2026/10/31', { exact: true }) });
-  await first.getByRole('button', { name: 'しょうゆを1本使い終わった' }).click();
+  await first.getByRole('button', { name: 'しょうゆのその他の操作' }).click();
+  await page.getByRole('menuitem', { name: 'しょうゆを1本使い切る' }).click();
   expect((await cloudData(page)).items.find(item => item.id === 'old')).toMatchObject({ quantity: 1, status: 'used' });
   await page.getByRole('button', { name: '完了', exact: true }).click();
   await expect(page.locator('.stock-lot').first()).toHaveCount(1);

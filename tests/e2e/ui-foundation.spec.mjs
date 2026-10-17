@@ -34,6 +34,8 @@ for (const width of [320, 390, 1440]) {
     const actions = page.getByRole('button', { name: 'キーボード確認用の牛乳のその他の操作' });
     await actions.focus();
     await page.keyboard.press('ArrowDown');
+    await expect(page.getByRole('menuitem', { name: 'キーボード確認用の牛乳を1本使い切る' })).toBeFocused();
+    await page.keyboard.press('ArrowDown');
     await expect(page.getByRole('menuitem', { name: 'キーボード確認用の牛乳を廃棄' })).toBeFocused();
     await page.keyboard.press('End');
     await expect(page.getByRole('menuitem', { name: 'キーボード確認用の牛乳を削除' })).toBeFocused();

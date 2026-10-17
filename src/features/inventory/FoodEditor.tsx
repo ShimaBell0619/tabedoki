@@ -146,20 +146,20 @@ export function FoodEditor({ item, purchase, templatesOnly, items, templates, bl
             {Object.entries(units).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </NativeSelect></label>
         </div>
-        <label>バーの満量<Input type="number" required min={Math.max(1,form.quantity)} max="999" step="1"
+        <label>{(form.trackingMode ?? (defaultVolumeTracking(form.name, form.unit) ? 'volume' : 'count')) === 'volume' ? '一覧バーの満量' : 'バーの満量'}<Input type="number" required min={Math.max(1,form.quantity)} max="999" step="1"
           value={(form.initialQuantity ?? form.quantity) || ''}
           onChange={event => setForm({ ...form, initialQuantity: Number(event.target.value) })} /></label>
         <p className="form-help mt-[-4px] text-xs leading-[1.7] text-muted">
           分割バーの100%に相当する数量です。現在の数量は変わりません。
         </p>
         {form.unit === 'pack' && <p className="form-help mt-[-4px] text-xs leading-[1.7] text-muted">納豆3個組は、個別に減らす場合「3パック」として登録します。</p>}
-        <label>数量の管理方法<NativeSelect value={form.trackingMode ?? (defaultVolumeTracking(form.name, form.unit) ? 'volume' : 'count')}
+        <label>数量の管理方式<NativeSelect value={form.trackingMode ?? (defaultVolumeTracking(form.name, form.unit) ? 'volume' : 'count')}
           onChange={event => setForm({ ...form, trackingMode: event.target.value as 'count' | 'volume' })}>
-          <option value="count">個数を数える</option><option value="volume">容器の中身も管理する</option>
+          <option value="count">個数で管理</option><option value="volume">残量で管理（10%刻み）</option>
         </NativeSelect></label>
-        <label>在庫を減らすときの表現<NativeSelect value={form.consumption} onChange={event => setForm({ ...form, consumption: event.target.value as FoodForm['consumption'] })}>
+        {(form.trackingMode ?? (defaultVolumeTracking(form.name, form.unit) ? 'volume' : 'count')) === 'count' && <label>在庫を減らすときの表現<NativeSelect value={form.consumption} onChange={event => setForm({ ...form, consumption: event.target.value as FoodForm['consumption'] })}>
           {Object.entries(consumptionLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-        </NativeSelect></label>
+        </NativeSelect></label>}
         <div className="form-group grid grid-cols-2 gap-3 mobile:gap-2.5">
           <label>保存場所<NativeSelect value={form.place} onChange={event => setForm({ ...form, place: event.target.value as StoragePlace })}>
             {Object.entries(places).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
