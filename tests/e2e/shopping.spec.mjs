@@ -20,7 +20,7 @@ async function seed(page, value) {
 }
 async function saved(page) { return await cloudData(page); }
 async function shopping(page) { await page.getByRole('button', { name: '買い物', exact: true }).last().click(); }
-async function inventory(page) { await page.getByRole('button', { name: '在庫', exact: true }).last().click(); }
+async function inventory(page) { await page.getByRole('button', { name: '一覧', exact: true }).last().click(); }
 async function add(page, name) {
   await page.getByLabel('買うものの名前').fill(name);
   await page.getByRole('button', { name: '追加する', exact: true }).first().click();
