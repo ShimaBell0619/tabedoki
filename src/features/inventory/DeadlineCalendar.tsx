@@ -29,7 +29,7 @@ function fullDate(date: string) {
   return `${value.getUTCMonth() + 1}月${value.getUTCDate()}日（${weekday[value.getUTCDay()]}）`;
 }
 /** Select the expiration date first; the existing per-lot detail actions remain available. */
-export function DeadlineCalendar({ items, today, listed, onShowList, blocked, onEdit, onStatus, onRemove, onLowStock, onAddShopping, iconSelections, onPickIcon }: Props) {
+export function DeadlineCalendar({ items, today, listed, onShowList, blocked, onEdit, onStatus, onQuantity, onRemove, onLowStock, onAddShopping, iconSelections, onPickIcon }: Props) {
   const [range, setRange] = useState<Range>(30);
   const [selectedOffset, setSelectedOffset] = useState(0);
   const calendarDate = dateAfter(today, selectedOffset);

@@ -27,7 +27,7 @@ export function shoppingFrom(source: string | Food | FoodTemplate, id: string): 
   const candidate = typeof source === 'string' ? { ...initialFoodForm(), name: source } : source;
   return validateShopping([{
     id, name: candidate.name, category: candidate.category, kind: candidate.kind,
-    quantity: 'deadline' in candidate ? candidate.initialQuantity : candidate.quantity, unit: candidate.unit, place: candidate.place, consumption: candidate.consumption, bought: false,
+    quantity: 'initialQuantity' in candidate ? candidate.initialQuantity : candidate.quantity, unit: candidate.unit, place: candidate.place, consumption: candidate.consumption, bought: false,
   }])[0];
 }
 
