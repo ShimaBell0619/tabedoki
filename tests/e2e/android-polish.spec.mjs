@@ -145,8 +145,9 @@ test('数量変更でちらつきと不要な通知がなく、その他の通�
   await expect(single.locator('.quantity')).toHaveText('7個');
   const after = await page.getByRole('heading', { level: 1 }).boundingBox();
   expect(after.y).toBe(before.y);
-  await single.getByRole('checkbox', { name: 'たまごの残りわずか' }).check();
+  await single.getByRole('checkbox', { name: 'たまごの残りわずか' }).click();
   await cloudData(page);
+  await expect(single.getByRole('checkbox', { name: 'たまごの残りわずか' })).toBeChecked();
   await expect(toast).toContainText('残りわずかを設定しました');
   const toastBox = await toast.boundingBox();
   const addBox = await page.locator('.mobile-add-button').boundingBox();
