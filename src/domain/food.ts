@@ -96,5 +96,6 @@ export function isFood(value: unknown): value is Food {
     (v.consumption === 'eat' || v.consumption === 'use' || v.consumption === 'drink') &&
     (v.trackingMode === undefined || v.trackingMode === 'count' || v.trackingMode === 'volume') &&
     (v.volumePercent === undefined || ((v.volumePercent === 25 || v.volumePercent === 50 ||
-      v.volumePercent === 75 || v.volumePercent === 100) && v.trackingMode !== 'count'));
+      v.volumePercent === 75 || v.volumePercent === 100) && (v.trackingMode === 'volume' || (v.trackingMode === undefined &&
+      defaultVolumeTracking(v.name as string, v.unit as QuantityUnit)))));
 }
