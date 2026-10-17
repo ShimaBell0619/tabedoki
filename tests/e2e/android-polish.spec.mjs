@@ -48,7 +48,7 @@ for (const width of [320, 390, 430]) {
     await page.screenshot({ path: info.outputPath(`android-list-${width}.png`) });
 
     await single.locator('summary').click();
-    await expect(single.locator('.stock-preview')).not.toBeVisible();
+    await expect(single.locator('.stock-preview')).toBeVisible();
     await expect(single.locator('.stock-progress')).toBeVisible();
     await page.screenshot({ path: info.outputPath(`android-single-${width}.png`) });
 

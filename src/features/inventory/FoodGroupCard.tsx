@@ -1,6 +1,6 @@
 import { cn } from '@/components/ui/utils';
 import { Button } from '@/components/ui/button';
-import { categories, units, places, kinds, type VolumePercent, type Food, type FoodStatus, type StoragePlace } from '../../domain/food';
+import { categories, units, places, kinds, tracksVolume, volumeLabel, type VolumePercent, type Food, type FoodStatus, type StoragePlace } from '../../domain/food';
 import { deadlineState, deadlineLabel } from '../../domain/deadline';
 import type { FoodGroup } from '../../domain/stock';
 import type { InventoryView, InventorySort } from './selectInventory';
@@ -42,37 +42,35 @@ type Props = InventoryActions & {
 export function FoodGroupCard({ group, totalActiveQuantity, today, view, sort, listed, adding, onToggleAdd, onCloseAdd, blocked, onEdit, onStatus, onRemove, onLowStock, onQuantity, onVolume, onAddShopping, onAddStock, iconSelections, onPickIcon }: Props) {
   const main = group.primary;
   const state = main.status === 'active' ? deadlineState(main.deadline, today) : 'later';
-  const date = (main.deadline.slice(0, 4) !== today.slice(0, 4) ? main.deadline.slice(0, 4) + '/' : '') +
-    Number(main.deadline.slice(5, 7)) + '/' + Number(main.deadline.slice(8));
   const finishedCount = group.items.filter(item => item.status !== 'active').length;
   const amount = finishedCount > 0
     ? (group.activeQuantity > 0 ? '管理中 ' + group.activeQuantity + units[group.unit] + '・' : '') + '完了 ' + finishedCount + '件'
     : group.activeQuantity + units[group.unit];
-  return <li className={cn('food-row min-w-0 rounded-[13px] border border-border bg-white shadow-[0_2px_8px_rgb(33_43_56/4%)] has-[.food-details[open]]:border-[#A7B9CF] has-[.food-details[open]]:shadow-[0_4px_16px_rgb(33_43_56/7%)]', group.items.length === 1 && 'single-stock', group.activeQuantity === 0 && 'completed', group.lowStock && 'border-[#DEB181] bg-[#FFFCF7]')} key={group.key}>
+  const partlyUsed = group.items.filter(item =>
+    item.status === 'active' && tracksVolume(item) && (item.volumePercent ?? 100) < 100);
+  const compactAmount = group.lowStock ? '残りわずか' :
+    finishedCount > 0 ? amount :
+    group.activeQuantity === 1 && partlyUsed.length === 1 ? '開封中 ' + volumeLabel(partlyUsed[0].volumePercent ?? 100) : amount;
+  return <li className={cn('food-row min-w-0 rounded-[13px] border border-border bg-white shadow-[0_2px_8px_rgb(33_43_56/4%)] has-[.food-details[open]]:border-[#A7B9CF] has-[.food-details[open]]:shadow-[0_4px_16px_rgb(33_43_56/7%)]', group.items.length === 1 && 'single-stock', group.activeQuantity === 0 && 'completed')} key={group.key}>
     <details className="food-details overflow-hidden rounded-xl open:[&>summary]:bg-white">
-      <summary className="grid min-h-[68px] cursor-pointer list-none grid-cols-[minmax(0,1fr)_auto_auto] grid-rows-[auto_auto] items-center gap-x-2 gap-y-1.5 px-3 py-2 focus-visible:outline-offset-[-3px]" aria-label={group.name + 'の詳細、' + amount + '、' + kinds[group.kind] + ' ' + main.deadline + '、' +
+      <summary className="relative flex min-h-[68px] cursor-pointer list-none items-center gap-2 px-3 py-2.5 pr-3.5 focus-visible:outline-offset-[-3px]" aria-label={group.name + 'の詳細、' + compactAmount + '、' + kinds[group.kind] + ' ' + main.deadline + '、' +
         (main.status === 'active' ? deadlineLabel(main.deadline, today) : main.status === 'used' ? '使用完了' : '廃棄済み')}>
-        <div className="food-primary col-start-1 row-start-1 flex min-w-0 items-center gap-2.5 [&_h3]:m-0 [&_h3]:text-[17px] [&_h3]:leading-[1.4] [&_h3]:font-[750] [&_h3]:wrap-anywhere mobile:[&_h3]:text-base">
+        {(state === 'expired' || state === 'today') && main.status === 'active' &&
+          <span className={cn('deadline-accent h-9 w-[3px] shrink-0 rounded-full', state === 'expired' ? 'bg-expired' : 'bg-[#B98545]')} aria-hidden="true" />}
+        <div className="food-primary flex min-w-0 flex-1 items-center gap-2.5">
           <button type="button" className="food-icon food-icon-button" aria-label={group.name + 'のアイコンを変更'}
             disabled={blocked} onClick={event => { event.preventDefault(); event.stopPropagation(); onPickIcon(group.name, group.category); }}
             onKeyDown={event => event.stopPropagation()}>
             <FoodIcon name={group.name} category={group.category} selected={selectedFoodIcon(iconSelections, group.name)} />
           </button>
-          <div className="food-caption flex min-w-0 flex-col gap-0.5">
-            <h3 className="min-w-0">{group.name}</h3>
-            <div className="food-secondary flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-0.5 text-xs text-muted">
-              <span className="quantity wrap-anywhere">{amount}</span>
-              <div className="food-deadline flex flex-wrap items-center gap-x-2 [&_time]:tabular-nums">
-                {group.items.length > 1 && <span className="deadline-prefix text-xs">{main.status === 'active' ? '最短期限' : '期限'}</span>}
-                <time dateTime={main.deadline} aria-label={kinds[group.kind] + ' ' + main.deadline}>{date}</time>
-              </div>
-              {group.lowStock && <span className="low-stock rounded-md border border-[#DCA66A] bg-[#FAE9D4] px-1.5 py-0.5 text-[11px] font-bold text-[#945119]">残りわずか</span>}
-            </div>
+          <div className="food-caption flex min-w-0 flex-1 flex-col gap-0.5">
+            <h3 className="m-0 line-clamp-2 min-w-0 wrap-anywhere text-base leading-[1.35] font-[750]" title={group.name}>{group.name}</h3>
+            <span className={cn('quantity min-w-0 text-xs leading-[1.4] wrap-anywhere', group.lowStock ? 'font-semibold text-[#986125]' : 'text-muted')}>{compactAmount}</span>
           </div>
         </div>
-        <span className={cn('deadline-chip col-start-2 row-start-1 inline-flex items-center rounded-[5px] text-[13px] font-semibold whitespace-nowrap', 'state-' + state, {
-          'bg-expired-surface px-[7px] py-[3px] font-bold text-expired': state === 'expired',
-          'bg-today-surface px-[7px] py-[3px] font-bold text-today': state === 'today' || state === 'soon',
+        <span className={cn('deadline-chip inline-flex shrink-0 items-center text-[13px] font-semibold whitespace-nowrap', 'state-' + state, {
+          'font-bold text-expired': state === 'expired',
+          'font-bold text-today': state === 'today' || state === 'soon',
           'text-muted': state === 'later',
         })}>
           {main.status === 'active' ? deadlineLabel(main.deadline, today) :
