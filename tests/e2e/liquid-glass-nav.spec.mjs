@@ -1,4 +1,4 @@
-import { test, expect, cloudData } from './helpers/cloud.mjs';
+import { test, expect, cloudData, setCloudData } from './helpers/cloud.mjs';
 
 // Emulate Android Chrome's mobile viewport and touch input.
 test.use({ isMobile: true, hasTouch: true });
@@ -194,3 +194,44 @@ test('スクロール中もガラスの透明度を保ち、停止後は屈折�
   await expect(navLens).toHaveAttribute('data-glass-strategy', 'svg');
   await expect(page.locator('.mobile-navigation').getByRole('button', { name: '買い物' })).toBeEnabled();
 });
+
+for (const width of [320, 390]) {
+  test(`${width}pxで実際の食品カード越しの静止・スクロール中ガラスを比較する`, async ({ page }, info) => {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto('/');
+    const current = await cloudData(page);
+    const foods = ['牛乳', '納豆', 'たまご', 'ヨーグルト', '豆腐', '食パン', 'パスタ', 'チーズ'];
+    await setCloudData(page, {
+      ...current,
+      items: foods.map((name, i) => ({
+        id: `glass-food-${i}`, name,
+        category: 'eggs-dairy', deadline: '2026-11-12',
+        kind: 'best-before', quantity: i + 1, unit: 'piece', place: 'chilled', status: 'active',
+      })),
+    });
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('食品一覧 8件');
+
+    const nav = page.locator('.mobile-navigation');
+    const navLens = page.locator('.mobile-navigation-glass > div:first-child');
+    await expect(navLens).toHaveCSS('backdrop-filter', /url/);
+    const before = await nav.evaluate(node => ({
+      background: getComputedStyle(node).backgroundImage,
+      border: getComputedStyle(node).borderColor,
+    }));
+    await page.screenshot({ path: info.outputPath(`glass-idle-${width}.png`) });
+
+    // Force the visual mode while taking evidence; avoid the 240ms debounce.
+    await page.evaluate(() => { document.documentElement.dataset.glassScrolling = 'true'; });
+    await expect(navLens).toHaveCSS('backdrop-filter', /blur/);
+    const during = await nav.evaluate(node => ({
+      background: getComputedStyle(node).backgroundImage,
+      border: getComputedStyle(node).borderColor,
+    }));
+    expect(during).toEqual(before);
+    await page.screenshot({ path: info.outputPath(`glass-scrolling-${width}.png`) });
+
+    await page.evaluate(() => { delete document.documentElement.dataset.glassScrolling; });
+    await expect(navLens).toHaveCSS('backdrop-filter', /url/);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+  });
+}
