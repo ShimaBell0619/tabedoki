@@ -110,7 +110,7 @@ for (const width of [320, 390, 1440]) {
   });
 }
 
-test('スクロール中はSVG屈折を停止し、停止後に同じレンズで復元する', async ({ page }) => {
+test('スクロール中もガラスの透明度を保ち、停止後は屈折だけ復元する', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
   await cloudData(page);
@@ -122,12 +122,39 @@ test('スクロール中はSVG屈折を停止し、停止後に同じレンズ�
   await expect(navLens).toHaveAttribute('data-glass-strategy', 'svg');
   await expect(navFilter).toHaveCSS('backdrop-filter', /url/);
   await expect(addFilter).toHaveCSS('backdrop-filter', /url/);
+  const initialSurface = await page.evaluate(() => {
+    const nav = getComputedStyle(document.querySelector('.mobile-navigation'));
+    const add = getComputedStyle(document.querySelector('.mobile-add-glass > div:first-child'));
+    const lens = getComputedStyle(document.querySelector('.mobile-navigation-glass > div:first-child'));
+    return {
+      navigationBackground: nav.backgroundImage,
+      navigationOpacity: nav.opacity,
+      navigationBorder: nav.borderColor,
+      lensBackground: lens.background,
+      addBackground: add.background,
+    };
+  });
 
   // Touch motion disables the heavy filter before the following scroll.
   await page.evaluate(() => window.dispatchEvent(new Event('touchmove')));
   await expect(page.locator('html')).toHaveAttribute('data-glass-scrolling', 'true');
-  await expect(navFilter).toHaveCSS('backdrop-filter', 'none');
-  await expect(addFilter).toHaveCSS('backdrop-filter', 'none');
+  await expect(navFilter).toHaveCSS('backdrop-filter', /blur/);
+  await expect(addFilter).toHaveCSS('backdrop-filter', /blur/);
+  expect(await navFilter.evaluate(node => getComputedStyle(node).backdropFilter)).toContain('3px');
+  expect(await addFilter.evaluate(node => getComputedStyle(node).backdropFilter)).toContain('2px');
+  const scrollingSurface = await page.evaluate(() => {
+    const nav = getComputedStyle(document.querySelector('.mobile-navigation'));
+    const add = getComputedStyle(document.querySelector('.mobile-add-glass > div:first-child'));
+    const lens = getComputedStyle(document.querySelector('.mobile-navigation-glass > div:first-child'));
+    return {
+      navigationBackground: nav.backgroundImage,
+      navigationOpacity: nav.opacity,
+      navigationBorder: nav.borderColor,
+      lensBackground: lens.background,
+      addBackground: add.background,
+    };
+  });
+  expect(scrollingSurface).toEqual(initialSurface);
 
   // Scrolling the page extends lightweight mode without remounting the lenses.
   await page.evaluate(() => {
@@ -137,7 +164,7 @@ test('スクロール中はSVG屈折を停止し、停止後に同じレンズ�
   });
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
   await expect(page.locator('html')).toHaveAttribute('data-glass-scrolling', 'true');
-  await expect(navFilter).toHaveCSS('backdrop-filter', 'none');
+  await expect(navFilter).toHaveCSS('backdrop-filter', /blur/);
 
   await expect(page.locator('html')).not.toHaveAttribute('data-glass-scrolling', 'true');
   await expect(navLens).toHaveAttribute('data-glass-strategy', 'svg');
