@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Icon } from '../../components/Icon';
-import { useThemePreference, type ThemePreference } from '../../app/useThemePreference';
+import { useThemePreference, type ThemePreference } from '../../components/useThemePreference';
 
 type Props = {
   email?: string;
