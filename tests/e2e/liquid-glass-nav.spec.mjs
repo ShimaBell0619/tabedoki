@@ -206,7 +206,9 @@ for (const width of [320, 390]) {
       items: foods.map((name, i) => ({
         id: `glass-food-${i}`, name,
         category: 'eggs-dairy', deadline: '2026-11-12',
-        kind: 'best-before', quantity: i + 1, unit: 'piece', place: 'chilled', status: 'active',
+        kind: 'best-before', quantity: i + 1, initialQuantity: i + 1,
+        consumption: 'eat', lowStock: false,
+        unit: 'piece', place: 'chilled', status: 'active',
       })),
     });
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('食品一覧 8件');
