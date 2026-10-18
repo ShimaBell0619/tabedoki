@@ -1,6 +1,5 @@
 import { Brand } from '../components/Brand';
 import { ScreenNavigation, type Screen } from './ScreenNavigation';
-import { SettingsPage } from './SettingsPage';
 import { DeadlineCalendar } from '../features/inventory/DeadlineCalendar';
 import { FoodIconPicker } from '../features/inventory/FoodIconPicker';
 import { selectedFoodIcon } from '../domain/food-icons';
@@ -40,10 +39,8 @@ export function App({ store, initial, mode = 'cloud', email, onLogout, onLogin, 
       <Brand />
       <ScreenNavigation className="desktop-navigation mobile:hidden" screen={screen} onChange={setScreen} />
       <div className="header-actions flex items-center gap-1">
-        <Button variant="plain" className={`header-action mobile:hidden flex min-h-11 items-center gap-[7px] rounded-lg border-0 bg-transparent p-2 text-[13px]
-          font-[650] text-muted hover:bg-[#EEF1F6] [&_.icon]:size-[18px] [&_.icon]:opacity-70 tiny:text-xs`} type="button" disabled={blocked || saving} aria-label="定番食品を管理"
-          onClick={() => { setFormError(''); setEditor({ templatesOnly: true }); }}><Icon name="bookmark" />定番食品</Button>
-        <AccountMenu email={email} busy={saving || authBusy} onRefresh={refresh} onLogout={onLogout} onLogin={onLogin} />
+        <AccountMenu email={email} busy={saving || authBusy} onRefresh={refresh} onLogout={onLogout} onLogin={onLogin}
+          onTemplates={() => { setFormError(''); setEditor({ templatesOnly: true }); }} />
       </div>
     </div></header>
     <main className="main mx-auto max-w-[1040px] px-8 pt-8 pb-10 mobile:px-4 mobile:pt-6 mobile:pb-[calc(110px+env(safe-area-inset-bottom))]">
@@ -70,10 +67,6 @@ export function App({ store, initial, mode = 'cloud', email, onLogout, onLogin, 
       <div hidden={screen !== 'shopping'}>
         <ShoppingPage items={data.shopping} foods={data.items} templates={data.templates} blocked={blocked || saving}
           onAdd={addToShopping} onBought={changeBought} onRemove={removeShopping} onRegister={item => openForm(undefined, item)} />
-      </div>
-      <div hidden={screen !== 'settings'}>
-        <SettingsPage mode={mode} email={email} blocked={blocked || saving} onRefresh={refresh}
-          onTemplates={() => { setFormError(''); setEditor({ templatesOnly: true }); }} />
       </div>
       </>
     </main>

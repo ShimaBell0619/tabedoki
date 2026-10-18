@@ -22,7 +22,8 @@ async function seed(page, values) {
 }
 async function saved(page) { return JSON.stringify(await cloudData(page)); }
 async function manage(page) {
-  await page.getByRole('button', { name: '定番食品を管理', exact: true }).click();
+  await page.getByRole('button', { name: 'アカウント', exact: true }).click();
+  await page.getByRole('menuitem', { name: '定番食品の管理', exact: true }).click();
   return page.getByRole('dialog');
 }
 async function newFood(page) {

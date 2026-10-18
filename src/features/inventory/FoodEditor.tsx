@@ -150,7 +150,7 @@ export function FoodEditor({ item, purchase, templatesOnly, items, templates, bl
           value={(form.initialQuantity ?? form.quantity) || ''}
           onChange={event => setForm({ ...form, initialQuantity: Number(event.target.value) })} /></label>
         <p className="form-help mt-[-4px] text-xs leading-[1.7] text-muted">
-          分割バーの100%に相当する数量です。現在の数量は変わりません。
+          一覧バーの満量に相当する数量です。現在の数量は変わりません。
         </p>
         {form.unit === 'pack' && <p className="form-help mt-[-4px] text-xs leading-[1.7] text-muted">納豆3個組は、個別に減らす場合「3パック」として登録します。</p>}
         <label>数量の管理方式<NativeSelect value={form.trackingMode ?? (defaultVolumeTracking(form.name, form.unit) ? 'volume' : 'count')}

@@ -24,7 +24,7 @@ async function setup(page) {
 }
 
 for (const width of [320, 390, 430, 1440]) {
-  test(`横型カレンダー・4タブ・食品操作 ${width}px`, async ({ page }, info) => {
+  test(`横型カレンダー・3タブ・食品操作 ${width}px`, async ({ page }, info) => {
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.setViewportSize({ width, height: 850 });
@@ -69,9 +69,7 @@ for (const width of [320, 390, 430, 1440]) {
     await expect(page.locator('.calendar-food')).toContainText('パスタ');
     await expect(page.locator('.calendar-food-label')).toHaveCSS('color', width <= 760 ? 'rgb(91, 108, 127)' : 'rgb(115, 127, 143)');
 
-    await page.getByRole('button', { name: '設定', exact: true }).click();
-    await expect(page.getByRole('heading', { name: '設定' })).toBeVisible();
-    await expect(page.locator('.settings-page').getByRole('button', { name: /定番食品/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: '設定', exact: true })).toHaveCount(0);
     await page.getByRole('button', { name: '買い物', exact: true }).click();
     await expect(page.getByRole('heading', { name: /買い物リスト/ })).toBeVisible();
     await page.getByRole('button', { name: '一覧', exact: true }).click();

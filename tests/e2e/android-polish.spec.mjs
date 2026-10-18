@@ -191,11 +191,13 @@ test('数量変更でちらつきと不要な通知がなく、その他の通�
   await page.clock.runFor(10100);
   await expect(toast).toHaveCount(0);
 
-  await page.getByRole('button', { name: '設定', exact: true }).click();
-  const refresh = page.getByRole('button', { name: '再取得', exact: true });
+  const account = page.getByRole('button', { name: 'アカウント', exact: true });
+  const refresh = page.getByRole('menuitem', { name: '再取得', exact: true });
+  await account.click();
   await refresh.click();
   await cloudData(page);
   await page.clock.runFor(8000);
+  await account.click();
   await refresh.click();
   await cloudData(page);
   await page.clock.runFor(3000);

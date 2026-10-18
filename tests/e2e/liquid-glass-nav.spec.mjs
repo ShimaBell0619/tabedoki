@@ -25,7 +25,7 @@ for (const width of [320, 390, 1440]) {
     await expect(mobile).toHaveCSS('position', 'fixed');
     await expect(mobile).toHaveCSS('border-radius', '23px');
     await expect(mobile).toHaveCSS('backdrop-filter', /blur/);
-    await expect(mobile.getByRole('button')).toHaveCount(4);
+    await expect(mobile.getByRole('button')).toHaveCount(3);
     await expect(mobile.getByRole('button', { name: '一覧' })).toHaveAttribute('aria-current', 'page');
     await expect(mobile).toHaveCSS('--active-tab-index', '0');
 
@@ -53,10 +53,6 @@ for (const width of [320, 390, 1440]) {
     await mobile.getByRole('button', { name: '買い物' }).click();
     await expect(mobile).toHaveCSS('--active-tab-index', '2');
     await expect(addButton).toHaveCount(0);
-    await mobile.getByRole('button', { name: '設定' }).click();
-    await expect(mobile).toHaveCSS('--active-tab-index', '3');
-    await expect(addButton).toHaveCount(0);
-
     await mobile.getByRole('button', { name: '一覧' }).click();
     await expect(mobile).toHaveCSS('--active-tab-index', '0');
     await addButton.click();
