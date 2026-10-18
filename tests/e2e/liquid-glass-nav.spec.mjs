@@ -25,12 +25,35 @@ for (const width of [320, 390, 1440]) {
     await expect(mobile).toHaveCSS('position', 'fixed');
     await expect(mobile).toHaveCSS('border-radius', '23px');
     await expect(mobile).toHaveCSS('backdrop-filter', /blur/);
+    const glass = await mobile.evaluate(node => {
+      const surface = getComputedStyle(node);
+      const highlight = getComputedStyle(node, '::after');
+      const selected = getComputedStyle(node, '::before');
+      return {
+        surface: surface.backgroundImage,
+        shadow: surface.boxShadow,
+        highlight: highlight.backgroundImage,
+        highlightPointer: highlight.pointerEvents,
+        selected: selected.backgroundImage,
+      };
+    });
+    expect(glass.surface).toContain('linear-gradient');
+    expect(glass.shadow).toContain('inset');
+    expect(glass.highlight).toContain('linear-gradient');
+    expect(glass.highlightPointer).toBe('none');
+    expect(glass.selected).toContain('linear-gradient');
     await expect(mobile.getByRole('button')).toHaveCount(3);
     await expect(mobile.getByRole('button', { name: '一覧' })).toHaveAttribute('aria-current', 'page');
     await expect(mobile).toHaveCSS('--active-tab-index', '0');
 
     const addButton = page.locator('.mobile-add-button');
     await expect(addButton).toBeVisible();
+    const addSurface = await addButton.evaluate(node => {
+      const style = getComputedStyle(node);
+      return { background: style.backgroundImage, shadow: style.boxShadow };
+    });
+    expect(addSurface.background).toContain('radial-gradient');
+    expect(addSurface.shadow).toContain('inset');
     const navBox = await mobile.boundingBox();
     const addBox = await addButton.boundingBox();
     expect(navBox).toBeTruthy();
