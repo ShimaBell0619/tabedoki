@@ -18,23 +18,23 @@ colors:
   today-surface: "#fff4e4"
 typography:
   page-title:
-    fontFamily: system-ui
+    fontFamily: "LINE Seed JP"
     fontSize: 29px
     fontWeight: 800
     lineHeight: 1.3
     letterSpacing: -0.04em
   item-title:
-    fontFamily: system-ui
+    fontFamily: "LINE Seed JP"
     fontSize: 17px
     fontWeight: 750
     lineHeight: 1.4
   body:
-    fontFamily: system-ui
+    fontFamily: "LINE Seed JP"
     fontSize: 16px
     fontWeight: 400
     lineHeight: 1.55
   metadata:
-    fontFamily: system-ui
+    fontFamily: "LINE Seed JP"
     fontSize: 12px
     fontWeight: 400
     lineHeight: 1.55
@@ -88,7 +88,7 @@ components:
 
 ## Typography
 
-日本語システムフォントを基準とし、端末のCJKフォールバックを利用する。ページ見出しは29px、食品名は17pxを中心に、日付・数量・状態を読み取れる階層とする。補助情報は12〜14px、入力欄は16pxを基本とする。モバイルの一覧・カレンダー・買い物のページ見出しは22px・650、食品名は15px・600、展開後の残量は16px・600とする。セクション見出しは13px・500、登録・定番管理のdialog見出しは20px・650を基本とする。数量・期限・補助情報は12px以上を保ち、太さと余白で強弱をつける。長い商品名は切り捨てず折り返す。
+日本語・英数字ともに LINE Seed JP を第一書体とし、Google Fonts から Regular (400)・Bold (700)・ExtraBold (800) を読み込む。読み込み中や通信不能時は端末のシステムフォントへフォールバックする。フォントのライセンスは SIL Open Font License 1.1。ページ見出しは29px、食品名は17pxを中心に、日付・数量・状態を読み取れる階層とする。補助情報は12〜14px、入力欄は16pxを基本とする。モバイルの一覧・カレンダー・買い物のページ見出しは22px・650、食品名は15px・600、展開後の残量は16px・600とする。セクション見出しは13px・500、登録・定番管理のdialog見出しは20px・650を基本とする。数量・期限・補助情報は12px以上を保ち、太さと余白で強弱をつける。長い商品名は切り捨てず折り返す。
 
 ## Layout
 

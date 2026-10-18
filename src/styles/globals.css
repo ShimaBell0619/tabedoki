@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: system-ui, "Noto Sans CJK JP", "Noto Sans JP", "IPAGothic", "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif;
+  --font-sans: "LINE Seed JP", system-ui, "Noto Sans CJK JP", "Noto Sans JP", "IPAGothic", "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif;
   --color-primary: #253B54;
   --color-background: #FFFFFF;
   --color-foreground: #25354A;
