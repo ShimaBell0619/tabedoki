@@ -18,6 +18,7 @@ test('満量は残数とは独立して編集でき、消費と再読み込み�
   const row = page.locator('.food-row').filter({ has: page.getByRole('heading', { name: 'たまご' }) });
   await expect(row.locator('summary .stock-preview')).toHaveAttribute('aria-label', /3\/3個/);
   await row.locator('summary').click();
+  await expect(row.locator('.stock-progress [aria-hidden="true"] > span')).toHaveCount(3);
   await row.getByRole('button', { name: 'たまごを編集' }).click();
 
   const dialog = page.getByRole('dialog', { name: '食品を編集' });
@@ -28,12 +29,14 @@ test('満量は残数とは独立して編集でき、消費と再読み込み�
 
   await expect(dialog).toHaveCount(0);
   await expect(row.locator('summary .stock-preview')).toHaveAttribute('aria-label', /3\/10個/);
+  await expect(row.locator('.stock-progress [aria-hidden="true"] > span')).toHaveCount(10);
   expect((await cloudData(page)).items.find(item => item.id === 'egg')).toMatchObject({
     quantity: 3, initialQuantity: 10, status: 'active'
   });
   await page.reload();
   await expect(row.locator('summary .stock-preview')).toHaveAttribute('aria-label', /3\/10個/);
   await row.locator('summary').click();
+  await expect(row.locator('.stock-progress [aria-hidden="true"] > span')).toHaveCount(10);
   await row.getByRole('button', { name: 'たまごを1個食べた' }).click();
   await expect(row.locator('summary .stock-preview')).toHaveAttribute('aria-label', /2\/10個/);
   expect((await cloudData(page)).items.find(item => item.id === 'egg')).toMatchObject({
@@ -47,6 +50,7 @@ test('満量は残数とは独立して編集でき、消費と再読み込み�
   expect((await cloudData(page)).items.find(item => item.id === 'egg')).toMatchObject({
     quantity: 2, initialQuantity: 5
   });
+  await expect(row.locator('.stock-progress [aria-hidden="true"] > span')).toHaveCount(5);
 });
 
 test('新規登録では数量を満量の初期値にし、現在量以上の範囲で調整できる', async ({ page }) => {
@@ -71,4 +75,25 @@ test('新規登録では数量を満量の初期値にし、現在量以上の�
   expect(saved.items[0]).toMatchObject({ quantity: 5, initialQuantity: 10 });
   const row = page.locator('.food-row').filter({ has: page.getByRole('heading', { name: 'たまご' }) });
   await expect(row.locator('summary .stock-preview')).toHaveAttribute('aria-label', /5\/10個/);
+});
+
+test('個数管理の満量が13以上なら分割しない連続バーで残割合を示す', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 850 });
+  await page.addInitScript(({ key, templates }) => {
+    localStorage.setItem(key, JSON.stringify({
+      version: 5, templates, shopping: [], items: [{
+        id: 'egg-many', name: 'たまご', category: 'eggs-dairy', kind: 'best-before',
+        deadline: '2027-01-10', quantity: 7, initialQuantity: 14, consumption: 'eat',
+        unit: 'piece', place: 'chilled', trackingMode: 'count', status: 'active', lowStock: false,
+      }]
+    }));
+  }, { key: V4_STORAGE_KEY, templates: defaultTemplates() });
+  await page.goto('/');
+  const row = page.locator('.food-row').filter({ has: page.getByRole('heading', { name: 'たまご' }) });
+  await row.locator('summary').click();
+  const progress = row.locator('.stock-progress');
+  await expect(progress).toHaveAttribute('aria-label', '残り7 / 基準14');
+  await expect(progress.locator('[aria-hidden="true"] > span')).toHaveCount(1);
+  await expect(progress.locator('[aria-hidden="true"] > span')).toHaveAttribute('style', 'width: 50%;');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
 });
