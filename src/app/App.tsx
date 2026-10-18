@@ -7,6 +7,7 @@ import type { FoodCategory } from '../domain/food';
 import { AppNotice } from './AppNotice';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
+import { LiquidGlass } from 'simple-liquid-glass';
 import type { DataStore, Snapshot } from '../data/cloud';
 import { InventoryPage } from '../features/inventory/InventoryPage';
 import { FoodEditor } from '../features/inventory/FoodEditor';
@@ -70,11 +71,28 @@ export function App({ store, initial, mode = 'cloud', email, onLogout, onLogin, 
       </div>
       </>
     </main>
+    {/* Refract the live page beneath the floating controls; leave accessible controls intact. */}
+    <LiquidGlass className="mobile-navigation-glass" aria-hidden="true" renderer="svg" effectMode="svg"
+      mobileFallback="svg" reveal="immediate" quality="high" refraction="lens" lensProfile="player"
+      radius={23} displacementScale={32} blur={1.2} dispersion={50} aberrationIntensity={0.32}
+      glassColor="rgba(236, 245, 255, 0.24)" borderColor="rgba(238, 248, 255, 0.7)"
+      style={{ position: 'fixed', zIndex: 19, pointerEvents: 'none',
+        left: 12, bottom: 'calc(12px + env(safe-area-inset-bottom))',
+        width: 'calc(100% - 24px)', height: 68 }} />
     <ScreenNavigation className="mobile-navigation" screen={screen} onChange={setScreen} />
-    {(screen === 'inventory' || screen === 'calendar') && <Button variant="default" className="mobile-add-button"
-      type="button" disabled={blocked || saving} aria-label="食品を登録" onClick={() => openForm()}>
-      <Icon name="plus" />
-    </Button>}
+    {(screen === 'inventory' || screen === 'calendar') && <>
+      <LiquidGlass className="mobile-add-glass" aria-hidden="true" renderer="svg" effectMode="svg"
+        mobileFallback="svg" reveal="immediate" quality="high" refraction="lens" lensProfile="loupe"
+        radius={19} displacementScale={18} blur={0.6} dispersion={50} aberrationIntensity={0.28}
+        glassColor="rgba(130, 169, 212, 0.18)" borderColor="rgba(213, 234, 255, 0.65)"
+        style={{ position: 'fixed', zIndex: 18, pointerEvents: 'none',
+          right: 20, bottom: 'calc(96px + env(safe-area-inset-bottom))',
+          width: 52, height: 52 }} />
+      <Button variant="default" className="mobile-add-button"
+        type="button" disabled={blocked || saving} aria-label="食品を登録" onClick={() => openForm()}>
+        <Icon name="plus" />
+      </Button>
+    </>}
     {iconTarget && <FoodIconPicker foodName={iconTarget.name} category={iconTarget.category}
       selected={selectedFoodIcon(data.icons, iconTarget.name)} blocked={blocked || saving} error={blocked ? notice?.message : undefined}
       onSelect={async icon => { if (await changeFoodIcon(iconTarget.name, icon)) setIconTarget(null); }}
