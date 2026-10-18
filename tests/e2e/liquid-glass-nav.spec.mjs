@@ -168,7 +168,7 @@ for (const width of [320, 390]) {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('食品一覧 8件');
 
     const nav = page.locator('.mobile-navigation');
-    const navLens = page.locator('.mobile-navigation-glass > div:first-child');
+    const navLens = page.locator('.mobile-navigation-glass');
     await expect(navLens).toHaveCSS('backdrop-filter', /blur\(3px\)/);
     const before = await nav.evaluate(node => ({
       background: getComputedStyle(node).backgroundImage,
