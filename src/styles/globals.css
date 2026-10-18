@@ -130,20 +130,45 @@ button.settings-row:hover, a.settings-row:hover { background:#F7F9FB; }
   :root { --color-muted:#5B6C7F; }
   .page:has(> .mobile-add-button) .main { padding-bottom:calc(164px + env(safe-area-inset-bottom)); }
   .inventory { margin-bottom:0; }
-  .food-primary { gap:8px; }
-  /* A quieter rhythm between category sections; in-category cards keep a tighter 12px gap. */
+  #inventory-heading { font-size:22px; font-weight:650; letter-spacing:-.03em; }
+  .food-primary { gap:6px; }
+  /* Smaller visual elements, with full-size touch targets and space between categories. */
+  .food-list { gap:10px; }
   .inventory-section + .inventory-section { margin-top:30px; }
   .inventory-section + .inventory-section > .group-heading { margin-top:0; }
-  .food-row .food-icon { background:#F2F5F8; color:#526479; }
-  .food-details > summary::after { border-color:#8D9BAD; }
+  .inventory-section > .group-heading { font-size:13px; font-weight:500; }
+  .food-row { border-radius:12px; box-shadow:0 1px 4px #253b5408; }
+  .food-row:has(.food-details[open]) { border-color:#BDCAD9; box-shadow:0 2px 8px #253b540d; }
+  .food-details > summary { min-height:64px; gap:6px; padding:8px 12px 8px 8px; }
+  .food-row .food-icon { width:44px; height:44px; border-radius:9px; background:transparent; color:#526479; }
+  .food-row .food-icon .icon { width:19px; height:19px; }
+  .food-caption h3 { font-size:15px; font-weight:600; line-height:1.45; }
+  .food-details > summary::after { flex-basis:7px; width:7px; height:7px; border-right-width:1.5px; border-bottom-width:1.5px; border-color:#8D9BAD; }
+  .food-row .deadline-chip { font-size:12px; font-weight:600; }
   .food-row .deadline-chip.state-later { color:#68778A; }
+  .food-row .deadline-chip.state-expired { font-weight:700; }
   .food-secondary { column-gap:6px; font-size:13px; }
   .stock-preview > span, .stock-progress > span { font-size:12px; color:var(--color-muted); }
   .filters select { color:var(--color-foreground); }
-  .single-stock .stock-lot { padding:0; border:0; background:transparent; box-shadow:none; }
+  .food-expanded { gap:8px; padding:10px 12px; background:#F6F8FB; }
+  .stock-heading { font-size:12px; font-weight:500; color:var(--color-muted); }
+  .food-row .stock-lot { gap:4px; padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; }
+  .stock-lot + .stock-lot { padding-top:10px; border-top:1px solid var(--color-border); }
+  .stock-lot-info > div:first-child { font-size:12px; }
+  .stock-lot-info time { font-weight:600; }
   .stock-lot-info .food-actions { gap:0; }
-  .stock-lot-controls .finish-food { white-space:normal; overflow-wrap:anywhere; }
-  .stock-lot-controls .finish-food .icon { flex-shrink:0; }
+  .stock-lot-balance { align-items:center; }
+  .stock-progress { gap:6px; }
+  .stock-progress strong { font-size:16px; font-weight:600; }
+  .stock-progress > [aria-hidden="true"] { height:5px; gap:2px; }
+  .stock-lot-low input { width:16px; height:16px; }
+  .stock-lot-controls .finish-food { border-color:#D6E0EB; background:#E8EEF5; color:var(--color-primary); font-weight:500; white-space:normal; overflow-wrap:anywhere; }
+  .stock-lot-controls .finish-food:hover { background:#DEE7F1; }
+  .stock-lot-controls .finish-food .icon { flex-shrink:0; filter:none; }
+  .stock-lot-controls .stock-quantity { min-height:44px; border-radius:8px; border-color:#D6E0EB; }
+  .stock-group-actions { gap:4px; padding-top:4px; border-top:1px solid var(--color-border); }
+  .stock-group-actions .secondary { min-height:44px; padding:8px; border-color:transparent; background:transparent; font-size:12px; font-weight:500; }
+  .stock-group-actions .secondary:hover { background:#E8EEF5; }
   .food-form .field-label { display:inline-flex; align-items:baseline; }
   /* Keep stock controls visually stable while writes are locked. */
   .page[data-saving="true"] :is(.food-row button, .mobile-add-button):disabled {

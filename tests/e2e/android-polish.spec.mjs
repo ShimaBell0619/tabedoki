@@ -26,7 +26,7 @@ async function setup(page) {
 }
 
 for (const width of [320, 390]) {
-  test(`一覧のカテゴリ間30px・カード間12pxの余白を維持する ${width}px`, async ({ page }, info) => {
+  test(`小ぶりなカードとカテゴリ間30px・カード間10pxの余白を維持する ${width}px`, async ({ page }, info) => {
     await page.setViewportSize({ width, height: 844 });
     await setup(page);
     const sections = page.locator('.inventory-section');
@@ -36,11 +36,15 @@ for (const width of [320, 390]) {
     const first = await cards.nth(0).boundingBox();
     const second = await cards.nth(1).boundingBox();
     const heading = await sections.nth(1).locator('.group-heading').boundingBox();
-    expect(Math.abs(second.y - first.y - first.height - 12)).toBeLessThanOrEqual(1);
+    expect(Math.abs(second.y - first.y - first.height - 10)).toBeLessThanOrEqual(1);
     expect(Math.abs(heading.y - second.y - second.height - 30)).toBeLessThanOrEqual(1);
-    await expect(cards.first().locator('summary')).toHaveCSS('min-height', '76px');
+    expect(first.height).toBeLessThanOrEqual(68);
+    await expect(cards.first().locator('summary')).toHaveCSS('min-height', '64px');
     await expect(cards.first().locator('.stock-preview')).toHaveCSS('height', '2px');
-    await expect(cards.first().locator('.food-icon')).toHaveCSS('background-color', 'rgb(242, 245, 248)');
+    await expect(cards.first().locator('.food-icon')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+    const iconButton = await cards.first().getByRole('button', { name: 'たまごのアイコンを変更' }).boundingBox();
+    expect(iconButton.width).toBeGreaterThanOrEqual(44);
+    expect(iconButton.height).toBeGreaterThanOrEqual(44);
     await expect(cards.first()).toHaveCSS('border-top-color', 'rgb(230, 234, 240)');
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
     await page.screenshot({ path: info.outputPath(`balanced-inventory-${width}.png`), fullPage: true });
