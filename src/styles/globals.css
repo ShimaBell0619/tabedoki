@@ -28,6 +28,13 @@
   --color-ink-soft: #40536A;
   --color-finished: #965C4F;
   --color-expired-border: #EED8D5;
+  --color-stock-track: #E3E9F0;
+  --color-stock-track-mobile: #EDF1F5;
+  --color-stock-progress-track: #DFE6EF;
+  --color-stock-fill: #344B68;
+  --color-stock-fill-mobile: #607691;
+  --color-stock-low: #B9874F;
+  --color-stock-low-mobile: #AD865B;
   --text-xs--line-height: 1.55;
   --text-sm--line-height: 1.55;
   --text-base--line-height: 1.55;
@@ -62,6 +69,13 @@
   --color-ink-soft: #BCCAD8;
   --color-finished: #C6A8A2;
   --color-expired-border: #7B4643;
+  --color-stock-track: #384450;
+  --color-stock-track-mobile: #34404B;
+  --color-stock-progress-track: #34404B;
+  --color-stock-fill: #A4B8CE;
+  --color-stock-fill-mobile: #A4B8CE;
+  --color-stock-low: #F0BC80;
+  --color-stock-low-mobile: #E4B88C;
 }
 
 @custom-variant mobile (@media (max-width: 760px));
