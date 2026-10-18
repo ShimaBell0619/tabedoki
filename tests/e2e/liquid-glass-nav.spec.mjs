@@ -122,53 +122,75 @@ test('スクロール中もガラスの透明度を保ち、停止後は屈折�
   await expect(navLens).toHaveAttribute('data-glass-strategy', 'svg');
   await expect(navFilter).toHaveCSS('backdrop-filter', /url/);
   await expect(addFilter).toHaveCSS('backdrop-filter', /url/);
-  const initialSurface = await page.evaluate(() => {
+
+  const capture = () => page.evaluate(() => {
     const nav = getComputedStyle(document.querySelector('.mobile-navigation'));
     const add = getComputedStyle(document.querySelector('.mobile-add-glass > div:first-child'));
     const lens = getComputedStyle(document.querySelector('.mobile-navigation-glass > div:first-child'));
     return {
-      navigationBackground: nav.backgroundImage,
-      navigationOpacity: nav.opacity,
-      navigationBorder: nav.borderColor,
-      lensBackground: lens.background,
-      addBackground: add.background,
+      paint: {
+        navigationBackground: nav.backgroundImage,
+        navigationOpacity: nav.opacity,
+        navigationBorder: nav.borderColor,
+        lensBackground: lens.background,
+        addBackground: add.background,
+      },
+      navFilter: lens.backdropFilter,
+      addFilter: add.backdropFilter,
+      scrolling: document.documentElement.dataset.glassScrolling === 'true',
     };
   });
 
-  // Touch motion disables the heavy filter before the following scroll.
-  await page.evaluate(() => window.dispatchEvent(new Event('touchmove')));
-  await expect(page.locator('html')).toHaveAttribute('data-glass-scrolling', 'true');
-  await expect(navFilter).toHaveCSS('backdrop-filter', /blur/);
-  await expect(addFilter).toHaveCSS('backdrop-filter', /blur/);
-  expect(await navFilter.evaluate(node => getComputedStyle(node).backdropFilter)).toContain('3px');
-  expect(await addFilter.evaluate(node => getComputedStyle(node).backdropFilter)).toContain('2px');
-  const scrollingSurface = await page.evaluate(() => {
+  const idle = await capture();
+  expect(idle.navFilter).toContain('url(');
+  expect(idle.addFilter).toContain('url(');
+  expect(idle.scrolling).toBe(false);
+
+  // Read both filter and painted surfaces in the same browser turn to avoid
+  // racing the 240ms idle debounce in a slower CI runner.
+  const moving = await page.evaluate(() => {
+    window.dispatchEvent(new Event('touchmove'));
     const nav = getComputedStyle(document.querySelector('.mobile-navigation'));
-    const add = getComputedStyle(document.querySelector('.mobile-add-glass > div:first-child'));
     const lens = getComputedStyle(document.querySelector('.mobile-navigation-glass > div:first-child'));
+    const add = getComputedStyle(document.querySelector('.mobile-add-glass > div:first-child'));
     return {
-      navigationBackground: nav.backgroundImage,
-      navigationOpacity: nav.opacity,
-      navigationBorder: nav.borderColor,
-      lensBackground: lens.background,
-      addBackground: add.background,
+      paint: {
+        navigationBackground: nav.backgroundImage,
+        navigationOpacity: nav.opacity,
+        navigationBorder: nav.borderColor,
+        lensBackground: lens.background,
+        addBackground: add.background,
+      },
+      navFilter: lens.backdropFilter,
+      addFilter: add.backdropFilter,
+      scrolling: document.documentElement.dataset.glassScrolling === 'true',
     };
   });
-  expect(scrollingSurface).toEqual(initialSurface);
+  expect(moving.scrolling).toBe(true);
+  expect(moving.navFilter).toContain('blur(3px)');
+  expect(moving.addFilter).toContain('blur(2px)');
+  expect(moving.navFilter).not.toContain('url(');
+  expect(moving.addFilter).not.toContain('url(');
+  expect(moving.paint).toEqual(idle.paint);
 
-  // Scrolling the page extends lightweight mode without remounting the lenses.
-  await page.evaluate(() => {
-    const main = document.querySelector('main');
-    main.style.minHeight = '2300px';
+  // Actual document scroll keeps the lightweight effect without remounting.
+  const scrolled = await page.evaluate(() => {
+    document.querySelector('main').style.minHeight = '2300px';
     window.scrollTo(0, 420);
+    window.dispatchEvent(new Event('scroll'));
+    return {
+      y: window.scrollY,
+      scrolling: document.documentElement.dataset.glassScrolling === 'true',
+      filter: getComputedStyle(document.querySelector('.mobile-navigation-glass > div:first-child')).backdropFilter,
+    };
   });
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
-  await expect(page.locator('html')).toHaveAttribute('data-glass-scrolling', 'true');
-  await expect(navFilter).toHaveCSS('backdrop-filter', /blur/);
+  expect(scrolled.y).toBeGreaterThan(0);
+  expect(scrolled.scrolling).toBe(true);
+  expect(scrolled.filter).toContain('blur(3px)');
 
   await expect(page.locator('html')).not.toHaveAttribute('data-glass-scrolling', 'true');
-  await expect(navLens).toHaveAttribute('data-glass-strategy', 'svg');
   await expect(navFilter).toHaveCSS('backdrop-filter', /url/);
   await expect(addFilter).toHaveCSS('backdrop-filter', /url/);
+  await expect(navLens).toHaveAttribute('data-glass-strategy', 'svg');
   await expect(page.locator('.mobile-navigation').getByRole('button', { name: '買い物' })).toBeEnabled();
 });
