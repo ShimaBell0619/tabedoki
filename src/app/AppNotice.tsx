@@ -22,8 +22,8 @@ export function AppNotice({ id, message, error, blocked, saving, refreshLabel, o
     return () => window.clearTimeout(timer);
   }, [id, error, focused, onDismiss]);
 
-  return <div className={cn('notice mb-5 flex items-center justify-between gap-3 rounded-[10px] bg-panel py-2.5 pr-3 pl-4 text-[13px] text-[#354F70] wrap-anywhere',
-    error ? 'notice-error bg-[#fff0ec] text-[#8e372b]' : 'notice-toast')}
+  return <div className={cn('notice mb-5 flex items-center justify-between gap-3 rounded-[10px] bg-panel py-2.5 pr-3 pl-4 text-[13px] text-primary wrap-anywhere',
+    error ? 'notice-error bg-expired-surface text-expired' : 'notice-toast')}
     role={error ? 'alert' : 'status'}
     onFocusCapture={() => setFocused(true)}
     onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}>

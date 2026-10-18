@@ -42,10 +42,10 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
     </div>
     <section className="inventory mb-[30px]" aria-labelledby="inventory-heading">
       <div className="list-toolbar mb-3 flex flex-wrap items-center justify-between gap-2">
-        <div className={`tabs flex gap-0.5 rounded-[10px] border border-[#E1E6ED] bg-panel p-[3px] [&_button]:min-h-11
+        <div className={`tabs flex gap-0.5 rounded-[10px] border border-border bg-panel p-[3px] [&_button]:min-h-11
           [&_button]:rounded-[7px] [&_button]:border-0 [&_button]:bg-transparent [&_button]:px-[18px] [&_button]:py-2
-          [&_button]:text-[13px] [&_button]:font-bold [&_button]:text-muted [&_button[aria-pressed=true]]:bg-white
-          [&_button[aria-pressed=true]]:text-[#354F70] [&_button[aria-pressed=true]]:shadow-[0_1px_3px_#263C5712]
+          [&_button]:text-[13px] [&_button]:font-bold [&_button]:text-muted [&_button[aria-pressed=true]]:bg-surface
+          [&_button[aria-pressed=true]]:text-primary [&_button[aria-pressed=true]]:shadow-[0_1px_3px_#263C5712]
           mobile:[&_button]:px-3 mobile:[&_button]:text-xs tiny:[&_button]:px-2.5`} role="group" aria-label="表示する食品">
           {(['active', 'finished', 'all'] as const).map(value =>
             <Button variant="plain" key={value} type="button" aria-pressed={view === value} onClick={() => setView(value)}>
@@ -53,37 +53,37 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
             </Button>)}
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="secondary" type="button" className="filter-toggle secondary shrink-0 px-3.5 aria-expanded:border-[#A0B1C6] aria-expanded:bg-[#EAF0F6] mobile:p-2.5 mobile:text-xs mobile:[&_.icon]:size-[17px] tiny:gap-[5px]" aria-expanded={filtersOpen}
+          <Button variant="secondary" type="button" className="filter-toggle secondary shrink-0 px-3.5 aria-expanded:border-border-hover aria-expanded:bg-control mobile:p-2.5 mobile:text-xs mobile:[&_.icon]:size-[17px] tiny:gap-[5px]" aria-expanded={filtersOpen}
             aria-controls="filter-panel" onClick={() => setFiltersOpen(!filtersOpen)}>
-            <Icon name="sliders-horizontal" />絞り込み{filterCount > 0 && <span className="filter-count min-w-5 rounded-full bg-primary text-center text-[11px] leading-5 text-white">{filterCount}</span>}
+            <Icon name="sliders-horizontal" />絞り込み{filterCount > 0 && <span className="filter-count min-w-5 rounded-full bg-action text-center text-[11px] leading-5 text-on-action">{filterCount}</span>}
           </Button>
         </div>
       </div>
       <div className={`filters mb-3 grid grid-cols-2 gap-3 rounded-[10px] border border-border bg-panel p-4 [&_label]:flex
           [&_label]:min-w-0 [&_label]:flex-col [&_label]:gap-1.5 [&_label]:text-xs [&_label]:font-[650]
           [&_label]:text-muted mobile:p-3`} id="filter-panel" hidden={!filtersOpen}>
-        <label>カテゴリ<NativeSelect className="min-h-11 rounded-lg border-[#CAD3DF] px-2.5 py-2 text-sm text-[#334b40] mobile:px-2.5" aria-label="カテゴリで絞り込み" value={categoryFilter}
+        <label>カテゴリ<NativeSelect className="min-h-11 rounded-lg border-input px-2.5 py-2 text-sm text-foreground mobile:px-2.5" aria-label="カテゴリで絞り込み" value={categoryFilter}
           onChange={event => setCategoryFilter(event.target.value as typeof categoryFilter)}>
           <option value="all">すべて</option>
           {Object.entries(categories).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
         </NativeSelect></label>
-        <label>保存場所<NativeSelect className="min-h-11 rounded-lg border-[#CAD3DF] px-2.5 py-2 text-sm text-[#334b40] mobile:px-2.5" aria-label="保存場所で絞り込み" value={placeFilter}
+        <label>保存場所<NativeSelect className="min-h-11 rounded-lg border-input px-2.5 py-2 text-sm text-foreground mobile:px-2.5" aria-label="保存場所で絞り込み" value={placeFilter}
           onChange={event => setPlaceFilter(event.target.value as typeof placeFilter)}>
           <option value="all">すべて</option>
           {Object.entries(places).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
         </NativeSelect></label>
-        <label>期限<NativeSelect className="min-h-11 rounded-lg border-[#CAD3DF] px-2.5 py-2 text-sm text-[#334b40] mobile:px-2.5" aria-label="期限状態で絞り込み" value={deadlineFilter}
+        <label>期限<NativeSelect className="min-h-11 rounded-lg border-input px-2.5 py-2 text-sm text-foreground mobile:px-2.5" aria-label="期限状態で絞り込み" value={deadlineFilter}
           onChange={event => setDeadlineFilter(event.target.value as DeadlineFilter)}>
           {Object.entries(deadlineFilters).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
         </NativeSelect></label>
         <label className="sort-control">並び順<span className="sr-only">一覧の表示方法</span>
-          <NativeSelect className="min-h-11 w-full rounded-lg border-[#CAD3DF] px-2.5 py-2 text-sm text-[#334b40]" value={sort} onChange={event => setSort(event.target.value as typeof sort)}>
+          <NativeSelect className="min-h-11 w-full rounded-lg border-input px-2.5 py-2 text-sm text-foreground" value={sort} onChange={event => setSort(event.target.value as typeof sort)}>
             <option value="category">カテゴリ別</option><option value="deadline">期限順</option><option value="place">保存場所別</option>
           </NativeSelect>
         </label>
         {view === 'active' && <div className={`deadline-filters col-span-full flex flex-wrap gap-1.5 [&_button]:min-h-11 [&_button]:rounded-lg [&_button]:border
-          [&_button]:border-border [&_button]:bg-white [&_button]:px-2.5 [&_button]:py-2 [&_button]:text-xs
-          [&_button]:text-muted [&_button[aria-pressed=true]]:border-primary [&_button[aria-pressed=true]]:text-primary
+          [&_button]:border-border [&_button]:bg-surface [&_button]:px-2.5 [&_button]:py-2 [&_button]:text-xs
+          [&_button]:text-muted [&_button[aria-pressed=true]]:border-action [&_button[aria-pressed=true]]:text-primary
           [&_button[aria-pressed=true]]:shadow-[inset_0_0_0_1px_var(--color-primary)]`} role="group" aria-label="期限の状況">
           {(['all', 'expired', 'fortnight', 'month'] as const).map(filter =>
             <Button variant="plain" key={filter} type="button" aria-pressed={deadlineFilter === filter}
@@ -93,17 +93,17 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
         </div>}
       </div>
       {hasFilters && <div className={`active-filters mt-1 mb-3.5 flex flex-wrap items-center gap-[7px] text-xs wrap-anywhere [&>span]:max-w-full
-          [&>span]:rounded-md [&>span]:bg-[#E9EEF5] [&>span]:px-[9px] [&>span]:py-1 [&>span]:text-[#354F70]
+          [&>span]:rounded-md [&>span]:bg-panel [&>span]:px-[9px] [&>span]:py-1 [&>span]:text-primary
           [&_button]:min-h-11 [&_button]:border-0 [&_button]:bg-transparent [&_button]:px-2 [&_button]:py-1
-          [&_button]:text-[#354F70] [&_button]:underline`} aria-label="適用中の絞り込み">
+          [&_button]:text-primary [&_button]:underline`} aria-label="適用中の絞り込み">
         {categoryFilter !== 'all' && <span>{categories[categoryFilter]}</span>}
         {placeFilter !== 'all' && <span>{places[placeFilter]}</span>}
         {deadlineFilter !== 'all' && <span>{deadlineFilters[deadlineFilter]}</span>}
         <Button variant="plain" type="button" onClick={resetFilters}>条件をクリア</Button>
       </div>}
       {foodGroups.length === 0 ? <div className={`empty flex min-h-[220px] flex-col items-center justify-center gap-4 rounded-[13px] border border-border
-          bg-white px-4 py-7 text-center [&_h2]:m-0 [&_h2]:text-base [&_h2]:font-[650]`}>
-        <div className="empty-icon grid size-[52px] place-items-center rounded-[14px] bg-[#EEF2F7] [&_.icon]:size-7 [&_.icon]:opacity-60"><Icon name={hasFilters ? 'sliders-horizontal' : 'cooking-pot'} /></div>
+          bg-surface px-4 py-7 text-center [&_h2]:m-0 [&_h2]:text-base [&_h2]:font-[650]`}>
+        <div className="empty-icon grid size-[52px] place-items-center rounded-[14px] bg-panel [&_.icon]:size-7 [&_.icon]:opacity-60"><Icon name={hasFilters ? 'sliders-horizontal' : 'cooking-pot'} /></div>
         <h2>{hasFilters ? '該当する食品がありません' : view === 'finished' ? '完了した食品はありません' :
           items.length === 0 ? '食品を登録しましょう' : '管理中の食品はありません'}</h2>
         {!hasFilters && view !== 'finished' && <Button variant="secondary" className="secondary" type="button" disabled={blocked} onClick={onCreate}>
@@ -111,8 +111,8 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
         </Button>}
       </div> :
         sections.filter(section => section.items.length > 0).map(section => <div className="inventory-section" key={section.name ?? 'deadline'}>
-        {section.name && <h2 className="group-heading mt-3.5 mb-1.5 text-[15px] font-bold mobile:mb-[9px] mobile:text-[14px] mobile:font-semibold mobile:text-[#40536A]" aria-label={section.name}>
-          {section.name}<span className="group-count ml-2 text-xs font-medium text-muted mobile:text-[#68778A]" aria-hidden="true">{section.items.length}件</span>
+        {section.name && <h2 className="group-heading mt-3.5 mb-1.5 text-[15px] font-bold mobile:mb-[9px] mobile:text-[14px] mobile:font-semibold mobile:text-ink-soft" aria-label={section.name}>
+          {section.name}<span className="group-count ml-2 text-xs font-medium text-muted mobile:text-muted" aria-hidden="true">{section.items.length}件</span>
         </h2>}
         <ul className="food-list m-0 flex list-none flex-col gap-1.5 p-0 mobile:gap-3">{section.items.map(group =>
           <FoodGroupCard key={group.key} group={group} totalActiveQuantity={totalByKey.get(group.key) ?? 0} today={today} view={view} sort={sort}
