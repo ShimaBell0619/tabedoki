@@ -119,7 +119,7 @@ test('定番の重複名を拒否し、50件上限を表示する', async ({ pag
   await expect(page.getByText('50 / 50件')).toBeVisible();
 });
 
-for (const width of [320, 390, 1440]) {
+for (const width of [320, 390, 430, 1440]) {
   test(`${width}pxで管理・編集が収まり、登録途中の入力とキーボード操作を保持する`, async ({ page }, info) => {
     const longName = '長い定番食品名'.repeat(10);
     await seed(page, { [STORAGE_KEY]: JSON.stringify({ ...initial(), templates: [...defaultTemplates(), { ...defaultTemplates()[0], id: 'long', name: longName }] }) });

@@ -1,6 +1,6 @@
 import { test, expect } from './helpers/cloud.mjs';
 
-for (const width of [320, 390, 1440]) {
+for (const width of [320, 390, 430, 1440]) {
   test(`設定行のアイコンとラベルを左寄せし、末尾の操作を右端に保つ ${width}px`, async ({ page }, info) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/');

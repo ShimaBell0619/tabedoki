@@ -50,9 +50,9 @@ export function ShoppingPage({ items, foods, templates, blocked, onAdd, onBought
             <span>{item.name}<small>{item.quantity}{units[item.unit]}</small></span>
           </label>
           <div className="shopping-actions ml-auto flex flex-wrap gap-2 mobile:[&_.secondary]:px-2.5 mobile:[&_.secondary]:py-2 mobile:[&_.secondary]:text-xs">
-            {item.bought && <Button variant="secondary" className="secondary" type="button" disabled={blocked}
+            {item.bought && <Button variant="secondary" className="secondary shopping-register" type="button" disabled={blocked}
               onClick={() => onRegister(item)} aria-label={`${item.name}を在庫に登録`}>在庫に登録</Button>}
-            <Button variant="secondary" className="secondary text-muted" type="button" disabled={blocked} onClick={() => onRemove(item)}
+            <Button variant="secondary" className="secondary shopping-remove text-muted" type="button" disabled={blocked} onClick={() => onRemove(item)}
               aria-label={`買い物の${item.name}を削除`}>削除</Button>
           </div>
         </li>)}</ul>

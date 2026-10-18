@@ -23,7 +23,7 @@ async function setup(page) {
   await page.goto('/');
 }
 
-for (const width of [320, 390, 1440]) {
+for (const width of [320, 390, 430, 1440]) {
   test(`横型カレンダー・4タブ・食品操作 ${width}px`, async ({ page }, info) => {
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
@@ -57,6 +57,7 @@ for (const width of [320, 390, 1440]) {
       expect(Math.abs(bounds.y + bounds.height / 2 - 850 / 2)).toBeLessThanOrEqual(2);
     }
     await expect(dialog.locator('.timeline-dialog-item')).toHaveCount(2);
+    await page.screenshot({ path: info.outputPath(`calendar-detail-${width}.png`) });
     await dialog.getByRole('button', { name: 'たまごを1個食べた' }).click();
     await expect(dialog).not.toBeVisible();
     expect((await cloudData(page)).items.find(entry => entry.id === 'egg').status).toBe('active');
