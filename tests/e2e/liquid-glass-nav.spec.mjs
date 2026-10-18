@@ -16,6 +16,8 @@ for (const width of [320, 390, 1440]) {
       await expect(mobile).toBeHidden();
       await expect(desktop).toBeVisible();
       await expect(desktop.getByRole('button', { name: 'カレンダー' })).toBeVisible();
+      await expect(page.locator('.mobile-navigation-glass')).toBeHidden();
+      await expect(page.locator('.mobile-add-glass')).toBeHidden();
       await page.screenshot({ path: info.outputPath('glass-desktop-1440.png') });
       return;
     }
@@ -24,7 +26,13 @@ for (const width of [320, 390, 1440]) {
     await expect(mobile).toBeVisible();
     await expect(mobile).toHaveCSS('position', 'fixed');
     await expect(mobile).toHaveCSS('border-radius', '23px');
-    await expect(mobile).toHaveCSS('backdrop-filter', /blur/);
+    const lens = page.locator('.mobile-navigation-glass');
+    await expect(lens).toBeVisible();
+    await expect(lens).toHaveAttribute('data-glass-strategy', 'svg');
+    await expect(lens).toHaveAttribute('aria-hidden', 'true');
+    const filter = await lens.locator(':scope > div').first()
+      .evaluate(node => getComputedStyle(node).backdropFilter);
+    expect(filter).toContain('url(');
     const glass = await mobile.evaluate(node => {
       const surface = getComputedStyle(node);
       const highlight = getComputedStyle(node, '::after');
@@ -48,6 +56,11 @@ for (const width of [320, 390, 1440]) {
 
     const addButton = page.locator('.mobile-add-button');
     await expect(addButton).toBeVisible();
+    await expect(addButton).toHaveCSS('backdrop-filter', 'none');
+    const addLens = page.locator('.mobile-add-glass');
+    await expect(addLens).toBeVisible();
+    await expect(addLens).toHaveAttribute('data-glass-strategy', 'svg');
+    await expect(addLens).toHaveAttribute('aria-hidden', 'true');
     const addSurface = await addButton.evaluate(node => {
       const style = getComputedStyle(node);
       return { background: style.backgroundImage, shadow: style.boxShadow };
@@ -55,9 +68,19 @@ for (const width of [320, 390, 1440]) {
     expect(addSurface.background).toContain('radial-gradient');
     expect(addSurface.shadow).toContain('inset');
     const navBox = await mobile.boundingBox();
+    const lensBox = await lens.boundingBox();
+    const addLensBox = await addLens.boundingBox();
+    expect(lensBox.x).toBe(navBox.x);
+    expect(lensBox.y).toBe(navBox.y);
+    expect(lensBox.width).toBe(navBox.width);
+    expect(lensBox.height).toBe(navBox.height);
     const addBox = await addButton.boundingBox();
     expect(navBox).toBeTruthy();
     expect(addBox).toBeTruthy();
+    expect(addLensBox.x).toBe(addBox.x);
+    expect(addLensBox.y).toBe(addBox.y);
+    expect(addLensBox.width).toBe(addBox.width);
+    expect(addLensBox.height).toBe(addBox.height);
     expect(navBox.x).toBeGreaterThanOrEqual(0);
     expect(navBox.x + navBox.width).toBeLessThanOrEqual(width);
     expect(navBox.y - (addBox.y + addBox.height)).toBeGreaterThanOrEqual(8);
@@ -76,6 +99,7 @@ for (const width of [320, 390, 1440]) {
     await mobile.getByRole('button', { name: '買い物' }).click();
     await expect(mobile).toHaveCSS('--active-tab-index', '2');
     await expect(addButton).toHaveCount(0);
+    await expect(addLens).toHaveCount(0);
     await mobile.getByRole('button', { name: '一覧' }).click();
     await expect(mobile).toHaveCSS('--active-tab-index', '0');
     await addButton.click();
