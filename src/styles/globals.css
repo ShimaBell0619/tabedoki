@@ -484,3 +484,9 @@
   .timeline-dialog-actions [data-variant="default"]:hover { background:#DEE7F1; }
   .timeline-more > summary { border-color:transparent; background:transparent; padding:8px; font-weight:500; }
 }
+
+/* Performance mode: turn off SVG filtering only while a user scrolls. */
+.page[data-glass-scrolling="true"] :is(.mobile-navigation-glass, .mobile-add-glass) > div:first-child {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
