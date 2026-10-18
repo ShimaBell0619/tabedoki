@@ -484,3 +484,15 @@
   .timeline-dialog-actions [data-variant="default"]:hover { background:#DEE7F1; }
   .timeline-more > summary { border-color:transparent; background:transparent; padding:8px; font-weight:500; }
 }
+
+/* SVG displacement behind fixed controls is expensive during scrolling on mobile GPUs.
+   Pause the filter itself rather than remounting the glass or changing React state. */
+@media (max-width:760px) {
+  html[data-glass-scrolling="true"] :is(.mobile-navigation-glass, .mobile-add-glass) > div:first-child {
+    -webkit-backdrop-filter:none !important;
+    backdrop-filter:none !important;
+  }
+  html[data-glass-scrolling="true"] .mobile-navigation {
+    background:linear-gradient(155deg,rgb(247 251 255 / 96%),rgb(233 242 251 / 94%) 52%,rgb(214 227 244 / 96%));
+  }
+}

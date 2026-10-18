@@ -109,3 +109,39 @@ for (const width of [320, 390, 1440]) {
     expect(page.cloud.writes).toBe(0);
   });
 }
+
+test('スクロール中はSVG屈折を停止し、停止後に同じレンズで復元する', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await cloudData(page);
+
+  const navLens = page.locator('.mobile-navigation-glass');
+  const addLens = page.locator('.mobile-add-glass');
+  const navFilter = navLens.locator(':scope > div').first();
+  const addFilter = addLens.locator(':scope > div').first();
+  await expect(navLens).toHaveAttribute('data-glass-strategy', 'svg');
+  await expect(navFilter).toHaveCSS('backdrop-filter', /url/);
+  await expect(addFilter).toHaveCSS('backdrop-filter', /url/);
+
+  // Touch motion disables the heavy filter before the following scroll.
+  await page.evaluate(() => window.dispatchEvent(new Event('touchmove')));
+  await expect(page.locator('html')).toHaveAttribute('data-glass-scrolling', 'true');
+  await expect(navFilter).toHaveCSS('backdrop-filter', 'none');
+  await expect(addFilter).toHaveCSS('backdrop-filter', 'none');
+
+  // Scrolling the page extends lightweight mode without remounting the lenses.
+  await page.evaluate(() => {
+    const main = document.querySelector('main');
+    main.style.minHeight = '2300px';
+    window.scrollTo(0, 420);
+  });
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  await expect(page.locator('html')).toHaveAttribute('data-glass-scrolling', 'true');
+  await expect(navFilter).toHaveCSS('backdrop-filter', 'none');
+
+  await expect(page.locator('html')).not.toHaveAttribute('data-glass-scrolling', 'true');
+  await expect(navLens).toHaveAttribute('data-glass-strategy', 'svg');
+  await expect(navFilter).toHaveCSS('backdrop-filter', /url/);
+  await expect(addFilter).toHaveCSS('backdrop-filter', /url/);
+  await expect(page.locator('.mobile-navigation').getByRole('button', { name: '買い物' })).toBeEnabled();
+});
