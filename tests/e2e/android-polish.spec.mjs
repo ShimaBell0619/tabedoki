@@ -25,6 +25,26 @@ async function setup(page) {
   await cloudData(page);
 }
 
+test('デュアルアンビエントの背景光とカードの立体感を維持する', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await setup(page);
+  const surface = page.locator('.page');
+  await expect(surface).toHaveCSS('background-color', 'rgb(240, 244, 250)');
+  const glow = await surface.evaluate(node => {
+    const before = getComputedStyle(node, '::before');
+    return { position: before.position, image: before.backgroundImage };
+  });
+  expect(glow.position).toBe('fixed');
+  expect((glow.image.match(/radial-gradient/g) ?? []).length).toBe(2);
+
+  const card = page.locator('.food-row').first();
+  await expect(card).toHaveCSS('background-image', /linear-gradient/);
+  await expect(card).toHaveCSS('box-shadow', /inset/);
+  await expect(card.locator('summary')).toHaveCSS('min-height', '64px');
+  await card.locator('summary').click();
+  await expect(card.locator('.stock-progress')).toBeVisible();
+});
+
 for (const width of [320, 390]) {
   test(`小ぶりなカードとカテゴリ間30px・カード間10pxの余白を維持する ${width}px`, async ({ page }, info) => {
     await page.setViewportSize({ width, height: 844 });
