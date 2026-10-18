@@ -16,13 +16,13 @@ export function StockProgress({ item }: { item: Food }) {
       <strong className="text-[19px] font-bold leading-[1.3] tracking-tight tabular-nums text-foreground">{label}</strong>
       {volume && <span className="text-xs text-muted">{item.quantity > 1 ? `開封中の1${units[item.unit]} · 全${item.quantity}${units[item.unit]}` : '開封中'}</span>}
     </div>
-    <div aria-hidden="true" className="flex h-[7px] gap-[3px] overflow-hidden rounded-sm bg-[#DFE6EF]">
+    <div aria-hidden="true" className="flex h-[7px] gap-[3px] overflow-hidden rounded-sm bg-stock-progress-track">
       {segmented ? Array.from({ length: segmentCount }, (_, i) => {
         const fraction = Math.max(0, Math.min(1, percent / 100 * segmentCount - i));
-        return <span key={i} className="min-w-0 flex-1 overflow-hidden rounded-sm bg-[#DFE6EF]">
-          <span className="block h-full bg-[#344B68]" style={{ width: fraction * 100 + '%' }} />
+        return <span key={i} className="min-w-0 flex-1 overflow-hidden rounded-sm bg-stock-progress-track">
+          <span className="block h-full bg-stock-fill" style={{ width: fraction * 100 + '%' }} />
         </span>;
-      }) : <span className="block h-full bg-[#344B68]" style={{ width: percent + '%' }} />}
+      }) : <span className="block h-full bg-stock-fill" style={{ width: percent + '%' }} />}
     </div>
   </div>;
 }
