@@ -112,7 +112,7 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
       </div> :
         sections.filter(section => section.items.length > 0).map(section => <div className="inventory-section" key={section.name ?? 'deadline'}>
         {section.name && <h2 className="group-heading mt-3.5 mb-1.5 text-[15px] font-bold mobile:mb-[9px] mobile:text-[14px] mobile:font-semibold mobile:text-ink-soft" aria-label={section.name}>
-          {section.name}<span className="group-count ml-2 text-xs font-medium text-muted mobile:text-muted" aria-hidden="true">{section.items.length}件</span>
+          {section.name}<span className="group-count ml-2 text-xs font-medium text-muted mobile:text-later" aria-hidden="true">{section.items.length}件</span>
         </h2>}
         <ul className="food-list m-0 flex list-none flex-col gap-1.5 p-0 mobile:gap-3">{section.items.map(group =>
           <FoodGroupCard key={group.key} group={group} totalActiveQuantity={totalByKey.get(group.key) ?? 0} today={today} view={view} sort={sort}

@@ -24,6 +24,7 @@
   --color-control-hover: #DEE7F1;
   --color-border-subtle: #E6EAF0;
   --color-border-hover: #A7B9CF;
+  --color-later: #68778A;
   --color-icon: #526479;
   --color-ink-soft: #40536A;
   --color-finished: #965C4F;
@@ -65,6 +66,7 @@
   --color-control-hover: #3A444E;
   --color-border-subtle: #333B45;
   --color-border-hover: #667A90;
+  --color-later: #ADB9C6;
   --color-icon: #CEDAE8;
   --color-ink-soft: #BCCAD8;
   --color-finished: #C6A8A2;
@@ -219,7 +221,7 @@
   .food-caption h3 { font-size:15px; font-weight:600; line-height:1.45; }
   .food-details > summary::after { flex-basis:7px; width:7px; height:7px; border-right-width:1.5px; border-bottom-width:1.5px; border-color:var(--color-muted); }
   .food-row .deadline-chip { font-size:12px; font-weight:600; }
-  .food-row .deadline-chip.state-later { color:var(--color-muted); }
+  .food-row .deadline-chip.state-later { color:var(--color-later); }
   .food-row .deadline-chip.state-expired { font-weight:700; }
   .food-secondary { column-gap:6px; font-size:13px; }
   .stock-preview > span, .stock-progress > span { font-size:12px; color:var(--color-muted); }
