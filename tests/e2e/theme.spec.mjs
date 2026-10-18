@@ -46,3 +46,15 @@ test('ダークモードでも食品登録フォームと他画面にライト�
   await page.getByRole('button', { name: '買い物', exact: true }).click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
 });
+
+test('リンク先の利用条件とプライバシーポリシーも手動のダーク指定に従う', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'light' });
+  await page.goto('/');
+  await page.evaluate(() => localStorage.setItem('tabedoki-theme', 'dark'));
+  for (const path of ['/terms.html', '/privacy.html']) {
+    await page.goto(path);
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await expect(page.locator('html')).toHaveCSS('background-color', 'rgb(14, 17, 21)');
+    await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute('content', '#0E1115');
+  }
+});
