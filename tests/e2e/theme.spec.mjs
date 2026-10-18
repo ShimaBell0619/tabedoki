@@ -7,7 +7,7 @@ test('端末のダーク設定に追従しブラウザー色とガラス色が�
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute('content', '#0E1115');
   await expect(page.locator('.page')).toHaveCSS('background-color', 'rgb(14, 17, 21)');
-  await expect(page.locator('.mobile-navigation-glass')).toHaveCSS('backdrop-filter', /blur\\(3px\\)/);
+  await expect(page.locator('.mobile-navigation-glass')).toHaveCSS('backdrop-filter', /blur\(3px\)/);
   await expect(page.locator('.mobile-navigation-glass')).toHaveCSS('background-color', 'rgba(27, 37, 50, 0.52)');
   await page.emulateMedia({ colorScheme: 'light' });
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
