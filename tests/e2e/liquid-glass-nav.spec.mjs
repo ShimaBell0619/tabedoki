@@ -120,8 +120,8 @@ test('スクロール中はSVG屈折を停止し、停止後に同じレンズ�
   const navFilter = navLens.locator(':scope > div').first();
   const addFilter = addLens.locator(':scope > div').first();
   await expect(navLens).toHaveAttribute('data-glass-strategy', 'svg');
-  await expect(navFilter).toHaveCSS('backdrop-filter', /url\\(/);
-  await expect(addFilter).toHaveCSS('backdrop-filter', /url\\(/);
+  await expect(navFilter).toHaveCSS('backdrop-filter', /url/);
+  await expect(addFilter).toHaveCSS('backdrop-filter', /url/);
 
   // Touch motion disables the heavy filter before the following scroll.
   await page.evaluate(() => window.dispatchEvent(new Event('touchmove')));
@@ -141,7 +141,7 @@ test('スクロール中はSVG屈折を停止し、停止後に同じレンズ�
 
   await expect(page.locator('html')).not.toHaveAttribute('data-glass-scrolling', 'true');
   await expect(navLens).toHaveAttribute('data-glass-strategy', 'svg');
-  await expect(navFilter).toHaveCSS('backdrop-filter', /url\\(/);
-  await expect(addFilter).toHaveCSS('backdrop-filter', /url\\(/);
+  await expect(navFilter).toHaveCSS('backdrop-filter', /url/);
+  await expect(addFilter).toHaveCSS('backdrop-filter', /url/);
   await expect(page.locator('.mobile-navigation').getByRole('button', { name: '買い物' })).toBeEnabled();
 });
