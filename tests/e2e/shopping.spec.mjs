@@ -26,7 +26,7 @@ async function add(page, name) {
   await page.getByRole('button', { name: '追加する', exact: true }).first().click();
 }
 
-for (const width of [320, 390, 1440]) {
+for (const width of [320, 390, 430, 1440]) {
   test(`${width}pxで在庫→買い物→購入→今回の期限で登録を一度だけ保存する`, async ({ page }, info) => {
     await page.setViewportSize({ width, height: 900 });
     await seed(page, initial()); await page.goto('/');
