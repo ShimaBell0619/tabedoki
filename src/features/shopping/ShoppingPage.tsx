@@ -40,7 +40,7 @@ export function ShoppingPage({ items, foods, templates, blocked, onAdd, onBought
       if (!group.length) return null;
       return <section key={String(bought)} aria-label={bought ? '購入済み' : '未購入'}>
         <h2>{bought ? '購入済み' : '買うもの'}</h2>
-        <ul className={`shopping-list m-0 list-none rounded-[13px] border border-border bg-white p-0 [&_li]:flex [&_li]:flex-wrap
+        <ul className={`shopping-list m-0 list-none rounded-[13px] border border-border bg-surface p-0 [&_li]:flex [&_li]:flex-wrap
           [&_li]:items-center [&_li]:gap-3 [&_li]:border-b [&_li]:border-border [&_li]:p-3 [&_li:last-child]:border-b-0`}>{group.map(item => <li key={item.id}>
           <label className={`shopping-check flex min-h-11 min-w-40 flex-1 cursor-pointer items-center gap-2 [&_input]:m-[11px]
           [&_input]:size-[22px] [&_input]:shrink-0 [&_input]:accent-primary [&_span]:min-w-0 [&_span]:font-[650]
@@ -59,7 +59,7 @@ export function ShoppingPage({ items, foods, templates, blocked, onAdd, onBought
       </section>;
     })}
     {suggestions.length > 0 && <section aria-label="補充候補"><h2>補充候補</h2>
-      <ul className={`shopping-list m-0 list-none rounded-[13px] border border-border bg-white p-0 [&_li]:flex [&_li]:flex-wrap
+      <ul className={`shopping-list m-0 list-none rounded-[13px] border border-border bg-surface p-0 [&_li]:flex [&_li]:flex-wrap
           [&_li]:items-center [&_li]:gap-3 [&_li]:border-b [&_li]:border-border [&_li]:p-3 [&_li:last-child]:border-b-0`}>{suggestions.map(food => <li key={food.id}>
         <span className="shopping-candidate-name min-w-0 flex-1 wrap-anywhere">{food.name}</span>
         <Button variant="secondary" className="secondary" type="button" disabled={blocked} onClick={() => onAdd(food)}

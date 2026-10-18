@@ -57,7 +57,7 @@ export function TemplateManager({ templates, blocked, error, onError, onSave, on
           <div>
           <h2 id="dialog-heading">{editing ? (editingId ? '定番食品を編集' : '定番食品を追加') : '定番食品を管理'}</h2>
           </div>
-          <Button variant="ghost" size="icon" ref={closeButton} type="button" className="close size-11 shrink-0 rounded-lg hover:bg-[#EEF1F6]" aria-label="閉じる" onClick={onDone}>
+          <Button variant="ghost" size="icon" ref={closeButton} type="button" className="close size-11 shrink-0 rounded-lg hover:bg-control-hover" aria-label="閉じる" onClick={onDone}>
           <Icon name="x" />
           </Button>
           </div>
@@ -85,8 +85,8 @@ export function TemplateManager({ templates, blocked, error, onError, onSave, on
           </label>
           </div>
       <label>在庫を減らすときの表現<NativeSelect value={draft.consumption} onChange={event => setDraft({ ...draft, consumption: event.target.value as Draft['consumption'] })}>{Object.entries(consumptionLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</NativeSelect></label>
-      {error && <p className="form-error m-0 rounded-lg bg-[#fff0ec] p-3 text-[13px] text-[#8e372b] wrap-anywhere" role="alert">{error}</p>}
-      <div className="dialog-actions mt-2 flex justify-end gap-2 sticky bottom-[-24px] z-2 mb-[-24px] border-t border-[#E2E7ED] bg-white pt-3.5 pb-6 mobile:bottom-[-20px] mobile:mb-[-20px] mobile:pb-5">
+      {error && <p className="form-error m-0 rounded-lg bg-expired-surface p-3 text-[13px] text-expired wrap-anywhere" role="alert">{error}</p>}
+      <div className="dialog-actions mt-2 flex justify-end gap-2 sticky bottom-[-24px] z-2 mb-[-24px] border-t border-border bg-surface pt-3.5 pb-6 mobile:bottom-[-20px] mobile:mb-[-20px] mobile:pb-5">
           <Button variant="secondary" type="button" className="secondary text-muted" onClick={() => { setEditing(false); onError(''); }}>一覧に戻る</Button>
           <Button variant="default" type="submit" className="primary" disabled={blocked}>定番を保存</Button>
           </div>
@@ -96,9 +96,9 @@ export function TemplateManager({ templates, blocked, error, onError, onSave, on
           <span>{templates.length} / {MAX_TEMPLATES}件</span>
           <Button variant="secondary" type="button" className="secondary" disabled={blocked || templates.length >= MAX_TEMPLATES} onClick={() => edit()}>定番食品を追加</Button>
           </div>
-      {error && <p className="form-error m-0 rounded-lg bg-[#fff0ec] p-3 text-[13px] text-[#8e372b] wrap-anywhere" role="alert">{error}</p>}
+      {error && <p className="form-error m-0 rounded-lg bg-expired-surface p-3 text-[13px] text-expired wrap-anywhere" role="alert">{error}</p>}
       {templates.length ? <ul className={`template-list m-0 list-none p-0 [&_li]:flex [&_li]:items-center [&_li]:justify-between [&_li]:gap-3
-          [&_li]:border-b [&_li]:border-[#E2E7ED] [&_li]:py-4 [&_li>div:first-child]:min-w-0 [&_h3]:mt-0 [&_h3]:mb-[5px]
+          [&_li]:border-b [&_li]:border-border [&_li]:py-4 [&_li>div:first-child]:min-w-0 [&_h3]:mt-0 [&_h3]:mb-[5px]
           [&_h3]:text-base [&_h3]:font-bold [&_h3]:wrap-anywhere [&_p]:m-0 [&_p]:text-xs [&_p]:text-muted
           [&_p]:wrap-anywhere [&_.food-actions]:shrink-0 narrow:[&_li]:flex-col narrow:[&_li]:items-start
           narrow:[&_.food-actions]:w-full narrow:[&_.food-actions]:justify-end`} aria-label="登録済みの定番食品">{templates.map(template => <li key={template.id}>

@@ -54,7 +54,7 @@ export function StockAdder({ base, blocked, onAdd, onClose }: Props) {
         </NativeSelect>
       </label>
     </div>
-    {error && <p className="form-error m-0 rounded-lg bg-[#fff0ec] p-3 text-[13px] text-[#8e372b] wrap-anywhere" role="alert">{error}</p>}
+    {error && <p className="form-error m-0 rounded-lg bg-expired-surface p-3 text-[13px] text-expired wrap-anywhere" role="alert">{error}</p>}
     <div className="stock-add-actions flex flex-wrap justify-end gap-2 [&_button]:min-h-11">
       <Button variant="secondary" type="button" className="secondary" onClick={onClose}>キャンセル</Button>
       <Button variant="default" type="submit" className="primary" disabled={blocked}>追加する</Button>
