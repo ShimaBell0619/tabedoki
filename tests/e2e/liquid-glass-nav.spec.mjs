@@ -56,6 +56,7 @@ for (const width of [320, 390, 1440]) {
 
     const addButton = page.locator('.mobile-add-button');
     await expect(addButton).toBeVisible();
+    await expect(addButton).toHaveCSS('backdrop-filter', 'none');
     const addLens = page.locator('.mobile-add-glass');
     await expect(addLens).toBeVisible();
     await expect(addLens).toHaveAttribute('data-glass-strategy', 'svg');
