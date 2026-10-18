@@ -113,10 +113,23 @@
 .calendar-overdue-item { display:flex; align-items:center; gap:10px; width:100%; min-height:44px; border:0; border-top:1px solid #EED8D5; background:transparent; text-align:left; font-size:13px; color:var(--color-foreground); }
 .calendar-overdue-item time { color:var(--color-expired); font-size:12px; white-space:nowrap; }
 .calendar-overdue-item span:nth-child(2) { flex:1; min-width:0; overflow-wrap:anywhere; }
-/* Android Chrome: stable inventory controls and feedback.
-   Keep the food content opaque; glass belongs to navigation controls only. */
+/* Android Chrome: compact cards with a subtle crystal edge and dual ambient lighting.
+   Use static gradients on food surfaces; reserve backdrop-filter for floating controls. */
 @media (max-width:760px) {
   :root { --color-muted:#5B6C7F; }
+  .page { position:relative; isolation:isolate; background-color:#F0F4FA; }
+  .page::before {
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:-1;
+    pointer-events:none;
+    background:
+      radial-gradient(ellipse 75% 47% at 110% 0%,rgb(160 193 235 / 29%),transparent 78%),
+      radial-gradient(ellipse 80% 50% at -16% 103%,rgb(174 201 235 / 15%),transparent 78%),
+      linear-gradient(155deg,#F3F7FB,#EDF2F8);
+  }
+  .topbar { background-color:rgb(255 255 255 / 82%); border-bottom-color:rgb(218 228 240 / 72%); }
   .page:has(> .mobile-add-button) .main { padding-bottom:calc(164px + env(safe-area-inset-bottom)); }
   .inventory { margin-bottom:0; }
   .main h1 { font-size:22px; font-weight:650; letter-spacing:-.03em; }
@@ -126,8 +139,19 @@
   .inventory-section + .inventory-section { margin-top:30px; }
   .inventory-section + .inventory-section > .group-heading { margin-top:0; }
   .inventory-section > .group-heading { font-size:13px; font-weight:500; }
-  .food-row { border-radius:12px; box-shadow:0 1px 4px #253b5408; }
-  .food-row:has(.food-details[open]) { border-color:#BDCAD9; box-shadow:0 2px 8px #253b540d; }
+  .food-row {
+    border-radius:12px;
+    background-color:#fff;
+    background-image:linear-gradient(127deg,rgb(255 255 255 / 98%),rgb(248 252 255 / 78%) 65%,rgb(239 246 255 / 67%));
+    box-shadow:0 5px 13px rgb(39 65 103 / 9%),0 1px 3px rgb(41 63 96 / 4%),
+      inset 0 1px 0 rgb(255 255 255 / 96%),inset 0 -1px 0 rgb(151 174 204 / 10%);
+  }
+  .food-row:has(.food-details[open]) {
+    border-color:#BDCAD9;
+    box-shadow:0 8px 18px rgb(39 65 103 / 11%),0 1px 4px rgb(41 63 96 / 5%),
+      inset 0 1px 0 #fff;
+  }
+  .food-details[open] > summary { background:rgb(255 255 255 / 88%); }
   .food-details > summary { min-height:64px; gap:6px; padding:8px 12px 8px 8px; }
   .food-row .food-icon { width:44px; height:44px; border-radius:9px; background:transparent; color:#526479; }
   .food-row .food-icon .icon { width:19px; height:19px; }
@@ -192,12 +216,12 @@
     bottom:calc(12px + env(safe-area-inset-bottom));
     height:68px;
     padding:5px;
-    border:1px solid #ffffffa3;
+    border:1px solid #ffffffd1;
     border-radius:23px;
-    background:linear-gradient(145deg,#ffffff73,#e9eff64d 55%,#dfe8f16b);
+    background:linear-gradient(145deg,#ffffffa6,#e9eff683 55%,#dfe8f187);
     -webkit-backdrop-filter:blur(12px) saturate(125%);
     backdrop-filter:blur(12px) saturate(125%);
-    box-shadow:inset 0 1px 0 #ffffff99,inset 0 -1px 1px #5c72891a,0 5px 18px #253b5424;
+    box-shadow:inset 0 1px 0 #ffffffd6,inset 0 -1px 1px #5c72891a,0 7px 19px #253b5421;
   }
   .mobile-navigation::before {
     content:"";
@@ -382,7 +406,9 @@
   .calendar-selected h2 { font-size:15px; font-weight:600; }
   .calendar-count { padding:0; background:transparent; color:var(--color-muted); font-weight:500; }
   .calendar-food-list { gap:10px; }
-  .calendar-food-row { min-height:64px; gap:6px; padding:8px; border-color:#E6EAF0; border-radius:12px; background:#fff; box-shadow:0 1px 4px #253b5408; }
+  .calendar-food-row { min-height:64px; gap:6px; padding:8px; border-color:#E6EAF0; border-radius:12px;
+    background:#fff; background-image:linear-gradient(127deg,#fff,rgb(242 248 255 / 65%));
+    box-shadow:0 5px 13px rgb(39 65 103 / 7%),inset 0 1px 0 #fff; }
   .calendar-food-row .food-icon { background:transparent; color:#526479; }
   .calendar-food-row .food-icon .icon { width:19px; height:19px; }
   .calendar-food-name { gap:2px; }
@@ -396,7 +422,8 @@
   .shopping-add label { font-size:12px; font-weight:500; }
   .shopping-add input { min-height:44px; border-radius:8px; }
   .shopping-templates > summary { font-size:13px; font-weight:500; color:var(--color-muted); }
-  .shopping-list { border-color:#E6EAF0; border-radius:12px; box-shadow:0 1px 4px #253b5408; }
+  .shopping-list { border-color:#E6EAF0; border-radius:12px;
+    box-shadow:0 5px 13px rgb(39 65 103 / 7%),inset 0 1px 0 #fff; }
   .shopping-list li { gap:8px; padding:8px 10px; }
   .shopping-check { min-width:0; flex:1 1 120px; }
   .shopping-check input { width:18px; height:18px; margin:0 6px; }
