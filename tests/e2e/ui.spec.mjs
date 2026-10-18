@@ -28,9 +28,9 @@ for (const width of [320, 390, 1440]) {
     const createButton = page.getByRole('button', { name: '食品を登録', exact: true }).last();
     if (width <= 760) {
       await expect(createButton).toHaveCSS('background-image', /linear-gradient/);
-      // The SVG glass lens sits behind the accessible button instead of blurring the button itself.
+      // Lightweight glass behind the button is identical while scrolling and idle.
       await expect(createButton).toHaveCSS('backdrop-filter', 'none');
-      await expect(page.locator('.mobile-add-glass')).toHaveAttribute('data-glass-strategy', 'svg');
+      await expect(page.locator('.mobile-add-glass')).toHaveCSS('backdrop-filter', /blur\(2px\)/);
       await expect(createButton).toHaveCSS('color', 'rgb(255, 255, 255)');
     } else {
       await expect(createButton).toHaveCSS('background-color', 'rgb(37, 59, 84)');

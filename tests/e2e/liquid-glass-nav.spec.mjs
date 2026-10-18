@@ -4,7 +4,7 @@ import { test, expect, cloudData, setCloudData } from './helpers/cloud.mjs';
 test.use({ isMobile: true, hasTouch: true });
 
 for (const width of [320, 390, 1440]) {
-  test(`Liquid Glassナビゲーションが${width}pxでも操作可能`, async ({ page }, info) => {
+  test(`ガラスナビゲーションが${width}pxでも操作可能`, async ({ page }, info) => {
     await page.setViewportSize({ width, height: 844 });
     await page.goto('/');
     await cloudData(page);
@@ -28,11 +28,9 @@ for (const width of [320, 390, 1440]) {
     await expect(mobile).toHaveCSS('border-radius', '23px');
     const lens = page.locator('.mobile-navigation-glass');
     await expect(lens).toBeVisible();
-    await expect(lens).toHaveAttribute('data-glass-strategy', 'svg');
     await expect(lens).toHaveAttribute('aria-hidden', 'true');
-    const filter = await lens.locator(':scope > div').first()
-      .evaluate(node => getComputedStyle(node).backdropFilter);
-    expect(filter).toContain('url(');
+    await expect(lens).toHaveCSS('backdrop-filter', /blur\(3px\)/);
+    await expect(lens).toHaveCSS('background-color', 'rgba(236, 245, 255, 0.24)');
     const glass = await mobile.evaluate(node => {
       const surface = getComputedStyle(node);
       const highlight = getComputedStyle(node, '::after');
@@ -59,8 +57,9 @@ for (const width of [320, 390, 1440]) {
     await expect(addButton).toHaveCSS('backdrop-filter', 'none');
     const addLens = page.locator('.mobile-add-glass');
     await expect(addLens).toBeVisible();
-    await expect(addLens).toHaveAttribute('data-glass-strategy', 'svg');
     await expect(addLens).toHaveAttribute('aria-hidden', 'true');
+    await expect(addLens).toHaveCSS('backdrop-filter', /blur\(2px\)/);
+    await expect(addLens).toHaveCSS('background-color', 'rgba(130, 169, 212, 0.18)');
     const addSurface = await addButton.evaluate(node => {
       const style = getComputedStyle(node);
       return { background: style.backgroundImage, shadow: style.boxShadow };
@@ -110,88 +109,43 @@ for (const width of [320, 390, 1440]) {
   });
 }
 
-test('スクロール中もガラスの透明度を保ち、停止後は屈折だけ復元する', async ({ page }) => {
+test('スクロール中と停止後のガラス描画が完全に同一', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
   await cloudData(page);
-
   const navLens = page.locator('.mobile-navigation-glass');
   const addLens = page.locator('.mobile-add-glass');
-  const navFilter = navLens.locator(':scope > div').first();
-  const addFilter = addLens.locator(':scope > div').first();
-  await expect(navLens).toHaveAttribute('data-glass-strategy', 'svg');
-  await expect(navFilter).toHaveCSS('backdrop-filter', /url/);
-  await expect(addFilter).toHaveCSS('backdrop-filter', /url/);
-
   const capture = () => page.evaluate(() => {
-    const nav = getComputedStyle(document.querySelector('.mobile-navigation'));
-    const add = getComputedStyle(document.querySelector('.mobile-add-glass > div:first-child'));
-    const lens = getComputedStyle(document.querySelector('.mobile-navigation-glass > div:first-child'));
+    const nav = getComputedStyle(document.querySelector('.mobile-navigation-glass'));
+    const add = getComputedStyle(document.querySelector('.mobile-add-glass'));
+    const overlay = getComputedStyle(document.querySelector('.mobile-navigation'));
     return {
-      paint: {
-        navigationBackground: nav.backgroundImage,
-        navigationOpacity: nav.opacity,
-        navigationBorder: nav.borderColor,
-        lensBackground: lens.background,
-        addBackground: add.background,
-      },
-      navFilter: lens.backdropFilter,
-      addFilter: add.backdropFilter,
-      scrolling: document.documentElement.dataset.glassScrolling === 'true',
+      navFilter: nav.backdropFilter, addFilter: add.backdropFilter,
+      navTint: nav.backgroundColor, addTint: add.backgroundColor,
+      navBackground: overlay.backgroundImage, navBorder: overlay.borderColor,
+      navShadow: nav.boxShadow, addShadow: add.boxShadow,
     };
   });
-
   const idle = await capture();
-  expect(idle.navFilter).toContain('url(');
-  expect(idle.addFilter).toContain('url(');
-  expect(idle.scrolling).toBe(false);
-
-  // Read both filter and painted surfaces in the same browser turn to avoid
-  // racing the 240ms idle debounce in a slower CI runner.
+  expect(idle.navFilter).toContain('blur(3px)');
+  expect(idle.addFilter).toContain('blur(2px)');
+  expect(idle.navFilter).not.toContain('url(');
+  expect(idle.addFilter).not.toContain('url(');
   const moving = await page.evaluate(() => {
     window.dispatchEvent(new Event('touchmove'));
-    const nav = getComputedStyle(document.querySelector('.mobile-navigation'));
-    const lens = getComputedStyle(document.querySelector('.mobile-navigation-glass > div:first-child'));
-    const add = getComputedStyle(document.querySelector('.mobile-add-glass > div:first-child'));
-    return {
-      paint: {
-        navigationBackground: nav.backgroundImage,
-        navigationOpacity: nav.opacity,
-        navigationBorder: nav.borderColor,
-        lensBackground: lens.background,
-        addBackground: add.background,
-      },
-      navFilter: lens.backdropFilter,
-      addFilter: add.backdropFilter,
-      scrolling: document.documentElement.dataset.glassScrolling === 'true',
-    };
-  });
-  expect(moving.scrolling).toBe(true);
-  expect(moving.navFilter).toContain('blur(3px)');
-  expect(moving.addFilter).toContain('blur(2px)');
-  expect(moving.navFilter).not.toContain('url(');
-  expect(moving.addFilter).not.toContain('url(');
-  expect(moving.paint).toEqual(idle.paint);
-
-  // Actual document scroll keeps the lightweight effect without remounting.
-  const scrolled = await page.evaluate(() => {
     document.querySelector('main').style.minHeight = '2300px';
     window.scrollTo(0, 420);
     window.dispatchEvent(new Event('scroll'));
-    return {
-      y: window.scrollY,
-      scrolling: document.documentElement.dataset.glassScrolling === 'true',
-      filter: getComputedStyle(document.querySelector('.mobile-navigation-glass > div:first-child')).backdropFilter,
-    };
+    return { y: window.scrollY, hasScrollFlag: document.documentElement.hasAttribute('data-glass-scrolling') };
   });
-  expect(scrolled.y).toBeGreaterThan(0);
-  expect(scrolled.scrolling).toBe(true);
-  expect(scrolled.filter).toContain('blur(3px)');
-
-  await expect(page.locator('html')).not.toHaveAttribute('data-glass-scrolling', 'true');
-  await expect(navFilter).toHaveCSS('backdrop-filter', /url/);
-  await expect(addFilter).toHaveCSS('backdrop-filter', /url/);
-  await expect(navLens).toHaveAttribute('data-glass-strategy', 'svg');
+  expect(moving.y).toBeGreaterThan(0);
+  expect(moving.hasScrollFlag).toBe(false);
+  expect(await capture()).toEqual(idle);
+  await page.waitForTimeout(350);
+  expect(await capture()).toEqual(idle);
+  await expect(navLens).toHaveCSS('backdrop-filter', /blur\(3px\)/);
+  await expect(addLens).toHaveCSS('backdrop-filter', /blur\(2px\)/);
+  await expect(page.locator('[data-liquid-glass], [data-glass-strategy]')).toHaveCount(0);
   await expect(page.locator('.mobile-navigation').getByRole('button', { name: '買い物' })).toBeEnabled();
 });
 
@@ -214,26 +168,25 @@ for (const width of [320, 390]) {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('食品一覧 8件');
 
     const nav = page.locator('.mobile-navigation');
-    const navLens = page.locator('.mobile-navigation-glass > div:first-child');
-    await expect(navLens).toHaveCSS('backdrop-filter', /url/);
+    const navLens = page.locator('.mobile-navigation-glass');
+    await expect(navLens).toHaveCSS('backdrop-filter', /blur\(3px\)/);
     const before = await nav.evaluate(node => ({
       background: getComputedStyle(node).backgroundImage,
       border: getComputedStyle(node).borderColor,
     }));
     await page.screenshot({ path: info.outputPath(`glass-idle-${width}.png`) });
 
-    // Force the visual mode while taking evidence; avoid the 240ms debounce.
-    await page.evaluate(() => { document.documentElement.dataset.glassScrolling = 'true'; });
-    await expect(navLens).toHaveCSS('backdrop-filter', /blur/);
+    // Touch activity does not change the surface, even after the prior idle timeout.
+    await page.evaluate(() => window.dispatchEvent(new Event('touchmove')));
+    await expect(navLens).toHaveCSS('backdrop-filter', /blur\(3px\)/);
     const during = await nav.evaluate(node => ({
       background: getComputedStyle(node).backgroundImage,
       border: getComputedStyle(node).borderColor,
     }));
     expect(during).toEqual(before);
     await page.screenshot({ path: info.outputPath(`glass-scrolling-${width}.png`) });
-
-    await page.evaluate(() => { delete document.documentElement.dataset.glassScrolling; });
-    await expect(navLens).toHaveCSS('backdrop-filter', /url/);
+    await page.waitForTimeout(350);
+    await expect(navLens).toHaveCSS('backdrop-filter', /blur\(3px\)/);
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
   });
 }
