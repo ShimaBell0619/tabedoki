@@ -105,11 +105,11 @@
 
 ## アプリ固有規則
 
-- HTML・CSS・クライアント側Web APIの設計・変更では、リポジトリ内の [Modern Web Guidance Skill](.agents/skills/modern-web-guidance/SKILL.md) を必要な対象に限って参照する。既存機能の書き換えを目的化せず、`DESIGN.md`、Android Chromeでの実際の挙動・性能と合致する案だけを採用する。実験的なWeb APIは自動で有効化しない。
-
 この節はたべどきが所有する。ユーザーの明示指示を優先し、共通規則からの変更はここに明記する。Foundation更新で上書きしない。
 
 - 製品の目的・重要な保証・制約はPRODUCT.md、視覚システムはDESIGN.md、利用方法はREADME.mdで管理する。具体的な操作・保存形式はコードとテスト、変更理由と検証証拠はPR／Actionsに残す。旧VERIFICATION.mdはGit履歴で確認できる。
 - npm ci、check、typecheck、test、build、design:lint、Chromium E2Eを実行する。復元の非同期待機はダイアログ処理完了と新しい通知で確認し、保存値を検証する。
 - Simpleのみを使う。main保護は不要で、Controlled Kitは導入しない。CI成功と公開READYを区別する。
 - 保存形式・キー・公開originは、規則やテストの改善のために変更しない。
+
+- HTML・CSS・クライアント側Web APIの設計・変更では、リポジトリ内の [Modern Web Guidance Skill](.agents/skills/modern-web-guidance/SKILL.md) を必要な対象に限って参照する。既存機能の書き換えを目的化せず、`DESIGN.md`、Android Chromeでの実際の挙動・性能と合致する案だけを採用する。実験的なWeb APIは自動で有効化しない。
