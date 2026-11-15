@@ -1,81 +1,58 @@
-# 登録リマインダーの配備・運用
+# 登録リマインダー（Googleログイン専用）
 
-## 公開順序（mainへのマージは本番公開を伴う）
+## 利用者の操作
 
-1. 変更前のSupabaseデータを管理者が退避し、通知スキーマのマイグレーションを適用する。既存のuser_dataには変更なし。
-2. VAPID鍵ペアを **一度だけ** 作成し、安全な場所に保管する。鍵の再生成は既存Push購読を無効にする。
-3. Supabase Edge Functionシークレットに以下を登録する（秘密鍵はGitHubやVercelに置かない）。
+1. 既存のGoogleログインでクラウド保存を使用する。
+2. 右上の3点メニュー →「通知の設定」から曜日・時刻を選び、通知を有効にする。
+3. Chromeの通知許可を一度だけ承認する。
 
-   - WEB_PUSH_PUBLIC_KEY: 公開VAPID鍵
-   - WEB_PUSH_PRIVATE_KEY: 秘密VAPID鍵
-   - WEB_PUSH_SUBJECT: mailto:形式の管理連絡先
-   - REMINDER_ALLOWED_ORIGINS: Previewから試す場合のみ、許可するURL（カンマ区切り）。Productionは https://tabedoki.shimabell.dev を既定で許可する。
+ログインしない場合は通知設定メニューを表示しない。個人用の匿名通知トークンやIPごとの登録管理は使用しない。通知先はGoogleアカウントとブラウザのPush購読先の組み合わせで管理する。通知を停止するとその端末の購読レコードを削除する。ログアウト時にも削除を試みる（オフラインでは停止が失敗し得る）。
 
-4. `supabase functions deploy reminder-preferences --no-verify-jwt`
-5. `supabase functions deploy send-registration-reminders --no-verify-jwt`
-6. Android Chromeで「通知の設定」→保存→テスト通知→通知タップ→食品登録フォームを検証する。
-7. 適切なタイミングで本番mainの公開とCronジョブを有効化する。
+## 開発者側の初期設定
 
-VAPID鍵は端末上で次のコマンドから**一度だけ**生成する。表示した秘密鍵はGitHub・チャット・公開ブラウザ側環境変数に貼らず、Supabase Dashboard の **Edge Functions → Secrets** へ設定する。
+**VAPID鍵はWeb Pushそのものに必須です。Googleログインで省略できません。** ただし、鍵の生成・保存は開発者の一度限りの初期設定であり、利用者には表示しません。
 
-```sh
-npx --yes web-push@4.0.0 generate-vapid-keys
-```
+- 通知用DBの旧マイグレーション `20261115031838_registration_reminders` は既に本番に反映済み。既存購読数0件を確認後、`google_authenticated_reminders` を一度適用して `user_id` を追加し、匿名専用の `token_hash` とレート制限テーブルを廃止する。
+- Edge Functions `reminder-preferences` と `send-registration-reminders` を新コードで更新する。どちらも `verify_jwt=false` だが、前者はSupabase AuthのGoogleユーザーJWTをサーバー側で検証し、後者はSupabaseのsecret keyで配信者を認証する。
+- <https://supabase.com/dashboard/project/fbwvfczzzrkvrgltwpmt/functions/secrets> に以下のVAPID設定を登録する：
+  - `WEB_PUSH_PUBLIC_KEY`: Web Pushの公開鍵
+  - `WEB_PUSH_PRIVATE_KEY`: Web Pushの秘密鍵
+  - `WEB_PUSH_SUBJECT`: 通知送信者の `mailto:...` 形式の連絡先
+- 鍵はPCで `npx --yes web-push@4.0.0 generate-vapid-keys` を一度だけ実行して生成可能。**秘密鍵をGitHub・チャット・Vercelのクライアント公開環境変数に貼らない**。鍵の再生成には全端末の再購読が必要。
+- `REMINDER_ALLOWED_ORIGINS` は必要な場合のみPreview originをカンマ区切りで設定。Production originは既定で許可。
 
-- `Public Key` → `WEB_PUSH_PUBLIC_KEY`
-- `Private Key` → `WEB_PUSH_PRIVATE_KEY`
-- `WEB_PUSH_SUBJECT` は連絡可能な `mailto:...` 形式で登録する
-- Secretsは [対象プロジェクトの設定画面](https://supabase.com/dashboard/project/fbwvfczzzrkvrgltwpmt/functions/secrets) から登録できる。反映後にテスト通知を確認する
-- 公開後にVAPID鍵を再生成すると、既存購読の再登録が必要になる。秘密鍵を適切に保管する
+## 定期配信
 
-既存のtabedoki本番プロジェクトには通知マイグレーション `20261115031838_registration_reminders` が適用済みで、Edge Functionsもv1を配備済み（2026-11-15時点）。**同じDBマイグレーションを再適用しない**。
+Supabaseの `pg_cron` と `pg_net` から、UTCの `0 9,10,12 * * *`（日本時間18/19/21時）で配信関数を実行する。スケジュールはDB側でも曜日・時刻・当日の登録日・送信済み日を検証する。
 
-## Cronの設定
-
-Supabase Dashboardでpg_cronとpg_netを有効にする。Vaultに以下2つのシークレットを保存してから、管理者がSQL Editorでジョブを作成する。
-
-- `tabedoki_project_url`: `https://<project-ref>.supabase.co`
-- `tabedoki_function_secret`: Supabaseの **secret** key。publishable keyは不可。
+まずSupabase Vaultに `tabedoki_project_url` と `tabedoki_function_secret` を登録する。後者はSupabaseのsecret keyであり、Webブラウザに渡さない。SQLでCronのHTTPヘッダーへ渡すときは `apikey` を使用する。
 
 ```sql
--- それぞれの値を管理者がVaultへ登録する（例の値を実行しない）
--- select vault.create_secret('https://project-ref.supabase.co', 'tabedoki_project_url');
--- select vault.create_secret('sb_secret_...', 'tabedoki_function_secret');
-
 select cron.schedule(
   'tabedoki-registration-reminders',
-  '0 9,10,12 * * *', -- UTC。日本時間18:00、19:00、21:00
+  '0 9,10,12 * * *',
   $$
-    select net.http_post(
-      url := (select decrypted_secret from vault.decrypted_secrets where name = 'tabedoki_project_url')
-        || '/functions/v1/send-registration-reminders',
-      headers := jsonb_build_object(
-        'Content-Type', 'application/json',
-        'apikey', (select decrypted_secret from vault.decrypted_secrets where name = 'tabedoki_function_secret')
-      ),
-      body := '{}'::jsonb,
-      timeout_milliseconds := 10000
-    );
+  select net.http_post(
+    url := (select decrypted_secret from vault.decrypted_secrets where name='tabedoki_project_url')
+       || '/functions/v1/send-registration-reminders',
+    headers := jsonb_build_object(
+      'Content-Type','application/json',
+      'apikey',(select decrypted_secret from vault.decrypted_secrets where name='tabedoki_function_secret')
+    ),
+    body := '{}'::jsonb,
+    timeout_milliseconds := 10000
+  );
   $$
 );
 ```
 
-DB側はJSTの曜日・時刻・当日登録済み・最後の送信試行日を検査するため、Cronが誤った時刻に呼ばれても送信しない。ジョブは再作成せず、同じ名前で設定を更新する。停止は `select cron.unschedule('tabedoki-registration-reminders');`。
+停止する際は `select cron.unschedule('tabedoki-registration-reminders');` を実行する。VAPID未設定、実機未確認の状態ではCronを有効化しない。
 
-## セキュリティ・障害時
+## 動作確認・安全性
 
-- 登録情報テーブルには匿名・ログイン済みユーザーのSQL権限とRLSポリシーを付与しない。Edge Functionのみが秘密キーで読み書きする。
-- `reminder-preferences` は匿名端末向けの公開API。書き込みには端末ごとのランダムトークン（サーバーはSHA-256だけ保持）を使い、接続元Originを制限する。Originは完全な認証境界ではないため、新規登録には接続元IP相当のハッシュ単位で1時間10件の登録制限も設ける。cf-connecting-ipがSupabaseの公開入口で上書きされていることは本番で確認する。本番アクセスログで異常な新規購読数も監視する。
-- Push endpointはAndroid ChromeのFCMホストだけを許可し、任意URLへの送信を許さない。
-- 配信APIはSupabase secret keyを要求する。購読情報や秘密鍵をログに出さない。
-- 登録や在庫追加の保存に成功した後だけ、登録済みマーカーを通知APIへ送る。マーカー送信失敗は食品の保存を取り消さないため、その日の通知が省略されない可能性は残る。
-- 送信は成功を保証するものではない。DBは同日重複送信を抑えるため送信**試行前**に送信日を記録する。失敗しても同日は再送せず、次の設定曜日に送信する。FCMの404/410は購読を停止する。
-- 端末のブラウザデータ削除後にサーバーに古い購読が残ることがある。Pushサービスで404/410が返った購読は停止し、不要購読の定期削除は運用時に検討する。
-- クラウド食品データと通知購読情報は別の保存先・ライフサイクルにする。VAPID鍵ローテーション時は全端末に再購読が必要。
-
-## 検証・ロールバック
-
-- CI：既存単体、E2E、DBテストを含む全ジョブを確認する。
-- 実端末：通知許可を初めて要求するケース、拒否、通知タップ（タブ閉／開）、テスト通知制限、通知停止、再登録、ローカル保存・クラウド保存。
-- 障害時はまずCronを停止し、次に配信関数を無効化する。通知テーブルを削除してはいけない。
-- アプリのロールバックで通知購読テーブルは残す。旧UIでは通知停止操作がないため、配信ジョブも必ず停止する。
+- PostgreSQL: `reminder_subscriptions` はRLSを有効化し、anon/authenticatedに直接のSELECT/INSERT/UPDATE/DELETE権限を付与しない。資格情報・通知先は信頼済みEdge Functionだけが管理する。
+- Edge Function: `auth.getUser(token)` で本人確認し、`user.app_metadata` にGoogle連携を持つユーザーに限定する。クライアントからの `user_id` は受け取らない。送信先はFCMのHTTPS endpointだけを許可する。
+- ログアウト時に購読停止を試みる。通信不能の場合はログアウトを優先するので、配信停止が間に合わない可能性がある。その際は再ログインして通知を無効化する。
+- テスト通知は1端末・1分に1回に制限する。Pushレスポンスの404/410は失効した購読として削除する。
+- 実機Android Chromeで、許可/拒否、登録・無効化、ログアウト、通知タップからの直接登録、閉じたブラウザへの通知、登録済み日の省略を確認する。
+- 重大障害の場合はCronを停止し、送信関数を停止する。既存の `user_data` や食品情報は変更しない。
