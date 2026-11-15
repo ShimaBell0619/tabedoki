@@ -28,12 +28,12 @@ begin
     raise exception 'Browser role may bypass registration quota';
   end if;
 end;
-$;
+$$;
 reset role;
-do $
-declare index integer;
+do $$
+declare attempt integer;
 begin
-  for index in 1..10 loop
+  for attempt in 1..10 loop
     if not public.take_reminder_registration_slot(repeat('b',64)) then
       raise exception 'Initial registration quota rejected too soon';
     end if;
@@ -42,5 +42,5 @@ begin
     raise exception 'Registration quota exceeded its limit';
   end if;
 end;
-$;
+$$;
 rollback;
