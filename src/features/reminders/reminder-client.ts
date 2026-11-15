@@ -67,7 +67,7 @@ export async function saveReminderSettings(userId: string, token: string, settin
     return;
   }
   if (!supported()) throw new Error('このブラウザはプッシュ通知に対応していません。');
-  if (await Notification.requestPermission() !== 'granted') {
+  if (Notification.permission !== 'granted') {
     throw new Error('Chromeのサイト設定で通知を許可してください。');
   }
   const { publicKey } = await api(token, 'GET');
