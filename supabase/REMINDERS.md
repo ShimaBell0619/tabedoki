@@ -16,7 +16,19 @@
 6. Android Chromeで「通知の設定」→保存→テスト通知→通知タップ→食品登録フォームを検証する。
 7. 適切なタイミングで本番mainの公開とCronジョブを有効化する。
 
-VAPID鍵はNode.jsの `web-push@4.0.0` などで一度生成できる。再実行した鍵で古い購読を上書きしないこと。
+VAPID鍵は端末上で次のコマンドから**一度だけ**生成する。表示した秘密鍵はGitHub・チャット・公開ブラウザ側環境変数に貼らず、Supabase Dashboard の **Edge Functions → Secrets** へ設定する。
+
+```sh
+npx --yes web-push@4.0.0 generate-vapid-keys
+```
+
+- `Public Key` → `WEB_PUSH_PUBLIC_KEY`
+- `Private Key` → `WEB_PUSH_PRIVATE_KEY`
+- `WEB_PUSH_SUBJECT` は連絡可能な `mailto:...` 形式で登録する
+- Secretsは [対象プロジェクトの設定画面](https://supabase.com/dashboard/project/fbwvfczzzrkvrgltwpmt/functions/secrets) から登録できる。反映後にテスト通知を確認する
+- 公開後にVAPID鍵を再生成すると、既存購読の再登録が必要になる。秘密鍵を適切に保管する
+
+既存のtabedoki本番プロジェクトには通知マイグレーション `20261115031838_registration_reminders` が適用済みで、Edge Functionsもv1を配備済み（2026-11-15時点）。**同じDBマイグレーションを再適用しない**。
 
 ## Cronの設定
 
