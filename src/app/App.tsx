@@ -6,7 +6,8 @@ import { selectedFoodIcon } from '../domain/food-icons';
 import type { FoodCategory } from '../domain/food';
 import { AppNotice } from './AppNotice';
 import { Button } from '@/components/ui/button';
-import { Activity, useMemo, useState } from 'react';
+import { Activity, useEffect, useMemo, useState } from 'react';
+import { ReminderSettingsDialog } from '../features/reminders/ReminderSettingsDialog';
 import type { DataStore, Snapshot } from '../data/cloud';
 import { InventoryPage } from '../features/inventory/InventoryPage';
 import { FoodEditor } from '../features/inventory/FoodEditor';
@@ -30,9 +31,26 @@ type Props = {
 };
 export function App({ store, initial, mode = 'cloud', email, onLogout, onLogin, authBusy = false, loginError = '' }: Props) {
   const [screen, setScreen] = useState<Screen>('inventory');
+  const [reminderOpen, setReminderOpen] = useState(false);
   const [iconTarget, setIconTarget] = useState<{ name: string; category: FoodCategory } | null>(null);
   const today = useToday();
   const { data, saving, showSaving, blocked, notice, dismissNotice, formError, setFormError, editor, setEditor, refresh, openForm, saveTemplates, saveFood, addStock, changeStatus, changeQuantity, changeVolume, removeFood, changeLowStock, addToShopping, changeBought, removeShopping, changeFoodIcon } = useAppModel(store, initial, mode);
+
+  
+  useEffect(() => {
+    const showRegistration = () => { setScreen('inventory'); openForm(); };
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('reminder') === 'register') {
+      url.searchParams.delete('reminder');
+      window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+      showRegistration();
+    }
+    const onWorkerMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'TABEDOKI_REGISTER_FROM_NOTIFICATION') showRegistration();
+    };
+    navigator.serviceWorker?.addEventListener('message', onWorkerMessage);
+    return () => navigator.serviceWorker?.removeEventListener('message', onWorkerMessage);
+  }, [openForm]);
 
   const activeItems = useMemo(() => data.items.filter(item => item.status === 'active'), [data.items]);
   const listed = useMemo(() => new Set(data.shopping.filter(item => !item.bought).map(item => normalizedName(item.name))), [data.shopping]);
@@ -43,7 +61,7 @@ export function App({ store, initial, mode = 'cloud', email, onLogout, onLogin, 
       <ScreenNavigation className="desktop-navigation mobile:hidden" screen={screen} onChange={setScreen} />
       <div className="header-actions flex items-center gap-1">
         <AccountMenu email={email} busy={saving || authBusy} onRefresh={refresh} onLogout={onLogout} onLogin={onLogin}
-          onTemplates={() => { setFormError(''); setEditor({ templatesOnly: true }); }} />
+          onTemplates={() => { setFormError(''); setEditor({ templatesOnly: true }); }} onReminders={() => setReminderOpen(true)} />
       </div>
     </div></header>
     <main className="main mx-auto max-w-[1040px] px-8 pt-8 pb-10 mobile:px-4 mobile:pt-6 mobile:pb-[calc(110px+env(safe-area-inset-bottom))]">
@@ -86,6 +104,7 @@ export function App({ store, initial, mode = 'cloud', email, onLogout, onLogin, 
         <Icon name="plus" />
       </Button>
     </>}
+    {reminderOpen && <ReminderSettingsDialog onClose={() => setReminderOpen(false)} />}
     {iconTarget && <FoodIconPicker foodName={iconTarget.name} category={iconTarget.category}
       selected={selectedFoodIcon(data.icons, iconTarget.name)} blocked={blocked || saving} error={blocked ? notice?.message : undefined}
       onSelect={async icon => { if (await changeFoodIcon(iconTarget.name, icon)) setIconTarget(null); }}
