@@ -22,6 +22,15 @@ export function ReminderSettingsDialog({ userId, getAccessToken, onClose }: Prop
     event.preventDefault();
     setBusy(true); setError(''); setMessage('');
     try {
+      if (settings.enabled) {
+        if (!('Notification' in window) || !window.isSecureContext) {
+          throw new Error('このブラウザはプッシュ通知に対応していません。');
+        }
+        // The permission request must be initiated before any other awaited work.
+        if (await Notification.requestPermission() !== 'granted') {
+          throw new Error('Chromeのサイト設定で通知を許可してください。');
+        }
+      }
       await saveReminderSettings(userId, await getAccessToken(), settings);
       dialog.current?.close();
     } catch (cause) {
