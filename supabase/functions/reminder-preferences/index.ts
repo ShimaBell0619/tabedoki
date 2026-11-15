@@ -4,7 +4,6 @@ const productionOrigin = 'https://tabedoki.shimabell.dev';
 const allowedOrigins = new Set([productionOrigin, ...((Deno.env.get('REMINDER_ALLOWED_ORIGINS') || '').split(',').map(value => value.trim()).filter(Boolean))]);
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const base64url = /^[A-Za-z0-9_-]+$/;
-const publicKey = /^[A-Za-z0-9_-]{70,100}$/;
 
 function headers(origin: string) {
   return { 'Access-Control-Allow-Origin': origin, 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
