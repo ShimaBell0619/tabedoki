@@ -37,7 +37,6 @@ as $$
       and extract(isodow from c.timestamp_jst)::integer = any(s.weekdays)
       and (not s.skip_registered or s.last_registered_on is distinct from c.timestamp_jst::date)
       and s.last_sent_on is distinct from c.timestamp_jst::date
-      and s.last_seen_at > now() - interval '120 days'
     order by s.created_at
     for update of s skip locked
     limit 100

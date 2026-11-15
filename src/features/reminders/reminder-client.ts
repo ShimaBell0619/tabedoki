@@ -1,4 +1,5 @@
-import { projectUrl } from '../../data/supabase';
+// Reminders are device-scoped and do not depend on the inventory data layer.
+const projectUrl = (import.meta as ImportMeta & { env: Record<string,string> }).env.VITE_SUPABASE_URL;
 
 export type ReminderSettings = {
   enabled: boolean;
