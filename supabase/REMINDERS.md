@@ -12,7 +12,7 @@
 
 **VAPID鍵はWeb Pushそのものに必須です。Googleログインで省略できません。** ただし、鍵の生成・保存は開発者の一度限りの初期設定であり、利用者には表示しません。
 
-- 通知用DBの旧マイグレーション `20261115031838_registration_reminders` は既に本番に反映済み。既存購読数0件を確認後、`google_authenticated_reminders` を一度適用して `user_id` を追加し、匿名専用の `token_hash` とレート制限テーブルを廃止する。
+- 通知用DBマイグレーション `20261115031838_registration_reminders` と `20261115040759_google_authenticated_reminders` は本番Supabaseへ適用済み。購読データ0件を確認してから後者を適用したため、既存食品データに変更はない。**同じマイグレーションを再適用しない**。
 - Edge Functions `reminder-preferences` と `send-registration-reminders` を新コードで更新する。どちらも `verify_jwt=false` だが、前者はSupabase AuthのGoogleユーザーJWTをサーバー側で検証し、後者はSupabaseのsecret keyで配信者を認証する。
 - <https://supabase.com/dashboard/project/fbwvfczzzrkvrgltwpmt/functions/secrets> に以下のVAPID設定を登録する：
   - `WEB_PUSH_PUBLIC_KEY`: Web Pushの公開鍵
