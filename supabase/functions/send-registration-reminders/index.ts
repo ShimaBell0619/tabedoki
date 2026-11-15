@@ -1,4 +1,4 @@
-import { adminClient, pushStatus, secretKey, sendReminder, vapidPublicKey } from '../_shared/reminder-push.ts';
+import { adminClient, pushStatus, secretKey, sendReminder, vapidPublicKey, type SubscriptionRow } from '../_shared/reminder-push.ts';
 
 Deno.serve(async request => {
   if (request.method !== 'POST') return new Response('Method not allowed', { status: 405 });
@@ -15,7 +15,7 @@ Deno.serve(async request => {
       if (!data?.length) break;
       claimed += data.length;
       for (let offset = 0; offset < data.length; offset += 10) {
-        await Promise.all(data.slice(offset, offset + 10).map(async row => {
+        await Promise.all(data.slice(offset, offset + 10).map(async (row: SubscriptionRow) => {
           try {
             await sendReminder(row);
             accepted++;
