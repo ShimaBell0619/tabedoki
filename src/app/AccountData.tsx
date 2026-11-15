@@ -53,7 +53,7 @@ export function AccountData({ user, onLogout }: { user: User; onLogout: () => vo
     catch (cause) { if (alive.current) setError(cause instanceof Error ? cause.message : '再取得できません。'); }
     finally { pending.current = false; if (alive.current) setBusy(false); }
   }
-  if (snapshot) return <App store={store} initial={snapshot} email={user.email ?? 'Googleアカウント'} onLogout={onLogout} />;
+  if (snapshot) return <App store={store} initial={snapshot} userId={user.id} email={user.email ?? 'Googleアカウント'} onLogout={onLogout} />;
   const allowed = source?.data && (!owner || owner === user.id);
   return <AuthShell account={<AccountMenu email={user.email ?? 'Googleアカウント'} busy={busy} refreshDisabled={!loaded && !error} onRefresh={reload} onLogout={onLogout} />}>
     <h1>{loaded ? 'クラウドを使い始める' : 'クラウドを読み込み中…'}</h1>
