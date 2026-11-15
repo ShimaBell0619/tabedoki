@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { deadlineLabel, daysLeft } from '../../domain/deadline.ts';
 import { consumptionAction, tracksVolume, kinds, normalizedName, places, units, type Food } from '../../domain/food.ts';
@@ -36,12 +36,13 @@ export function DeadlineCalendar({ items, today, listed, onShowList, blocked, on
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const railRef = useRef<HTMLDivElement>(null);
-  const { expired, visible, later } = selectTimeline(items, today, range);
-  const totalByKey = new Map(groupFoods(items.filter(item => item.status === 'active')).map(group => [group.key, group.activeQuantity]));
+  const { expired, visible, later } = useMemo(() => selectTimeline(items, today, range), [items, today, range]);
+  const totalByKey = useMemo(() => new Map(groupFoods(items.filter(item => item.status === 'active'))
+    .map(group => [group.key, group.activeQuantity])), [items]);
   const selectedDay = [...expired, ...visible].find(day => day.deadline === selectedDate);
   const current = visible.find(day => day.deadline === calendarDate);
-  const dates = Array.from({ length: range + 1 }, (_, i) => dateAfter(today, i));
-  const count = new Map(visible.map(day => [day.deadline, day.items.length]));
+  const dates = useMemo(() => Array.from({ length: range + 1 }, (_, i) => dateAfter(today, i)), [today, range]);
+  const count = useMemo(() => new Map(visible.map(day => [day.deadline, day.items.length])), [visible]);
   const overdueCount = expired.reduce((sum, day) => sum + day.items.length, 0);
 
   useEffect(() => {

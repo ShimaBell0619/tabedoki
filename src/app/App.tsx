@@ -6,7 +6,7 @@ import { selectedFoodIcon } from '../domain/food-icons';
 import type { FoodCategory } from '../domain/food';
 import { AppNotice } from './AppNotice';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
+import { Activity, useMemo, useState } from 'react';
 import type { DataStore, Snapshot } from '../data/cloud';
 import { InventoryPage } from '../features/inventory/InventoryPage';
 import { FoodEditor } from '../features/inventory/FoodEditor';
@@ -34,6 +34,9 @@ export function App({ store, initial, mode = 'cloud', email, onLogout, onLogin, 
   const today = useToday();
   const { data, saving, showSaving, blocked, notice, dismissNotice, formError, setFormError, editor, setEditor, refresh, openForm, saveTemplates, saveFood, addStock, changeStatus, changeQuantity, changeVolume, removeFood, changeLowStock, addToShopping, changeBought, removeShopping, changeFoodIcon } = useAppModel(store, initial, mode);
 
+  const activeItems = useMemo(() => data.items.filter(item => item.status === 'active'), [data.items]);
+  const listed = useMemo(() => new Set(data.shopping.filter(item => !item.bought).map(item => normalizedName(item.name))), [data.shopping]);
+
   return <div className="page min-h-dvh" data-saving={saving ? "true" : undefined}>
     <header className="topbar h-[68px] border-b border-border bg-surface mobile:h-[62px]"><div className="topbar-inner mx-auto flex h-full max-w-[1040px] items-center justify-between gap-4 px-8 mobile:px-[18px]">
       <Brand />
@@ -50,24 +53,27 @@ export function App({ store, initial, mode = 'cloud', email, onLogout, onLogin, 
         blocked={blocked} saving={saving} refreshLabel={mode === 'local' ? '端末のデータを再取得' : 'クラウドを再取得'}
         onRefresh={refresh} onDismiss={dismissNotice} />}
       <>
-      <div hidden={screen !== 'inventory'}>
+      <Activity mode={screen === 'inventory' ? 'visible' : 'hidden'}><div>
         <InventoryPage items={data.items} today={today} blocked={blocked || saving} onCreate={() => openForm()}
           onEdit={openForm} onStatus={changeStatus} onRemove={removeFood} shopping={data.shopping}
           onLowStock={changeLowStock} onVolume={changeVolume} onAddShopping={addToShopping} onAddStock={addStock} onQuantity={changeQuantity}
           iconSelections={data.icons} onPickIcon={(name, category) => setIconTarget({ name, category })} />
       </div>
-      <div hidden={screen !== 'calendar'}>
-        <DeadlineCalendar items={data.items.filter(item => item.status === 'active')} today={today}
-          listed={new Set(data.shopping.filter(item => !item.bought).map(item => normalizedName(item.name)))}
+      </Activity>
+      <Activity mode={screen === 'calendar' ? 'visible' : 'hidden'}><div>
+        <DeadlineCalendar items={activeItems} today={today}
+          listed={listed}
           blocked={blocked || saving} onEdit={openForm} onStatus={changeStatus} onRemove={removeFood}
           onLowStock={changeLowStock} onVolume={changeVolume} onQuantity={changeQuantity} onAddShopping={addToShopping} onAddStock={addStock}
           onShowList={() => setScreen('inventory')}
           iconSelections={data.icons} onPickIcon={(name, category) => setIconTarget({ name, category })} />
       </div>
-      <div hidden={screen !== 'shopping'}>
+      </Activity>
+      <Activity mode={screen === 'shopping' ? 'visible' : 'hidden'}><div>
         <ShoppingPage items={data.shopping} foods={data.items} templates={data.templates} blocked={blocked || saving}
           onAdd={addToShopping} onBought={changeBought} onRemove={removeShopping} onRegister={item => openForm(undefined, item)} />
       </div>
+      </Activity>
       </>
     </main>
     {/* The same lightweight, translucent glass remains visible whether scrolling or idle. */}

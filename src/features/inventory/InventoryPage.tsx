@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { NativeSelect } from '@/components/ui/native-select';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { categories, places, normalizedName, type Food, type FoodCategory, type StoragePlace } from '../../domain/food';
 import { deadlineFilters, matchesDeadline, type DeadlineFilter } from '../../domain/deadline';
 import { groupFoods } from '../../domain/stock';
@@ -24,11 +24,19 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
   const [placeFilter, setPlaceFilter] = useState<'all' | StoragePlace>('all');
   const [deadlineFilter, setDeadlineFilter] = useState<DeadlineFilter>('all');
   const [sort, setSort] = useState<'category' | 'deadline' | 'place'>('category');
-  const { active, foodGroups, sections } = selectInventory(items, today, { view, categoryFilter, placeFilter, deadlineFilter, sort });
+  const { active, foodGroups, sections } = useMemo(
+    () => selectInventory(items, today, { view, categoryFilter, placeFilter, deadlineFilter, sort }),
+    [items, today, view, categoryFilter, placeFilter, deadlineFilter, sort],
+  );
   const filterCount = Number(categoryFilter !== 'all') + Number(placeFilter !== 'all') + Number(deadlineFilter !== 'all');
   const hasFilters = filterCount > 0;
-  const totalByKey = new Map(groupFoods(items.filter(item => item.status === 'active')).map(group => [group.key, group.activeQuantity]));
-  const listed = new Set(shopping.filter(item => !item.bought).map(item => normalizedName(item.name)));
+  const totalByKey = useMemo(() => new Map(groupFoods(items.filter(item => item.status === 'active'))
+    .map(group => [group.key, group.activeQuantity])), [items]);
+  const listed = useMemo(() => new Set(shopping.filter(item => !item.bought).map(item => normalizedName(item.name))), [shopping]);
+  const deadlineCounts = useMemo(() => Object.fromEntries(
+    (['all', 'expired', 'fortnight', 'month'] as const).map(filter =>
+      [filter, groupFoods(active.filter(item => matchesDeadline(item.deadline, today, filter))).length]),
+  ), [active, today]);
   function resetFilters() {
     setCategoryFilter('all'); setPlaceFilter('all'); setDeadlineFilter('all');
   }
@@ -88,7 +96,7 @@ export function InventoryPage({ items, today, blocked, onCreate, onEdit, onStatu
           {(['all', 'expired', 'fortnight', 'month'] as const).map(filter =>
             <Button variant="plain" key={filter} type="button" aria-pressed={deadlineFilter === filter}
               onClick={() => setDeadlineFilter(deadlineFilter === filter && filter !== 'all' ? 'all' : filter)}>
-              {deadlineFilters[filter]} <span>{groupFoods(active.filter(item => matchesDeadline(item.deadline, today, filter))).length}件</span>
+              {deadlineFilters[filter]} <span>{deadlineCounts[filter]}件</span>
             </Button>)}
         </div>}
       </div>
