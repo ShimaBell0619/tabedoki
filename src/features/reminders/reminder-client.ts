@@ -94,8 +94,8 @@ export async function testReminder(userId: string, token: string) {
   if (!current) throw new Error('通知の購読情報がありません。');
   await api(token, 'POST', { action: 'test', endpoint: current });
 }
-export async function markFoodRegistered(userId: string, token: string) {
-  if (!readReminderSettings(userId).enabled) return;
+export async function markFoodRegistered(_userId: string, token: string) {
+  // Food registered on any signed-in device should suppress reminders on all devices.
   try { await api(token, 'POST', { action: 'registered' }); }
   catch { /* Never roll back a successful food registration due to a reminder error. */ }
 }
