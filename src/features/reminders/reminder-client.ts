@@ -1,115 +1,105 @@
-// Reminders are device-scoped and do not depend on the inventory data layer.
+// Registration reminders are available only while signed in with Google.
+// The server validates the Supabase access token and never trusts a client-supplied user ID.
 const projectUrl = (import.meta as ImportMeta & { env: Record<string,string> }).env.VITE_SUPABASE_URL;
-
 export type ReminderSettings = {
-  enabled: boolean;
-  weekdays: number[];
-  hour: 18 | 19 | 21;
-  skipRegistered: boolean;
+  enabled: boolean; weekdays: number[]; hour: 18 | 19 | 21; skipRegistered: boolean;
 };
-
-type DeviceIdentity = { deviceId: string; deviceToken: string };
-const settingsKey = 'tabedoki-reminder-settings-v1';
-const identityKey = 'tabedoki-reminder-device-v1';
-const defaultSettings: ReminderSettings = { enabled: false, weekdays: [1, 4, 7], hour: 19, skipRegistered: true };
-
-function storage(): Storage | null {
-  try { return window.localStorage; } catch { return null; }
-}
-export function readReminderSettings(): ReminderSettings {
+const defaults: ReminderSettings = { enabled: false, weekdays: [1, 4, 7], hour: 19, skipRegistered: true };
+const settingsKey = (user: string) => 'tabedoki-reminder-v2:' + user;
+const endpointKey = (user: string) => 'tabedoki-reminder-endpoint-v2:' + user;
+function storage(): Storage | null { try { return localStorage; } catch { return null; } }
+export function readReminderSettings(userId: string): ReminderSettings {
   try {
-    const raw = storage()?.getItem(settingsKey);
-    if (!raw) return { ...defaultSettings };
-    const value = JSON.parse(raw) as Partial<ReminderSettings>;
+    const raw = storage()?.getItem(settingsKey(userId));
+    if (!raw) return { ...defaults };
+    const value = JSON.parse(raw) as ReminderSettings;
     if (typeof value.enabled === 'boolean' && Array.isArray(value.weekdays)
-        && value.weekdays.every(day => Number.isInteger(day) && day >= 1 && day <= 7)
-        && value.weekdays.length > 0 && value.weekdays.length <= 7 && new Set(value.weekdays).size === value.weekdays.length
-        && [18,19,21].includes(Number(value.hour)) && typeof value.skipRegistered === 'boolean') {
-      return value as ReminderSettings;
-    }
-  } catch { /* Do not trust malformed storage. */ }
-  return { ...defaultSettings };
-}
-function readIdentity(): DeviceIdentity | null {
-  try {
-    const value = JSON.parse(storage()?.getItem(identityKey) || 'null') as DeviceIdentity | null;
-    if (value && typeof value.deviceId === 'string' && typeof value.deviceToken === 'string') return value;
-  } catch { /* Ignore malformed identity. */ }
-  return null;
-}
-function deviceIdentity(): DeviceIdentity {
-  const existing = readIdentity();
-  if (existing) return existing;
-  const bytes = crypto.getRandomValues(new Uint8Array(32));
-  const token = btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
-  const created = { deviceId: crypto.randomUUID(), deviceToken: token };
-  if (!storage()) throw new Error('ブラウザの保存機能が利用できません。');
-  storage()!.setItem(identityKey, JSON.stringify(created));
-  return created;
+      && value.weekdays.length >= 1 && value.weekdays.length <= 7
+      && new Set(value.weekdays).size === value.weekdays.length
+      && value.weekdays.every(d => Number.isInteger(d) && d >= 1 && d <= 7)
+      && [18,19,21].includes(value.hour) && typeof value.skipRegistered === 'boolean') return value;
+  } catch { /* Ignore malformed local settings. */ }
+  return { ...defaults };
 }
 function supported() {
-  return !!(projectUrl && window.isSecureContext && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window);
+  return !!(projectUrl && isSecureContext && 'serviceWorker' in navigator
+    && 'PushManager' in window && 'Notification' in window);
 }
 function base64Key(input: string): Uint8Array<ArrayBuffer> {
-  const normalized = input.replace(/-/g, '+').replace(/_/g, '/');
-  const binary = atob(normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '='));
-  const bytes = new Uint8Array(binary.length);
-  for (let index = 0; index < binary.length; index++) bytes[index] = binary.charCodeAt(index);
-  return bytes;
+  const padded = input.replace(/-/g, '+').replace(/_/g, '/');
+  const bytes = atob(padded.padEnd(Math.ceil(padded.length / 4) * 4, '='));
+  const key = new Uint8Array(bytes.length);
+  for (let i = 0; i < bytes.length; i++) key[i] = bytes.charCodeAt(i);
+  return key;
 }
-async function requestBackend(path: 'config' | 'write', payload?: Record<string,unknown>) {
-  if (!projectUrl) throw new Error('通知機能の接続設定がありません。');
-  const url = projectUrl.replace(/\/$/, '') + '/functions/v1/reminder-preferences';
+async function api(accessToken: string, method: 'GET' | 'POST', body?: Record<string, unknown>) {
+  if (!projectUrl) throw new Error('通知サービスが設定されていません。');
   let response: Response;
   try {
-    response = await fetch(url, { method: path === 'config' ? 'GET' : 'POST',
-      headers: path === 'config' ? {} : { 'Content-Type': 'application/json' },
-      ...(payload ? { body: JSON.stringify(payload) } : {}),
+    response = await fetch(projectUrl.replace(/\/$/, '') + '/functions/v1/reminder-preferences', {
+      method,
+      headers: { Authorization: 'Bearer ' + accessToken, ...(body ? { 'Content-Type': 'application/json' } : {}) },
+      ...(body ? { body: JSON.stringify(body) } : {}),
       signal: AbortSignal.timeout(15000),
     });
-  } catch { throw new Error('通知サービスに接続できません。通信状態をご確認ください。'); }
+  } catch { throw new Error('通知サービスに接続できません。'); }
   let data: { error?: string; publicKey?: string };
   try { data = await response.json() as typeof data; } catch { data = {}; }
   if (!response.ok) throw new Error(data.error || '通知サービスでエラーが発生しました。');
   return data;
 }
-async function write(action: string, extra: Record<string,unknown> = {}) {
-  const identity = deviceIdentity();
-  return requestBackend('write', { action, ...identity, ...extra });
+async function endpoint(userId: string): Promise<string | null> {
+  try {
+    if ('serviceWorker' in navigator) {
+      const registration = await navigator.serviceWorker.getRegistration('/reminder-sw.js');
+      const subscription = await registration?.pushManager.getSubscription();
+      if (subscription) return subscription.endpoint;
+    }
+  } catch { /* Fall back to the last registered endpoint. */ }
+  return storage()?.getItem(endpointKey(userId)) ?? null;
 }
-export async function saveReminderSettings(settings: ReminderSettings): Promise<void> {
+export async function saveReminderSettings(userId: string, token: string, settings: ReminderSettings) {
   if (!settings.enabled) {
-    if (readIdentity()) await write('disable');
-    storage()?.setItem(settingsKey, JSON.stringify(settings));
-    // No need to unsubscribe: old tokens may still exist but server-side dispatch is disabled.
+    const current = await endpoint(userId);
+    if (current) await api(token, 'POST', { action: 'disable', endpoint: current });
+    storage()?.setItem(settingsKey(userId), JSON.stringify(settings));
+    storage()?.removeItem(endpointKey(userId));
     return;
   }
   if (!supported()) throw new Error('このブラウザはプッシュ通知に対応していません。');
-  // Permission request must be initiated directly from the save button gesture.
-  const permission = await Notification.requestPermission();
-  if (permission !== 'granted') throw new Error('Chromeのサイト設定で通知を許可してください。');
-  const { publicKey } = await requestBackend('config');
-  if (!publicKey) throw new Error('通知サービスが準備されていません。');
-  const registration = await navigator.serviceWorker.register('/reminder-sw.js');
-  let subscription = await registration.pushManager.getSubscription();
-  if (!subscription) {
-    subscription = await registration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: base64Key(publicKey),
-    });
+  if (await Notification.requestPermission() !== 'granted') {
+    throw new Error('Chromeのサイト設定で通知を許可してください。');
   }
-  const serialized = subscription.toJSON();
-  if (!serialized.keys?.p256dh || !serialized.keys?.auth) throw new Error('通知の購読情報が取得できません。');
-  await write('save', { subscription: serialized, weekdays: settings.weekdays,
-    hour: settings.hour, skipRegistered: settings.skipRegistered });
-  storage()?.setItem(settingsKey, JSON.stringify(settings));
+  const { publicKey } = await api(token, 'GET');
+  if (!publicKey) throw new Error('通知サービスを準備中です。');
+  const registration = await navigator.serviceWorker.register('/reminder-sw.js');
+  const push = await registration.pushManager.getSubscription()
+    || await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: base64Key(publicKey) });
+  const subscription = push.toJSON();
+  if (!subscription.endpoint || !subscription.keys?.p256dh || !subscription.keys.auth) {
+    throw new Error('通知の購読情報が取得できません。');
+  }
+  await api(token, 'POST', {
+    action: 'save', subscription,
+    weekdays: settings.weekdays, hour: settings.hour, skipRegistered: settings.skipRegistered,
+  });
+  storage()?.setItem(endpointKey(userId), subscription.endpoint);
+  storage()?.setItem(settingsKey(userId), JSON.stringify(settings));
 }
-export async function testReminder(): Promise<void> {
-  if (!readReminderSettings().enabled) throw new Error('通知を有効にしてください。');
-  await write('test');
+export async function testReminder(userId: string, token: string) {
+  if (!readReminderSettings(userId).enabled) throw new Error('通知を有効にしてください。');
+  const current = await endpoint(userId);
+  if (!current) throw new Error('通知の購読情報がありません。');
+  await api(token, 'POST', { action: 'test', endpoint: current });
 }
-export async function markFoodRegistered(): Promise<void> {
-  if (!readReminderSettings().enabled || !readIdentity()) return;
-  try { await write('registered'); }
-  catch { /* Food registration already succeeded; never roll it back for a reminder failure. */ }
+export async function markFoodRegistered(userId: string, token: string) {
+  if (!readReminderSettings(userId).enabled) return;
+  try { await api(token, 'POST', { action: 'registered' }); }
+  catch { /* Never roll back a successful food registration due to a reminder error. */ }
+}
+export async function disableReminderOnLogout(userId: string, token: string) {
+  const current = await endpoint(userId);
+  if (current) await api(token, 'POST', { action: 'disable', endpoint: current });
+  storage()?.setItem(settingsKey(userId), JSON.stringify({ ...readReminderSettings(userId), enabled: false }));
+  storage()?.removeItem(endpointKey(userId));
 }
