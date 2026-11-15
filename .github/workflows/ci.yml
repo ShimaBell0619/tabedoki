@@ -68,4 +68,5 @@ jobs:
             psql -X -v ON_ERROR_STOP=1 -f "$migration"
           done
           psql -X -v ON_ERROR_STOP=1 -f supabase/tests/user_data.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/tests/reminders.sql
           psql -X -v ON_ERROR_STOP=1 -c "DO \$\$ BEGIN IF (SELECT count(*) FROM public.user_data) <> 0 THEN RAISE EXCEPTION 'SQL test did not roll back'; END IF; END \$\$;"
