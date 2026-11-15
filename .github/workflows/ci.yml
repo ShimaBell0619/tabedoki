@@ -30,6 +30,22 @@ jobs:
       - name: Validate DESIGN.md with locked Google CLI
         run: npm run design:lint
 
+  edge-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Set up Deno
+        uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
+        with:
+          deno-version: v2.9.6
+      - name: Check reminder Edge Functions
+        run: deno check --node-modules-dir=auto supabase/functions/reminder-preferences/index.ts supabase/functions/send-registration-reminders/index.ts
+
   db-test:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -68,4 +84,5 @@ jobs:
             psql -X -v ON_ERROR_STOP=1 -f "$migration"
           done
           psql -X -v ON_ERROR_STOP=1 -f supabase/tests/user_data.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/tests/reminders.sql
           psql -X -v ON_ERROR_STOP=1 -c "DO \$\$ BEGIN IF (SELECT count(*) FROM public.user_data) <> 0 THEN RAISE EXCEPTION 'SQL test did not roll back'; END IF; END \$\$;"

@@ -6,7 +6,11 @@ import { selectedFoodIcon } from '../domain/food-icons';
 import type { FoodCategory } from '../domain/food';
 import { AppNotice } from './AppNotice';
 import { Button } from '@/components/ui/button';
-import { Activity, useMemo, useState } from 'react';
+import { Activity, useEffect, useMemo, useState } from 'react';
+import { ReminderSettingsDialog } from '../features/reminders/ReminderSettingsDialog';
+import { readReminderSettings } from '../features/reminders/reminder-client';
+import { reminderAccessToken } from './reminder-auth';
+import { consumeReminderEntry, subscribeReminderEntry } from './reminder-entry';
 import type { DataStore, Snapshot } from '../data/cloud';
 import { InventoryPage } from '../features/inventory/InventoryPage';
 import { FoodEditor } from '../features/inventory/FoodEditor';
@@ -23,16 +27,46 @@ type Props = {
   initial: Snapshot;
   mode?: 'local' | 'cloud';
   email?: string;
+  userId?: string;
   onLogout?: () => void;
   onLogin?: () => void;
   authBusy?: boolean;
   loginError?: string;
 };
-export function App({ store, initial, mode = 'cloud', email, onLogout, onLogin, authBusy = false, loginError = '' }: Props) {
+export function App({ store, initial, mode = 'cloud', email, userId, onLogout, onLogin, authBusy = false, loginError = '' }: Props) {
   const [screen, setScreen] = useState<Screen>('inventory');
+  const [reminderOpen, setReminderOpen] = useState(false);
+  const [reminderInviteDismissed, setReminderInviteDismissed] = useState(() => {
+    try { return localStorage.getItem('tabedoki-reminder-invite-v1') === '1'; } catch { return true; }
+  });
+  function dismissReminderInvite() {
+    try { localStorage.setItem('tabedoki-reminder-invite-v1', '1'); } catch { /* Best effort. */ }
+    setReminderInviteDismissed(true);
+  }
   const [iconTarget, setIconTarget] = useState<{ name: string; category: FoodCategory } | null>(null);
   const today = useToday();
-  const { data, saving, showSaving, blocked, notice, dismissNotice, formError, setFormError, editor, setEditor, refresh, openForm, saveTemplates, saveFood, addStock, changeStatus, changeQuantity, changeVolume, removeFood, changeLowStock, addToShopping, changeBought, removeShopping, changeFoodIcon } = useAppModel(store, initial, mode);
+  const { data, saving, showSaving, blocked, notice, dismissNotice, formError, setFormError, editor, setEditor, refresh, openForm, saveTemplates, saveFood, addStock, changeStatus, changeQuantity, changeVolume, removeFood, changeLowStock, addToShopping, changeBought, removeShopping, changeFoodIcon } = useAppModel(store, initial, mode, userId);
+
+  
+  useEffect(() => {
+    const showRegistration = () => {
+      const queued = consumeReminderEntry();
+      const url = new URL(window.location.href);
+      const fromUrl = url.searchParams.get('reminder') === 'register';
+      if (fromUrl) {
+        url.searchParams.delete('reminder');
+        window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+      }
+      if (!queued && !fromUrl) return;
+      // Never discard an existing food editor draft.
+      if (editor) return;
+      setScreen('inventory');
+      openForm();
+    };
+    const unsubscribe = subscribeReminderEntry(showRegistration);
+    showRegistration();
+    return unsubscribe;
+  }, [openForm, editor]);
 
   const activeItems = useMemo(() => data.items.filter(item => item.status === 'active'), [data.items]);
   const listed = useMemo(() => new Set(data.shopping.filter(item => !item.bought).map(item => normalizedName(item.name))), [data.shopping]);
@@ -43,12 +77,19 @@ export function App({ store, initial, mode = 'cloud', email, onLogout, onLogin, 
       <ScreenNavigation className="desktop-navigation mobile:hidden" screen={screen} onChange={setScreen} />
       <div className="header-actions flex items-center gap-1">
         <AccountMenu email={email} busy={saving || authBusy} onRefresh={refresh} onLogout={onLogout} onLogin={onLogin}
-          onTemplates={() => { setFormError(''); setEditor({ templatesOnly: true }); }} />
+          onTemplates={() => { setFormError(''); setEditor({ templatesOnly: true }); }} onReminders={userId ? () => setReminderOpen(true) : undefined} />
       </div>
     </div></header>
     <main className="main mx-auto max-w-[1040px] px-8 pt-8 pb-10 mobile:px-4 mobile:pt-6 mobile:pb-[calc(110px+env(safe-area-inset-bottom))]">
       {loginError && <p role="alert" className="notice notice-error mb-5 rounded-[10px] bg-expired-surface p-3 text-[13px] text-expired">{loginError}</p>}
       {showSaving && <p className="cloud-pending mb-4 text-[13px] text-muted" role="status" aria-label="保存状態">保存・読み込み中…</p>}
+      {userId && !reminderInviteDismissed && data.items.length > 0 && !readReminderSettings(userId).enabled && <aside
+        className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-border bg-panel px-3 py-2 text-[13px]" aria-label="登録リマインダーのご案内">
+        <Icon name="bell" className="size-4 text-muted" />
+        <span className="min-w-0 flex-1">食品の登録忘れを通知で防げます。</span>
+        <Button variant="secondary" className="min-h-11 text-xs" type="button" onClick={() => setReminderOpen(true)}>設定する</Button>
+        <Button variant="ghost" className="min-h-11 text-xs" type="button" onClick={dismissReminderInvite}>後で</Button>
+      </aside>}
       {notice && <AppNotice key={notice.id} id={notice.id} message={notice.message} error={notice.error || blocked}
         blocked={blocked} saving={saving} refreshLabel={mode === 'local' ? '端末のデータを再取得' : 'クラウドを再取得'}
         onRefresh={refresh} onDismiss={dismissNotice} />}
@@ -86,6 +127,7 @@ export function App({ store, initial, mode = 'cloud', email, onLogout, onLogin, 
         <Icon name="plus" />
       </Button>
     </>}
+    {reminderOpen && userId && <ReminderSettingsDialog userId={userId} getAccessToken={reminderAccessToken} onClose={() => setReminderOpen(false)} />}
     {iconTarget && <FoodIconPicker foodName={iconTarget.name} category={iconTarget.category}
       selected={selectedFoodIcon(data.icons, iconTarget.name)} blocked={blocked || saving} error={blocked ? notice?.message : undefined}
       onSelect={async icon => { if (await changeFoodIcon(iconTarget.name, icon)) setIconTarget(null); }}

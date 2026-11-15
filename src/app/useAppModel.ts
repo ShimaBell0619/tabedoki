@@ -6,8 +6,10 @@ import type { AppData } from '../domain/app-data.ts';
 import type { DataStore, Snapshot } from '../data/cloud';
 import { addShopping, registerPurchase, setBought, shoppingFrom, type ShoppingItem } from '../domain/shopping';
 import { useCloudData } from './useCloudData';
+import { markFoodRegistered } from '../features/reminders/reminder-client';
+import { reminderAccessToken } from './reminder-auth';
 
-export function useAppModel(store: DataStore, initial: Snapshot, mode: 'local' | 'cloud') {
+export function useAppModel(store: DataStore, initial: Snapshot, mode: 'local' | 'cloud', userId?: string) {
   const [editor, setEditor] = useState<{ item?: Food; purchase?: ShoppingItem; templatesOnly: boolean } | null>(null);
   const foodSaved = useRef(false);
   const noticeSequence = useRef(0);
@@ -64,6 +66,7 @@ export function useAppModel(store: DataStore, initial: Snapshot, mode: 'local' |
     } catch (error) { showError(error instanceof Error ? error.message : '登録できません。'); return false; }
     if (!await commitData(next)) return false;
     foodSaved.current = true;
+    if (!editingId && userId) void reminderAccessToken().then(token => markFoodRegistered(userId, token)).catch(() => {});
     setNotice(editingId ? '食品を更新しました。' : '食品を登録しました。');
     return true;
   }
@@ -76,6 +79,7 @@ export function useAppModel(store: DataStore, initial: Snapshot, mode: 'local' |
       items = addStockToFoods(current.items, source, { deadline, quantity, place }, crypto.randomUUID());
     } catch (error) { showError(error instanceof Error ? error.message : '在庫を追加できません。'); return false; }
     if (!await commitData({ ...current, items })) return false;
+    if (userId) void reminderAccessToken().then(token => markFoodRegistered(userId, token)).catch(() => {});
     setNotice('「' + source.name + '」の在庫を追加しました。');
     return true;
   }

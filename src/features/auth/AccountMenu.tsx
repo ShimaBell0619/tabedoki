@@ -9,10 +9,11 @@ type Props = {
   refreshDisabled?: boolean;
   onRefresh?: () => void;
   onTemplates?: () => void;
+  onReminders?: () => void;
   onLogout?: () => void;
   onLogin?: () => void;
 };
-export function AccountMenu({ email, busy, refreshDisabled = false, onRefresh, onTemplates, onLogout, onLogin }: Props) {
+export function AccountMenu({ email, busy, refreshDisabled = false, onRefresh, onTemplates, onReminders, onLogout, onLogin }: Props) {
   const { preference, setPreference } = useThemePreference();
   return <DropdownMenu modal={false}>
     <DropdownMenuTrigger asChild>
@@ -25,6 +26,7 @@ export function AccountMenu({ email, busy, refreshDisabled = false, onRefresh, o
       {onLogin && <DropdownMenuItem disabled={busy} onSelect={onLogin}>Googleでログインしてクラウド保存</DropdownMenuItem>}
       {onLogout && <DropdownMenuItem disabled={busy} onSelect={onLogout}>ログアウト</DropdownMenuItem>}
       {onTemplates && <DropdownMenuItem disabled={busy} onSelect={onTemplates}>定番食品の管理</DropdownMenuItem>}
+      {onReminders && <DropdownMenuItem disabled={busy} onSelect={onReminders}>通知の設定</DropdownMenuItem>}
       <div role="separator" className="my-1 border-t border-border" />
       <p className="mx-2 mt-2 mb-1 text-xs font-semibold text-muted">表示モード</p>
       <DropdownMenuRadioGroup value={preference} onValueChange={value => setPreference(value as ThemePreference)}>
