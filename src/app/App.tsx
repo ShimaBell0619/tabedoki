@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Activity, useEffect, useMemo, useState } from 'react';
 import { ReminderSettingsDialog } from '../features/reminders/ReminderSettingsDialog';
 import { readReminderSettings } from '../features/reminders/reminder-client';
+import { consumeReminderEntry, subscribeReminderEntry } from './reminder-entry';
 import type { DataStore, Snapshot } from '../data/cloud';
 import { InventoryPage } from '../features/inventory/InventoryPage';
 import { FoodEditor } from '../features/inventory/FoodEditor';
@@ -46,18 +47,23 @@ export function App({ store, initial, mode = 'cloud', email, onLogout, onLogin, 
 
   
   useEffect(() => {
-    const showRegistration = () => { if (editor) return; setScreen('inventory'); openForm(); };
-    const url = new URL(window.location.href);
-    if (url.searchParams.get('reminder') === 'register') {
-      url.searchParams.delete('reminder');
-      window.history.replaceState(null, '', url.pathname + url.search + url.hash);
-      showRegistration();
-    }
-    const onWorkerMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'TABEDOKI_REGISTER_FROM_NOTIFICATION') showRegistration();
+    const showRegistration = () => {
+      const queued = consumeReminderEntry();
+      const url = new URL(window.location.href);
+      const fromUrl = url.searchParams.get('reminder') === 'register';
+      if (fromUrl) {
+        url.searchParams.delete('reminder');
+        window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+      }
+      if (!queued && !fromUrl) return;
+      // Never discard an existing food editor draft.
+      if (editor) return;
+      setScreen('inventory');
+      openForm();
     };
-    navigator.serviceWorker?.addEventListener('message', onWorkerMessage);
-    return () => navigator.serviceWorker?.removeEventListener('message', onWorkerMessage);
+    const unsubscribe = subscribeReminderEntry(showRegistration);
+    showRegistration();
+    return unsubscribe;
   }, [openForm, editor]);
 
   const activeItems = useMemo(() => data.items.filter(item => item.status === 'active'), [data.items]);
