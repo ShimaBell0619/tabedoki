@@ -1,6 +1,14 @@
 import { test, expect } from './helpers/cloud.mjs';
+import { test as localTest } from '@playwright/test';
 
-test('通知設定が3点メニューから開き、曜日と時刻を操作できる', async ({ page }) => {
+localTest('ローカル保存では通知設定を表示しない', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'アカウント', exact: true }).click();
+  await expect(page.getByRole('menuitem', { name: '通知の設定' })).toHaveCount(0);
+  await expect(page.getByRole('menuitem', { name: /Googleでログイン/ })).toBeVisible();
+});
+
+test('Googleログイン中だけ通知設定が開き曜日と時刻を操作できる', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'アカウント', exact: true }).click();
   await page.getByRole('menuitem', { name: '通知の設定' }).click();
@@ -12,6 +20,7 @@ test('通知設定が3点メニューから開き、曜日と時刻を操作で�
   await expect(dialog.getByRole('button', { name: '月曜日' })).toHaveAttribute('aria-pressed', 'false');
   await dialog.getByRole('radio', { name: '21:00' }).check();
   await expect(dialog.getByText(/木・日曜日 21:00/)).toBeVisible();
+  await expect(dialog.getByText(/Googleログイン中のアカウント/)).toBeVisible();
   await dialog.getByRole('button', { name: '閉じる' }).click();
   await expect(dialog).toHaveCount(0);
 });
