@@ -50,20 +50,26 @@ async function api(accessToken: string, method: 'GET' | 'POST', body?: Record<st
   if (!response.ok) throw new Error(data.error || '通知サービスでエラーが発生しました。');
   return data;
 }
-async function endpoint(userId: string): Promise<string | null> {
+async function browserSubscription(): Promise<PushSubscription | null> {
   try {
     if ('serviceWorker' in navigator) {
       const registration = await navigator.serviceWorker.getRegistration('/reminder-sw.js');
       const subscription = await registration?.pushManager.getSubscription();
-      if (subscription) return subscription.endpoint;
+      if (subscription) return subscription;
     }
-  } catch { /* Fall back to the last registered endpoint. */ }
+  } catch { /* The server can still remove the last registered endpoint. */ }
+  return null;
+}
+async function endpoint(userId: string): Promise<string | null> {
+  const subscription = await browserSubscription();
+  if (subscription) return subscription.endpoint;
   return storage()?.getItem(endpointKey(userId)) ?? null;
 }
 export async function saveReminderSettings(userId: string, token: string, settings: ReminderSettings) {
   if (!settings.enabled) {
     const current = await endpoint(userId);
     if (current) await api(token, 'POST', { action: 'disable', endpoint: current });
+    await (await browserSubscription())?.unsubscribe().catch(() => false);
     storage()?.setItem(settingsKey(userId), JSON.stringify(settings));
     storage()?.removeItem(endpointKey(userId));
     return;
@@ -100,8 +106,14 @@ export async function markFoodRegistered(_userId: string, token: string) {
   catch { /* Never roll back a successful food registration due to a reminder error. */ }
 }
 export async function disableReminderOnLogout(userId: string, token: string) {
-  const current = await endpoint(userId);
-  if (current) await api(token, 'POST', { action: 'disable', endpoint: current });
-  storage()?.setItem(settingsKey(userId), JSON.stringify({ ...readReminderSettings(userId), enabled: false }));
-  storage()?.removeItem(endpointKey(userId));
+  const subscription = await browserSubscription();
+  const current = subscription?.endpoint ?? storage()?.getItem(endpointKey(userId));
+  // Stop delivery in this browser even when the API is unreachable during logout.
+  await subscription?.unsubscribe().catch(() => false);
+  try {
+    if (current) await api(token, 'POST', { action: 'disable', endpoint: current });
+  } finally {
+    storage()?.setItem(settingsKey(userId), JSON.stringify({ ...readReminderSettings(userId), enabled: false }));
+    storage()?.removeItem(endpointKey(userId));
+  }
 }

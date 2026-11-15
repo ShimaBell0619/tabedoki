@@ -28,6 +28,41 @@ begin
   end if;
 end;
 $$;
+
+-- Test the real claim function at the CI clock, including hours outside the UI's
+-- three choices. This constraint change and every fixture roll back below.
+alter table public.reminder_subscriptions drop constraint reminder_subscriptions_reminder_hour_check;
+delete from public.reminder_subscriptions where id='22222222-2222-4222-8222-222222222222';
+insert into public.reminder_subscriptions
+  (id,user_id,endpoint,p256dh,auth,weekdays,reminder_hour,enabled,skip_registered,last_registered_on,last_sent_on)
+select
+  ('22222222-2222-4222-8222-' || lpad(n::text,12,'0'))::uuid,
+  '11111111-1111-4111-8111-111111111111',
+  'https://fcm.googleapis.com/wp/claim-' || n, 'fixture-p256','fixture-auth',
+  case when n=6 then array[(extract(isodow from clock)::integer % 7)+1]
+    else array[extract(isodow from clock)::integer] end,
+  case when n=7 then (extract(hour from clock)::integer+1)%24 else extract(hour from clock)::integer end,
+  n<>5, n<>3,
+  case when n in (2,3) then clock::date else null end,
+  case when n=4 then clock::date else null end
+from generate_series(1,7) n, (select now() at time zone 'Asia/Tokyo' as clock) c;
+
+do $$
+declare claimed uuid[];
+begin
+  select array_agg(id order by id) into claimed from public.claim_due_registration_reminders();
+  if claimed is distinct from array[
+    '22222222-2222-4222-8222-000000000001'::uuid,
+    '22222222-2222-4222-8222-000000000003'::uuid
+  ] then
+    raise exception 'Claim must respect JST day/hour, registered-day skip, enabled and sent-day guards';
+  end if;
+  if exists(select 1 from public.claim_due_registration_reminders()) then
+    raise exception 'Repeated dispatch may claim the same day twice';
+  end if;
+end;
+$$;
+
 set local role authenticated;
 do $$
 begin
@@ -38,6 +73,19 @@ begin
   end if;
   if has_function_privilege('authenticated','public.claim_due_registration_reminders()','EXECUTE') then
     raise exception 'Browser may dispatch notifications';
+  end if;
+end;
+$$;
+reset role;
+set local role anon;
+do $$
+begin
+  if has_table_privilege('anon','public.reminder_subscriptions','SELECT')
+    or has_table_privilege('anon','public.reminder_subscriptions','INSERT')
+    or has_table_privilege('anon','public.reminder_subscriptions','UPDATE')
+    or has_table_privilege('anon','public.reminder_subscriptions','DELETE')
+    or has_function_privilege('anon','public.claim_due_registration_reminders()','EXECUTE') then
+    raise exception 'Unauthenticated browser may access subscriptions or dispatch';
   end if;
 end;
 $$;

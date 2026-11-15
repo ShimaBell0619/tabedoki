@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { supabase } from '../data/supabase';
 import { reminderAccessToken } from './reminder-auth';
-import { disableReminderOnLogout, readReminderSettings } from '../features/reminders/reminder-client';
+import { disableReminderOnLogout } from '../features/reminders/reminder-client';
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -34,8 +34,8 @@ export function useAuth() {
   async function logout() {
     setBusy(true); setError('');
     try {
-      if (user && readReminderSettings(user.id).enabled) {
-        try { await disableReminderOnLogout(user.id, await reminderAccessToken()); }
+      if (user) {
+        try { await disableReminderOnLogout(user.id, await reminderAccessToken().catch(() => '')); }
         catch { /* Never block logout when the notification service is unavailable. */ }
       }
       const { error } = await supabase!.auth.signOut({ scope: 'local' });
