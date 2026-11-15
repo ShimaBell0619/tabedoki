@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { cn } from '@/components/ui/utils';
 import { Button } from '@/components/ui/button';
 import { categories, consumptionAction, units, places, kinds, tracksVolume, volumeLabel, type Food, type FoodStatus, type StoragePlace } from '../../domain/food';
@@ -39,6 +40,9 @@ type Props = InventoryActions & {
 };
 
 export function FoodGroupCard({ group, totalActiveQuantity, today, view, sort, listed, adding, onToggleAdd, onCloseAdd, blocked, onEdit, onStatus, onRemove, onLowStock, onQuantity, onVolume, onAddShopping, onAddStock, iconSelections, onPickIcon }: Props) {
+  // Keep lot text in the DOM for native find-in-page. Defer only interactive controls.
+  // Once visited, retain those controls and form state even when the disclosure closes.
+  const [hasOpened, setHasOpened] = useState(false);
   const main = group.primary;
   const state = main.status === 'active' ? deadlineState(main.deadline, today) : 'later';
   const finishedCount = group.items.filter(item => item.status !== 'active').length;
@@ -51,7 +55,8 @@ export function FoodGroupCard({ group, totalActiveQuantity, today, view, sort, l
     finishedCount > 0 ? amount :
     group.activeQuantity === 1 && partlyUsed.length === 1 ? '開封中 ' + volumeLabel(partlyUsed[0].volumePercent ?? 100) : amount;
   return <li className={cn('food-row min-w-0 rounded-[13px] border border-border bg-surface shadow-[0_2px_8px_rgb(33_43_56/4%)] mobile:border-border-subtle mobile:shadow-[0_2px_7px_rgb(33_43_56/3%)] has-[.food-details[open]]:border-border-hover has-[.food-details[open]]:shadow-[0_4px_16px_rgb(33_43_56/7%)]', group.items.length === 1 && 'single-stock', group.activeQuantity === 0 && 'completed')} key={group.key}>
-    <details className="food-details overflow-hidden rounded-xl open:[&>summary]:bg-surface">
+    <details className="food-details overflow-hidden rounded-xl open:[&>summary]:bg-surface"
+      onToggle={event => { if (event.currentTarget.open) setHasOpened(true); }}>
       <summary className="relative flex min-h-[68px] mobile:min-h-[76px] cursor-pointer list-none items-center gap-2 px-3 py-2.5 pr-3.5 focus-visible:outline-offset-[-3px]" aria-label={group.name + 'の詳細、' + compactAmount + '、' + kinds[group.kind] + ' ' + main.deadline + '、' +
         (main.status === 'active' ? deadlineLabel(main.deadline, today) : main.status === 'used' ? '使用完了' : '廃棄済み')}>
         {(state === 'expired' || state === 'today') && main.status === 'active' &&
@@ -92,19 +97,19 @@ export function FoodGroupCard({ group, totalActiveQuantity, today, view, sort, l
                 {sort !== 'category' && <span className="text-xs text-muted">· {categories[group.category]}</span>}
                 {item.status !== 'active' && <span className="stock-finished text-xs text-finished">{item.status === 'used' ? '使用完了' : '廃棄済み'}</span>}
               </div>
-              <FoodActions item={item} blocked={blocked} onEdit={() => onEdit(item)}
-                onConsume={() => onQuantity(item, -1)} onDiscard={() => onStatus(item, 'discarded')} onRemove={() => onRemove(item)} />
+              {hasOpened && <FoodActions item={item} blocked={blocked} onEdit={() => onEdit(item)}
+                onConsume={() => onQuantity(item, -1)} onDiscard={() => onStatus(item, 'discarded')} onRemove={() => onRemove(item)} />}
             </div>
             {item.status === 'active' ? <>
               <div className="stock-lot-balance flex min-w-0 items-start justify-between gap-2">
                 <StockProgress item={item} />
-                <label className="stock-lot-low inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-1 text-xs whitespace-nowrap text-muted [&_input]:size-5 [&_input]:accent-primary">
+                {hasOpened && <label className="stock-lot-low inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-1 text-xs whitespace-nowrap text-muted [&_input]:size-5 [&_input]:accent-primary">
                   <input type="checkbox" checked={item.lowStock} disabled={blocked}
                     onChange={event => onLowStock(item, event.target.checked)}
                     aria-label={item.name + 'の残りわずか'} />残りわずか
-                </label>
+                </label>}
               </div>
-              <div className="stock-lot-controls flex min-w-0 gap-2">
+              {hasOpened && <div className="stock-lot-controls flex min-w-0 gap-2">
                 <Button variant="action" type="button" className="finish-food flex min-h-11 min-w-0 flex-1 items-center justify-center gap-1.5 border-action bg-action px-3 text-on-action hover:bg-action-hover [&_.icon]:size-4 [&_.icon]:brightness-0 [&_.icon]:invert"
                   disabled={blocked} onClick={() => volume ? onVolume(item, -10) : onQuantity(item, -1)}
                   aria-label={`${item.name.trim()}を${action}`}>
@@ -116,17 +121,17 @@ export function FoodGroupCard({ group, totalActiveQuantity, today, view, sort, l
                   aria-label={volume ? item.name.trim() + 'の残量を10%増やす' : item.name.trim() + 'の数量を1増やす'}>
                   <Icon name="plus" />
                 </Button>
-              </div>
+              </div>}
             </> : <div className="flex items-center justify-between gap-3">
               <span className="text-xs text-muted">{item.quantity}{units[item.unit]}</span>
-              <Button variant="secondary" type="button" className="secondary min-h-11 text-xs" disabled={blocked}
+              {hasOpened && <Button variant="secondary" type="button" className="secondary min-h-11 text-xs" disabled={blocked}
                 onClick={() => onStatus(item, 'active')} aria-label={item.name.trim() + 'を管理中に戻す'}>
                 <Icon name="refresh-cw" />管理中に戻す
-              </Button>
+              </Button>}
             </div>}
           </li>;
         })}</ul>
-        {view !== 'finished' && <div className={`stock-group-actions flex flex-wrap items-center justify-between gap-2 [&_.secondary]:min-h-11
+        {hasOpened && view !== 'finished' && <div className={`stock-group-actions flex flex-wrap items-center justify-between gap-2 [&_.secondary]:min-h-11
           [&_.secondary]:text-[13px] [&_.icon]:size-4 mobile:[&_.secondary]:px-3 mobile:[&_.secondary]:py-[9px]`}>
           <Button variant="secondary" type="button" className="secondary" disabled={blocked}
             aria-expanded={adding} onClick={() => onToggleAdd()}>
