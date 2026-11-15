@@ -1,6 +1,8 @@
 // Registration reminders are available only while signed in with Google.
 // The server validates the Supabase access token and never trusts a client-supplied user ID.
-const projectUrl = (import.meta as ImportMeta & { env: Record<string,string> }).env.VITE_SUPABASE_URL;
+const env = (import.meta as ImportMeta & { env: Record<string,string> }).env;
+const projectUrl = env.VITE_SUPABASE_URL;
+const publishableKey = env.VITE_SUPABASE_PUBLISHABLE_KEY;
 export type ReminderSettings = {
   enabled: boolean; weekdays: number[]; hour: 18 | 19 | 21; skipRegistered: boolean;
 };
@@ -38,7 +40,7 @@ async function api(accessToken: string, method: 'GET' | 'POST', body?: Record<st
   try {
     response = await fetch(projectUrl.replace(/\/$/, '') + '/functions/v1/reminder-preferences', {
       method,
-      headers: { Authorization: 'Bearer ' + accessToken, ...(body ? { 'Content-Type': 'application/json' } : {}) },
+      headers: { apikey: publishableKey, Authorization: 'Bearer ' + accessToken, ...(body ? { 'Content-Type': 'application/json' } : {}) },
       ...(body ? { body: JSON.stringify(body) } : {}),
       signal: AbortSignal.timeout(15000),
     });
