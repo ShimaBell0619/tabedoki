@@ -48,3 +48,34 @@ as $$
 $$;
 revoke all on function public.claim_due_registration_reminders() from public, anon, authenticated;
 grant execute on function public.claim_due_registration_reminders() to service_role;
+
+-- The public device-registration API is authenticated per-device only after first
+-- subscription. Rate-limit initial registrations independently of device tokens.
+create table public.reminder_registration_limits (
+  source_hash text not null check (source_hash ~ '^[0-9a-f]{64}$'),
+  hour_bucket timestamptz not null,
+  attempts integer not null check (attempts between 1 and 10),
+  primary key (source_hash, hour_bucket)
+);
+alter table public.reminder_registration_limits enable row level security;
+revoke all on public.reminder_registration_limits from public, anon, authenticated;
+grant select, insert, update, delete on public.reminder_registration_limits to service_role;
+
+create function public.take_reminder_registration_slot(p_hash text) returns boolean
+language plpgsql security invoker set search_path = ''
+as $$
+declare admitted boolean;
+begin
+  if p_hash !~ '^[0-9a-f]{64}$' then return false; end if;
+  delete from public.reminder_registration_limits where hour_bucket < now() - interval '48 hours';
+  insert into public.reminder_registration_limits (source_hash, hour_bucket, attempts)
+    values (p_hash, date_trunc('hour', now()), 1)
+    on conflict (source_hash, hour_bucket) do update
+      set attempts = public.reminder_registration_limits.attempts + 1
+      where public.reminder_registration_limits.attempts < 10
+    returning true into admitted;
+  return coalesce(admitted,false);
+end;
+$$;
+revoke all on function public.take_reminder_registration_slot(text) from public, anon, authenticated;
+grant execute on function public.take_reminder_registration_slot(text) to service_role;

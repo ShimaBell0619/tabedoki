@@ -24,7 +24,23 @@ begin
   if has_function_privilege('authenticated','public.claim_due_registration_reminders()','EXECUTE') then
     raise exception 'Browser role may claim subscriptions';
   end if;
+  if has_function_privilege('authenticated','public.take_reminder_registration_slot(text)','EXECUTE') then
+    raise exception 'Browser role may bypass registration quota';
+  end if;
 end;
-$$;
+$;
 reset role;
+do $
+declare index integer;
+begin
+  for index in 1..10 loop
+    if not public.take_reminder_registration_slot(repeat('b',64)) then
+      raise exception 'Initial registration quota rejected too soon';
+    end if;
+  end loop;
+  if public.take_reminder_registration_slot(repeat('b',64)) then
+    raise exception 'Registration quota exceeded its limit';
+  end if;
+end;
+$;
 rollback;

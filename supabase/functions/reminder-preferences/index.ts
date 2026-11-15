@@ -61,6 +61,17 @@ Deno.serve(async request => {
     if (readError) throw readError;
     if (existing && existing.token_hash !== tokenHash) return response(origin, 403, { error: 'Invalid device credentials' });
     if (action === 'save') {
+      if (!existing) {
+        const secret = Deno.env.get('WEB_PUSH_PRIVATE_KEY');
+        if (!secret) return response(origin, 503, { error: '通知サービスが準備されていません。' });
+        // Supabase's Cloudflare ingress normally supplies cf-connecting-ip.
+        // Missing IPs share a conservative quota instead of trusting user-supplied XFF.
+        const address = request.headers.get('cf-connecting-ip') || 'unknown';
+        const sourceHash = await hashToken(address.slice(0, 100) + ':' + secret);
+        const { data: admitted, error: quotaError } = await admin.rpc('take_reminder_registration_slot', { p_hash: sourceHash });
+        if (quotaError) throw quotaError;
+        if (!admitted) return response(origin, 429, { error: '通知登録が集中しています。時間をおいてお試しください。' });
+      }
       const { subscription, weekdays, hour, skipRegistered } = body;
       if (!subscription || typeof subscription !== 'object') return response(origin, 400, { error: 'Invalid subscription' });
       const push = subscription as Record<string,unknown>;
