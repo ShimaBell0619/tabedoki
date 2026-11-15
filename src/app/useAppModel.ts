@@ -65,7 +65,7 @@ export function useAppModel(store: DataStore, initial: Snapshot, mode: 'local' |
     } catch (error) { showError(error instanceof Error ? error.message : '登録できません。'); return false; }
     if (!await commitData(next)) return false;
     foodSaved.current = true;
-    void markFoodRegistered();
+    if (!editingId) void markFoodRegistered();
     setNotice(editingId ? '食品を更新しました。' : '食品を登録しました。');
     return true;
   }

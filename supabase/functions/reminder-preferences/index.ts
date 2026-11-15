@@ -61,6 +61,15 @@ Deno.serve(async request => {
     if (readError) throw readError;
     if (existing && existing.token_hash !== tokenHash) return response(origin, 403, { error: 'Invalid device credentials' });
     if (action === 'save') {
+      const { subscription, weekdays, hour, skipRegistered } = body;
+      if (!subscription || typeof subscription !== 'object') return response(origin, 400, { error: 'Invalid subscription' });
+      const push = subscription as Record<string,unknown>;
+      if (!validEndpoint(push.endpoint) || !validKeys(push.keys) || !Array.isArray(weekdays)
+        || weekdays.length < 1 || weekdays.length > 7 || new Set(weekdays).size !== weekdays.length
+        || !weekdays.every(d => Number.isInteger(d) && Number(d) >= 1 && Number(d) <= 7)
+        || ![18,19,21].includes(Number(hour)) || typeof skipRegistered !== 'boolean') {
+        return response(origin, 400, { error: 'Invalid notification settings' });
+      }
       if (!existing) {
         const secret = Deno.env.get('WEB_PUSH_PRIVATE_KEY');
         if (!secret) return response(origin, 503, { error: '通知サービスが準備されていません。' });
@@ -71,15 +80,6 @@ Deno.serve(async request => {
         const { data: admitted, error: quotaError } = await admin.rpc('take_reminder_registration_slot', { p_hash: sourceHash });
         if (quotaError) throw quotaError;
         if (!admitted) return response(origin, 429, { error: '通知登録が集中しています。時間をおいてお試しください。' });
-      }
-      const { subscription, weekdays, hour, skipRegistered } = body;
-      if (!subscription || typeof subscription !== 'object') return response(origin, 400, { error: 'Invalid subscription' });
-      const push = subscription as Record<string,unknown>;
-      if (!validEndpoint(push.endpoint) || !validKeys(push.keys) || !Array.isArray(weekdays)
-        || weekdays.length < 1 || weekdays.length > 7 || new Set(weekdays).size !== weekdays.length
-        || !weekdays.every(d => Number.isInteger(d) && Number(d) >= 1 && Number(d) <= 7)
-        || ![18,19,21].includes(Number(hour)) || typeof skipRegistered !== 'boolean') {
-        return response(origin, 400, { error: 'Invalid notification settings' });
       }
       const entry = { id: deviceId, token_hash: tokenHash, endpoint: push.endpoint as string,
         p256dh: (push.keys as {p256dh:string;auth:string}).p256dh, auth: (push.keys as {p256dh:string;auth:string}).auth, weekdays, reminder_hour: hour,
