@@ -4,11 +4,11 @@ import { Icon } from '../../components/Icon';
 import { readReminderSettings, saveReminderSettings, testReminder, type ReminderSettings } from './reminder-client';
 
 const days = ['月', '火', '水', '木', '金', '土', '日'] as const;
-type Props = { onClose: () => void };
+type Props = { userId: string; getAccessToken: () => Promise<string>; onClose: () => void };
 
-export function ReminderSettingsDialog({ onClose }: Props) {
+export function ReminderSettingsDialog({ userId, getAccessToken, onClose }: Props) {
   const dialog = useRef<HTMLDialogElement>(null);
-  const [settings, setSettings] = useState<ReminderSettings>(readReminderSettings);
+  const [settings, setSettings] = useState<ReminderSettings>(() => readReminderSettings(userId));
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -22,7 +22,7 @@ export function ReminderSettingsDialog({ onClose }: Props) {
     event.preventDefault();
     setBusy(true); setError(''); setMessage('');
     try {
-      await saveReminderSettings(settings);
+      await saveReminderSettings(userId, await getAccessToken(), settings);
       dialog.current?.close();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : '通知設定を保存できませんでした。');
@@ -31,13 +31,13 @@ export function ReminderSettingsDialog({ onClose }: Props) {
   async function sendTest() {
     setBusy(true); setError(''); setMessage('');
     try {
-      await testReminder();
+      await testReminder(userId, await getAccessToken());
       setMessage('テスト通知を送信しました。Androidの通知欄をご確認ください。');
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'テスト通知を送信できませんでした。');
     } finally { setBusy(false); }
   }
-  const stored = readReminderSettings();
+  const stored = readReminderSettings(userId);
   const validDays = settings.weekdays.length > 0;
   return <dialog ref={dialog} onClose={onClose} aria-labelledby="reminder-heading"
     className="m-auto max-h-[92dvh] w-[min(94vw,460px)] overflow-auto rounded-[18px] border border-border bg-surface p-0 text-foreground shadow-[0_24px_90px_#212B3840] backdrop:bg-[#1F2937B3] mobile:max-h-[94dvh] mobile:w-[calc(100vw-24px)]">
@@ -88,7 +88,7 @@ export function ReminderSettingsDialog({ onClose }: Props) {
       </fieldset>
       {settings.enabled && <div className="rounded-lg bg-panel p-3 text-xs text-muted">
         {validDays ? days.filter((_,index) => settings.weekdays.includes(index+1)).join('・') + '曜日 ' + settings.hour + ':00' : '曜日未設定'}
-        <span className="mt-1 block">通知先はこの端末のみです。Googleログインは不要です。</span>
+        <span className="mt-1 block">Googleログイン中のアカウントで、この端末に通知します。</span>
       </div>}
       {error && <p role="alert" className="m-0 rounded-lg bg-expired-surface p-3 text-[13px] text-expired">{error}</p>}
       {message && <p role="status" className="m-0 text-[13px] text-foreground">{message}</p>}
