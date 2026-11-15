@@ -50,7 +50,8 @@ export function DeadlineCalendar({ items, today, listed, onShowList, blocked, on
   }, [selectedDate]);
   function jumpTo(date: string) {
     setSelectedOffset(daysLeft(date,today));
-    railRef.current?.querySelector<HTMLElement>(`[data-date="${date}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    railRef.current?.querySelector<HTMLElement>(`[data-date="${date}"]`)?.scrollIntoView({ behavior, block: 'nearest', inline: 'center' });
   }
   function nextDate() {
     const next = visible.find(day => day.deadline > calendarDate) ?? visible[0];

@@ -80,3 +80,29 @@ for (const width of [320, 390, 430, 1440]) {
     expect(errors).toEqual([]);
   });
 }
+
+test('期限カレンダーの日付ジャンプは動きを減らす設定に従う', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 850 });
+  await page.clock.install({ time: new Date('2026-10-17T12:00:00') });
+  await setup(page);
+  await page.getByRole('button', { name: 'カレンダー', exact: true }).click();
+
+  await page.evaluate(() => {
+    const scrollIntoView = Element.prototype.scrollIntoView;
+    window.calendarScrollBehaviors = [];
+    Element.prototype.scrollIntoView = function (options) {
+      if (this.closest('.calendar-rail')) window.calendarScrollBehaviors.push(options?.behavior);
+      return scrollIntoView.call(this, options);
+    };
+  });
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.getByRole('button', { name: '10月24日（土）、2件' }).click();
+  await expect(page.getByRole('button', { name: '10月24日（土）、2件' })).toHaveAttribute('aria-pressed', 'true');
+  expect(await page.evaluate(() => window.calendarScrollBehaviors.at(-1))).toBe('auto');
+
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.getByRole('button', { name: '10月17日（土）、1件、今日' }).click();
+  await expect(page.getByRole('button', { name: '10月17日（土）、1件、今日' })).toHaveAttribute('aria-pressed', 'true');
+  expect(await page.evaluate(() => window.calendarScrollBehaviors.at(-1))).toBe('smooth');
+});
