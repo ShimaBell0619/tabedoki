@@ -46,7 +46,7 @@ export function App({ store, initial, mode = 'cloud', email, onLogout, onLogin, 
 
   
   useEffect(() => {
-    const showRegistration = () => { setScreen('inventory'); openForm(); };
+    const showRegistration = () => { if (editor) return; setScreen('inventory'); openForm(); };
     const url = new URL(window.location.href);
     if (url.searchParams.get('reminder') === 'register') {
       url.searchParams.delete('reminder');
@@ -58,7 +58,7 @@ export function App({ store, initial, mode = 'cloud', email, onLogout, onLogin, 
     };
     navigator.serviceWorker?.addEventListener('message', onWorkerMessage);
     return () => navigator.serviceWorker?.removeEventListener('message', onWorkerMessage);
-  }, [openForm]);
+  }, [openForm, editor]);
 
   const activeItems = useMemo(() => data.items.filter(item => item.status === 'active'), [data.items]);
   const listed = useMemo(() => new Set(data.shopping.filter(item => !item.bought).map(item => normalizedName(item.name))), [data.shopping]);

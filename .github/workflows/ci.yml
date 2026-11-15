@@ -44,7 +44,7 @@ jobs:
         with:
           deno-version: v2.9.6
       - name: Check reminder Edge Functions
-        run: deno check supabase/functions/reminder-preferences/index.ts supabase/functions/send-registration-reminders/index.ts
+        run: deno check --node-modules-dir=auto supabase/functions/reminder-preferences/index.ts supabase/functions/send-registration-reminders/index.ts
 
   db-test:
     runs-on: ubuntu-latest
